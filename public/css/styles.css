@@ -5,7 +5,7 @@
   --color-secondary: #F9AFB1;     /* complementary pink */
   --color-accent: #CE325B;        /* bold accent for buttons or highlights */
   --color-neutral-dark: #3A3F3B;  /* dark text / backgrounds */
-  --color-neutral-light: #F9F5EA; /* light background / cards */
+  --color-neutral-light: #FCFAF5; /* light background / cards */
   --color-muted: #99B7C6;         /* soft blue for subtle UI elements */
   --color-green: #9AB59D;         /* optional, for success or positive indicators */
 
@@ -45,4 +45,53 @@ a:hover, .btn:hover {
 .script-text {
   font-family: var(--font-script);
   color: var(--color-accent);
+}
+
+.site-header {
+    background: var(--color-primary);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid var(--color-secondary);
+}
+
+.logo {
+    font-family: var(--font-heading);
+    margin: 0;
+}
+
+.navbar a {
+    margin-left: 1rem;
+    text-decoration: none;
+    font-weight: 600;
+    color: var(--color-accent);
+}
+
+.navbar a:hover {
+    color: var(--color-secondary);
+}
+
+.site-footer {
+    text-align: center;
+    padding: 1.5rem;
+    margin-top: 3rem;
+    background: var(--color-primary);
+    border-top: 3px solid var(--color-secondary);
+    font-weight: 600;
+}
+
+/* Ensure footer sticks to bottom */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1; /* pushes footer to bottom */
 }

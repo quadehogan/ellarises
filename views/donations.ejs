@@ -1,28 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Donations - Ella Rises</title>
-</head>
-
-<body>
-    <header>
-        <h2>Ella Rises</h2>
-        <nav>
-            <a href="/dashboard">Dashboard</a> |
-            <a href="/logout">Logout</a>
-        </nav>
-    </header>
-
-    <main>
+<%- include('layout', {
+    title: 'Donations',
+    body: `
         <h1>Donations</h1>
         <p>Manage and track donations here.</p>
-    </main>
-
-    <footer>
-        <p>Ella Rises &copy; 2025</p>
-    </footer>
-</body>
-
-</html>
+    `
+}) %>

@@ -75,9 +75,6 @@ app.get('/dashboard', requireLogin, (req, res) => {
 });
 
 // GET routes
-app.get('/index', (req, res) => 
-    res.render('index'));
-
 app.get('/participants', requireLogin, (req, res) => 
     res.render('participants'));
 

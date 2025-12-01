@@ -1,35 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard - Ella Rises</title>
-</head>
-
-<body>
-    <header>
-        <h2>Ella Rises</h2>
-        <nav>
-            <a href="/">Home</a> |
-            <a href="/participants">Participants</a> |
-            <a href="/events">Events</a> |
-            <a href="/surveys">Surveys</a> |
-            <a href="/milestones">Milestones</a> |
-            <a href="/donations">Donations</a> |
-            <a href="/logout">Logout</a>
-        </nav>
-    </header>
-
-    <main>
+<%- include('layout', {
+    title: 'Dashboard',
+    body: `
         <h1>Dashboard</h1>
-        <p>Welcome,
-            <%= user.username %>!</p>
+        <p>Welcome, <%= user.username %>!</p>
         <p>Here you can manage all the data and view insights.</p>
-    </main>
-
-    <footer>
-        <p>Ella Rises &copy; 2025</p>
-    </footer>
-</body>
-
-</html>
+    `
+}) %>
