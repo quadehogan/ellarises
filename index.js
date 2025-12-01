@@ -81,7 +81,7 @@ app.get('/participants', requireLogin, (req, res) =>
 app.get('/events', requireLogin, (req, res) => 
     res.render('events'));
 
-app.get('/surveys', requireLogin, (req, res) => 
+app.get('/surveys', (req, res) => 
     res.render('surveys'));
 
 app.get('/milestones', requireLogin, (req, res) => 
@@ -112,6 +112,50 @@ app.get('/add_donation', (req, res) =>
 app.get('/teapot', (req, res) => {
     res.status(418).send("I'm a teapot ☕");
 });
+
+// POST routes
+app.post('/submit-survey', requireLogin, (req, res) => {
+    const {
+        SurveySatisfactionScore,
+        SurveyUsefulnessScore,
+        SurveyInstructorScore,
+        SurveyRecommendationScore,
+        SurveyComments
+    } = req.body;
+
+    // Parse scores as integers
+    const sat = parseInt(SurveySatisfactionScore);
+    const use = parseInt(SurveyUsefulnessScore);
+    const instr = parseInt(SurveyInstructorScore);
+    const rec = parseInt(SurveyRecommendationScore);
+
+    // Calculate overall score (average of first 3)
+    const overall = ((sat + use + instr) / 3).toFixed(2);
+
+    // Determine NPS bucket
+    let npsBucket;
+    if(rec === 5) npsBucket = 'Promoter';
+    else if(rec === 4) npsBucket = 'Passive';
+    else npsBucket = 'Detractor';
+
+    // Example: save to database
+    const surveyData = {
+        SurveySatisfactionScore: sat,
+        SurveyUsefulnessScore: use,
+        SurveyInstructorScore: instr,
+        SurveyRecommendationScore: rec,
+        SurveyOverallScore: overall,
+        SurveyNPSBucket: npsBucket,
+        SurveyComments
+    };
+
+    // TODO: insert surveyData into your database
+    console.log('Saving survey:', surveyData);
+
+    // Redirect or render a success page
+    res.send('Survey submitted successfully!');
+});
+
 
 // ==========================
 // Start Server

@@ -95,3 +95,24 @@ body {
 main {
     flex: 1; /* pushes footer to bottom */
 }
+
+/* ===== Custom Button ===== */
+.custom-btn {
+    background-color: var(--color-primary);   /* soft pink background */
+    color: var(--color-neutral-dark);         /* dark text */
+    font-family: var(--font-body);            /* body font */
+    font-weight: 600;
+    padding: 0.5rem 1.2rem;
+    border: 2px solid var(--color-accent);    /* optional border */
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-align: center;
+}
+
+.custom-btn:hover {
+    background-color: var(--color-secondary); /* complementary pink */
+    color: var(--color-neutral-dark);
+    border-color: var(--color-accent);
+}
