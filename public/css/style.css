@@ -1,27 +1,48 @@
+/* ===== Variables ===== */
+:root {
+  /* ===== Colors ===== */
+  --color-primary: #FFD8D1;       /* soft pink, key color */
+  --color-secondary: #F9AFB1;     /* complementary pink */
+  --color-accent: #CE325B;        /* bold accent for buttons or highlights */
+  --color-neutral-dark: #3A3F3B;  /* dark text / backgrounds */
+  --color-neutral-light: #F9F5EA; /* light background / cards */
+  --color-muted: #99B7C6;         /* soft blue for subtle UI elements */
+  --color-green: #9AB59D;         /* optional, for success or positive indicators */
+
+  /* ===== Fonts ===== */
+  --font-heading: 'DM Serif Display', serif;
+  --font-body: 'Montserrat', sans-serif;
+  --font-script: 'TT Milk Script', cursive;
+}
+
+/* ===== Global Styles ===== */
 body {
-    font-family: system-ui, Segoe UI, Roboto, Arial;
-    margin: 20px
+  font-family: var(--font-body);
+  background-color: var(--color-neutral-light);
+  color: var(--color-neutral-dark);
+  margin: 0;
+  padding: 0;
 }
 
-header nav {
-    margin-bottom: 20px
+/* ===== Headings ===== */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--color-primary);
 }
 
-.kpi {
-    display: inline-block;
-    padding: 10px;
-    border-radius: 6px;
-    margin-right: 8px;
-    background: #f1f1f1
+/* ===== Links & Buttons ===== */
+a, .btn {
+  font-family: var(--font-body);
+  color: var(--color-accent);
+  text-decoration: none;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse
+a:hover, .btn:hover {
+  color: var(--color-secondary);
 }
 
-th,
-td {
-    border: 1px solid #ddd;
-    padding: 8px
+/* ===== Script / Decorative Text ===== */
+.script-text {
+  font-family: var(--font-script);
+  color: var(--color-accent);
 }
