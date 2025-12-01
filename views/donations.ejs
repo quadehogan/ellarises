@@ -1,7 +1,5 @@
 <%- include('layout', {
     title: 'Donations',
-    body: `
-        <h1>Donations</h1>
-        <p>Manage and track donations here.</p>
-    `
+    body: include('donations_content', { user: user })
 }) %>
+

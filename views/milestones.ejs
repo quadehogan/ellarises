@@ -1,7 +1,4 @@
 <%- include('layout', {
     title: 'Milestones',
-    body: `
-        <h1>Milestones</h1>
-        <p>Track participant milestone achievements here.</p>
-    `
+    body: include('milestones_content', { user: user })
 }) %>

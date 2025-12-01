@@ -1,7 +1,5 @@
 <%- include('layout', {
     title: 'Participants',
-    body: `
-        <h1>Participants</h1>
-        <p>Manage participants here.</p>
-    `
+    body: include('participants_content', { user: user })
 }) %>
+

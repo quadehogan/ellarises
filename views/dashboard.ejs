@@ -1,8 +1,5 @@
 <%- include('layout', {
     title: 'Dashboard',
-    body: `
-        <h1>Dashboard</h1>
-        <p>Welcome, <%= user.username %>!</p>
-        <p>Here you can manage all the data and view insights.</p>
-    `
+    body: include('dashboard_content', { user: user })
 }) %>
+
