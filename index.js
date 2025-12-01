@@ -74,12 +74,42 @@ app.get('/dashboard', requireLogin, (req, res) => {
     res.render('dashboard', { user: req.session.user });
 });
 
-// Other placeholder pages (demo purposes)
-app.get('/participants', requireLogin, (req, res) => res.render('participants'));
-app.get('/events', requireLogin, (req, res) => res.render('events'));
-app.get('/surveys', requireLogin, (req, res) => res.render('surveys'));
-app.get('/milestones', requireLogin, (req, res) => res.render('milestones'));
-app.get('/donations', requireLogin, (req, res) => res.render('donations'));
+// GET routes
+app.get('/index', (req, res) => 
+    res.render('index'));
+
+app.get('/participants', requireLogin, (req, res) => 
+    res.render('participants'));
+
+app.get('/events', requireLogin, (req, res) => 
+    res.render('events'));
+
+app.get('/surveys', requireLogin, (req, res) => 
+    res.render('surveys'));
+
+app.get('/milestones', requireLogin, (req, res) => 
+    res.render('milestones'));
+
+app.get('/donations', requireLogin, (req, res) => 
+    res.render('donations'));
+
+app.get('/enroll', (req, res) => 
+    res.render('enroll'));
+
+app.get('/create_user', requireLogin, (req, res) => 
+    res.render('create_user'));
+
+app.get('/add_events', requireLogin, (req, res) => 
+    res.render('add_events'));
+
+app.get('/add_milestone', requireLogin, (req, res) => 
+    res.render('add_milestone'));
+
+app.get('/add_survey', requireLogin, (req, res) => 
+    res.render('add_survey'));
+
+app.get('/add_donation', (req, res) => 
+    res.render('add_donation'));
 
 // Fun IS 404 requirement route
 app.get('/teapot', (req, res) => {
