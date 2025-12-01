@@ -1,0 +1,33 @@
+<% layout('layout') -%>
+    <h2>Admin Dashboard</h2>
+    <div id="kpis">
+        <div class="kpi">Satisfaction: <span id="kpi-sat">--</span></div>
+        <div class="kpi">Usefulness: <span id="kpi-use">--</span></div>
+        <div class="kpi">Recommend: <span id="kpi-rec">--</span></div>
+    </div>
+
+    <section>
+        <h3>Event Impact</h3>
+        <canvas id="chart-impact" width="800" height="300"></canvas>
+    </section>
+
+    <script>
+        // sample data fetch - replace with real API
+        const sample = {
+            labels: ['Workshop A', 'Workshop B', 'Workshop C'],
+            satisfaction: [4.2, 3.8, 4.6]
+        };
+        window.addEventListener('load', () => {
+            const ctx = document.getElementById('chart-impact').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sample.labels,
+                    datasets: [{
+                        label: 'Satisfaction',
+                        data: sample.satisfaction
+                    }]
+                }
+            });
+        });
+    </script>

@@ -1,0 +1,27 @@
+body {
+    font-family: system-ui, Segoe UI, Roboto, Arial;
+    margin: 20px
+}
+
+header nav {
+    margin-bottom: 20px
+}
+
+.kpi {
+    display: inline-block;
+    padding: 10px;
+    border-radius: 6px;
+    margin-right: 8px;
+    background: #f1f1f1
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 8px
+}
