@@ -1,0 +1,87 @@
+<%- include('layout', { title: "Create User" }) %>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Create User</h2>
+
+    <form action="/create-user-submit" method="POST">
+
+        <!-- Email -->
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="ParticipantEmail" class="form-control" required>
+        </div>
+
+        <!-- First Name -->
+        <div class="mb-3">
+            <label class="form-label">First Name</label>
+            <input type="text" name="ParticipantFirstName" class="form-control" required>
+        </div>
+
+        <!-- Last Name -->
+        <div class="mb-3">
+            <label class="form-label">Last Name</label>
+            <input type="text" name="ParticipantLastName" class="form-control" required>
+        </div>
+
+        <!-- DOB -->
+        <div class="mb-3">
+            <label class="form-label">Date of Birth</label>
+            <input type="date" name="ParticipantDOB" class="form-control" required>
+        </div>
+
+        <!-- Role (radio buttons) -->
+        <div class="mb-3">
+            <label class="form-label fw-bold">Select Role</label><br>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="ParticipantRole" value="participant" checked>
+                <label class="form-check-label">Participant</label>
+            </div>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="ParticipantRole" value="admin">
+                <label class="form-check-label">Admin</label>
+            </div>
+        </div>
+
+        <!-- Phone -->
+        <div class="mb-3">
+            <label class="form-label">Phone</label>
+            <input type="text" name="ParticipantPhone" class="form-control">
+        </div>
+
+        <!-- City -->
+        <div class="mb-3">
+            <label class="form-label">City</label>
+            <input type="text" name="ParticipantCity" class="form-control">
+        </div>
+
+        <!-- State -->
+        <div class="mb-3">
+            <label class="form-label">State</label>
+            <input type="text" name="ParticipantState" class="form-control">
+        </div>
+
+        <!-- Zip -->
+        <div class="mb-3">
+            <label class="form-label">Zip Code</label>
+            <input type="text" name="ParticipantZip" class="form-control">
+        </div>
+
+        <!-- School / Employer -->
+        <div class="mb-3">
+            <label class="form-label">School or Employer</label>
+            <input type="text" name="ParticipantSchoolOrEmployer" class="form-control">
+        </div>
+
+        <!-- Field of Interest -->
+        <div class="mb-3">
+            <label class="form-label">Field of Interest</label>
+            <input type="text" name="ParticipantFieldOfInterest" class="form-control">
+        </div>
+
+        <!-- Submit button -->
+        <button type="submit" class="btn btn-primary w-100 mt-3">Create User</button>
+
+    </form>
+</div>
