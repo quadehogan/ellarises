@@ -64,16 +64,40 @@ app.get('/login', (req, res) => {
 });
 
 // Login handler (demo user: admin/admin)
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
 
-    if (username === 'admin' && password === 'admin') {
-        req.session.user = { username: 'admin' };
+    try {
+        // Look up participant by email
+        const participant = await knex('participants')
+            .where({ Email: email })
+            .first();
+
+        if (!participant) {
+            // Email not found
+            return res.render('login', { error: 'Invalid login' });
+        }
+
+        // Check password
+        // If you store hashed passwords, use bcrypt.compare(password, participant.Password)
+        if (participant.Password !== password) {
+            return res.render('login', { error: 'Invalid login' });
+        }
+
+        // Save minimal info in session
+        req.session.user = {
+            id: participant.ID,               // store ID for later
+            email: participant.Email,
+            role: participant.ParticipantRole // save role for frequent access
+        };
+
         return res.redirect('/dashboard');
+    } catch (err) {
+        console.error('Login error:', err);
+        return res.status(500).send('Server error');
     }
-
-    res.render('login', { error: 'Invalid login' });
 });
+
 
 // Logout
 app.get('/logout', (req, res) => {
@@ -97,8 +121,8 @@ app.get("/participants", async(req, res) => {
     if (!user) {
         return res.redirect("/login");
     }
-    // Must be manager
-    if (user.role !== "manager") {
+    // Must be admin
+    if (user.role !== "admin") {
         return res.status(403).send("Access denied");
     }
     try {
@@ -190,20 +214,45 @@ app.get('/surveys', (req, res) =>
 app.get('/milestones', (req, res) =>
     res.render('milestones'));
 
-app.get('/donations', requireLogin, async(req, res) => {
+app.get('/donations', requireLogin, async (req, res) => {
     const user = req.session.user; // Logged-in user
-    let donations, totalAmount;
+    let donations = [];
+    let totalAmount = 0;
 
-    if (user.role === 'M') {
-        donations = await db.query('SELECT * FROM donations'); // All donations
-        totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
-    } else if (user.role === 'U') {
-        donations = await db.query('SELECT * FROM donations WHERE userId = ?', [user.id]);
-        totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
+    try {
+        if (user.role === 'admin') { // Admin: see all donations
+            donations = await knex('donations').select(
+                'Donation_ID',
+                'Participant_ID',
+                'DonationDate',
+                'DonationAmount'
+            );
+        } else if (user.role === 'participant') { // Participant: see only their donations
+            donations = await knex('donations')
+                .where({ Participant_ID: user.id })
+                .select(
+                    'Donation_ID',
+                    'Participant_ID',
+                    'DonationDate',
+                    'DonationAmount'
+                );
+        } else {
+            return res.status(403).send('Unauthorized role');
+        }
+
+        // Calculate total donation amount
+        totalAmount = donations.reduce(
+            (sum, d) => sum + Number(d.DonationAmount),
+            0
+        );
+
+        res.render('donations', { user, donations, totalAmount });
+    } catch (err) {
+        console.error('Error fetching donations:', err);
+        res.status(500).send('Server error');
     }
-
-    res.render('donations', { user, donations, totalAmount });
 });
+
 
 app.get('/enroll', (req, res) =>
     res.render('enroll'));
