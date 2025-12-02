@@ -1,0 +1,19 @@
+:root {
+    /* Color Palette */
+    --primary-color: #4B6CB7;
+    /* Example blue */
+    --secondary-color: #182848;
+    /* Darker blue */
+    --accent-color: #FF6B6B;
+    /* Accent/red */
+    --background-color: #F5F5F5;
+    /* Light grey background */
+    --text-color: #333333;
+    /* Dark text */
+    /* Fonts */
+    --font-primary: 'Roboto', sans-serif;
+    --font-heading: 'Montserrat', sans-serif;
+    /* Spacing */
+    --padding: 1rem;
+    --margin: 1rem;
+}
