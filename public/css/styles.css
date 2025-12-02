@@ -116,3 +116,253 @@ main {
     color: var(--color-neutral-dark);
     border-color: var(--color-accent);
 }
+
+/* ===== Slideshow Container ===== */
+.slideshow-container {
+  position: relative;
+  width: 100%;
+  max-height: 600px;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-bottom: 2rem; /* spacing below slideshow */
+}
+
+/* ===== Individual Slides ===== */
+.slide {
+  display: none;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  animation: fade 1s ease-in-out;
+}
+
+/* ===== Fade Animation ===== */
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ===== Slide Images ===== */
+.slideshow-container img {
+  width: 100%;
+  height: 600px;           /* fixed height for hero section */
+  object-fit: cover;
+  display: block;
+}
+
+/* ===== Dots / Navigation ===== */
+.dot {
+  height: 14px;
+  width: 14px;
+  margin: 0 6px;
+  background-color: var(--color-muted);
+  border-radius: 50%;
+  display: inline-block;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dot.active {
+  background-color: var(--color-accent);
+}
+
+/* ===== Dot Container ===== */
+.dot-container {
+  text-align: center;
+  margin-top: 15px;
+  position: relative;
+  z-index: 10;
+}
+
+/* ===== Optional: Overlay Text (for hero CTA) ===== */
+.slide .overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--color-neutral-light);
+  text-align: center;
+  font-family: var(--font-heading);
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+}
+
+/* ===== Mission + Stats Section ===== */
+.section-mission-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 4rem 2rem;
+  background: var(--color-neutral-light);
+}
+
+.section-mission-stats .mission {
+  flex: 1 1 45%;
+  background: var(--color-primary);
+  padding: 2rem;
+  border-radius: 0.5rem;
+}
+
+.section-mission-stats .mission h2 {
+  margin-bottom: 1rem;
+}
+
+.section-mission-stats .stats {
+  flex: 1 1 45%;
+  background: var(--color-neutral-light);
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.section-mission-stats .stats h2 {
+  margin-bottom: 1rem;
+}
+
+.section-mission-stats .stats ul {
+  list-style: none;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+/* ===== Video Section ===== */
+.section-video {
+  background: var(--color-neutral-light);
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.section-video video {
+  width: 90%;
+  max-width: 1000px;
+  border-radius: 0.5rem;
+  margin-top: 2rem;
+}
+
+/* Cards Section */
+.section-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  gap: 2rem;
+  padding: 4rem 2rem;
+  background: var(--color-primary);
+}
+
+.section-cards .card {
+  position: relative;
+  flex: 1 1 30%;
+  min-height: 300px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Set individual card images */
+.card1 {
+  background-image: url('/images/sponsor_photo.avif');
+}
+
+.card2 {
+  background-image: url('/images/enroll_photo.avif');
+}
+
+.card3 {
+  background-image: url('/images/volunteer_photo.avif');
+}
+
+/* Subtle overlay for better text visibility */
+.card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.1) 100%);
+  pointer-events: none;
+}
+
+/* Card content overlay */
+.section-cards .card-content {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem;
+  color: var(--color-neutral-light);
+}
+
+.section-cards .card-content h3 {
+  margin: 0;
+  align-self: flex-end;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.section-cards .card-content .custom-btn {
+  align-self: flex-end;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.8rem;
+}
+
+/* Spacer between sections */
+.section-spacer {
+  height: 4rem;
+  background: var(--color-neutral-light);
+}
+
+/* Call to Action Hero Section */
+.section-cta-hero {
+  position: relative;
+  min-height: 500px;
+  background-image: url('/images/Summer_Summit.avif'); /* Replace with your image path */
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 3rem 2rem;
+}
+
+.cta-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.cta-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.cta-btn {
+  display: inline-block;
+  padding: 1.2rem 3rem;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--color-neutral-light);
+  background: var(--color-accent);
+  border: none;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.cta-btn:hover {
+  background: var(--color-secondary);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
