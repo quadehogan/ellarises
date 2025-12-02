@@ -165,7 +165,7 @@ app.get("/participants", async(req, res) => {
 // ==========================
 
 // View profile (user sees own profile, manager can view any participant)
-app.get('/profile/:id?', requireLogin, async(req, res) => {
+app.get('/profile/:id', requireLogin, async(req, res) => {
     const userId = req.params.id || req.session.user.id; // manager can pass id
 
     // TODO: Query the database for this participant
