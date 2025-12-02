@@ -1,5 +1,8 @@
 <%- include('layout', {
     title: 'Participants',
-    body: include('participants_content', { user: user })
+    body: include('participants_content', { 
+        user: user,
+        participants: participants,
+        users: users
+    })
 }) %>
-

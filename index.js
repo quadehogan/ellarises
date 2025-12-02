@@ -75,19 +75,64 @@ app.get('/dashboard', requireLogin, (req, res) => {
 });
 
 // GET routes
-app.get('/participants', requireLogin, (req, res) => 
-    res.render('participants'));
+// ----------------------
+// PARTICIPANTS PAGE
+// ----------------------
+app.get("/participants", async(req, res) => {
+    const user = req.session.user;
+    // Must be logged in
+    if (!user) {
+        return res.redirect("/login");
+    }
+    // Must be manager
+    if (user.role !== "manager") {
+        return res.status(403).send("Access denied");
+    }
+    try {
+        // 1. Get ALL users
+        const [users] = await db.query(`
+            SELECT User_ID, FirstName, LastName
+            FROM Users
+        `);
+        // 2. Get participants who attended (RegistrationAttendedFlag = 'T')
+        const [participants] = await db.query(`
+            SELECT r.Participant_ID, u.FirstName, u.LastName
+            FROM Registration r
+            JOIN Users u 
+                ON r.Participant_ID = u.User_ID
+            WHERE r.RegistrationAttendedFlag = 'T'
+        `);
+        // 3. Format the data the way your EJS expects
+        const formattedUsers = users.map(u => ({
+            User_ID: u.User_ID,
+            name: `${u.FirstName} ${u.LastName}`
+        }));
+        const formattedParticipants = participants.map(p => ({
+            Participant_ID: p.Participant_ID,
+            name: `${p.FirstName} ${p.LastName}`
+        }));
+        // Render the page
+        res.render("participants", {
+            user,
+            users: formattedUsers,
+            participants: formattedParticipants
+        });
+    } catch (err) {
+        console.error("Error loading participants:", err);
+        res.status(500).send("Database error.");
+    }
+});
 
-app.get('/events', requireLogin, (req, res) => 
+app.get('/events', requireLogin, (req, res) =>
     res.render('events'));
 
-app.get('/surveys', (req, res) => 
+app.get('/surveys', (req, res) =>
     res.render('surveys'));
 
-app.get('/milestones', (req, res) => 
+app.get('/milestones', (req, res) =>
     res.render('milestones'));
 
-app.get('/donations', requireLogin, async (req, res) => {
+app.get('/donations', requireLogin, async(req, res) => {
     const user = req.session.user; // Logged-in user
     let donations, totalAmount;
 
@@ -102,22 +147,22 @@ app.get('/donations', requireLogin, async (req, res) => {
     res.render('donations', { user, donations, totalAmount });
 });
 
-app.get('/enroll', (req, res) => 
+app.get('/enroll', (req, res) =>
     res.render('enroll'));
 
-app.get('/create_user', requireLogin, (req, res) => 
+app.get('/create_user', requireLogin, (req, res) =>
     res.render('create_user'));
 
-app.get('/add_events', requireLogin, (req, res) => 
+app.get('/add_events', requireLogin, (req, res) =>
     res.render('add_events'));
 
-app.get('/add_milestone', requireLogin, (req, res) => 
+app.get('/add_milestone', requireLogin, (req, res) =>
     res.render('add_milestone'));
 
-app.get('/add_survey', requireLogin, (req, res) => 
+app.get('/add_survey', requireLogin, (req, res) =>
     res.render('add_survey'));
 
-app.get('/add_donation', (req, res) => 
+app.get('/add_donation', (req, res) =>
     res.render('add_donation'));
 
 // Fun IS 404 requirement route
@@ -146,8 +191,8 @@ app.post('/submit-survey', requireLogin, (req, res) => {
 
     // Determine NPS bucket
     let npsBucket;
-    if(rec === 5) npsBucket = 'Promoter';
-    else if(rec === 4) npsBucket = 'Passive';
+    if (rec === 5) npsBucket = 'Promoter';
+    else if (rec === 4) npsBucket = 'Passive';
     else npsBucket = 'Detractor';
 
     // Example: save to database
@@ -168,7 +213,7 @@ app.post('/submit-survey', requireLogin, (req, res) => {
     res.send('Survey submitted successfully!');
 });
 
-app.post('/submit-donation', async (req, res) => {
+app.post('/submit-donation', async(req, res) => {
     try {
         const userId = req.session.userId; // assuming user ID is stored in session
         const amount = parseFloat(req.body.amount);
@@ -179,14 +224,12 @@ app.post('/submit-donation', async (req, res) => {
 
         // Insert donation record
         await db.query(
-            'INSERT INTO donations (user_id, amount, created_at) VALUES ($1, $2, NOW())',
-            [userId, amount]
+            'INSERT INTO donations (user_id, amount, created_at) VALUES ($1, $2, NOW())', [userId, amount]
         );
 
         // Update running total in users table
         await db.query(
-            'UPDATE users SET total_donations = total_donations + $1 WHERE id = $2',
-            [amount, userId]
+            'UPDATE users SET total_donations = total_donations + $1 WHERE id = $2', [amount, userId]
         );
 
         res.redirect('/donations'); // redirect back to donations page
@@ -196,66 +239,66 @@ app.post('/submit-donation', async (req, res) => {
     }
 });
 
-app.post('/register', async (req, res) => {
-  const { Participant_ID, Event_ID, EventDateTimeStart } = req.body;
+app.post('/register', async(req, res) => {
+    const { Participant_ID, Event_ID, EventDateTimeStart } = req.body;
 
-  try {
-    // 1. Validate required inputs
-    if (!Participant_ID || !Event_ID || !EventDateTimeStart) {
-      return res.status(400).send("Missing required fields");
+    try {
+        // 1. Validate required inputs
+        if (!Participant_ID || !Event_ID || !EventDateTimeStart) {
+            return res.status(400).send("Missing required fields");
+        }
+
+        // 2. Look up event occurrence
+        const event = await knex('EventOccurrence')
+            .where({
+                Event_ID: Event_ID,
+                EventDateTimeStart: EventDateTimeStart
+            })
+            .first();
+
+        if (!event) {
+            return res.status(404).send("Event occurrence not found");
+        }
+
+        // 3. Validate registration deadline
+        const now = new Date();
+        const registrationDeadline = new Date(event.EventRegistrationDeadline);
+
+        if (now > registrationDeadline) {
+            return res.status(400).send("Registration deadline has passed");
+        }
+
+        // 4. Validate capacity
+        if (event.EventNumRegistered >= event.EventCapacity) {
+            return res.status(400).send("Event is full");
+        }
+
+        // 5. Insert registration
+        await knex('Registration').insert({
+            Participant_ID,
+            Event_ID,
+            EventDateTimeStart,
+            RegistrationStatus: "tbd",
+            RegistrationAttendedFlag: "F"
+                // RegistrationCreatedAt handled by DB default
+        });
+
+        // 6. Optionally increment event registered count
+        await knex('EventOccurrence')
+            .where({
+                Event_ID: Event_ID,
+                EventDateTimeStart: EventDateTimeStart
+            })
+            .update({
+                EventNumRegistered: event.EventNumRegistered + 1
+            });
+
+        res.status(200).send("Registration successful");
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Server error");
     }
-
-    // 2. Look up event occurrence
-    const event = await knex('EventOccurrence')
-      .where({
-        Event_ID: Event_ID,
-        EventDateTimeStart: EventDateTimeStart
-      })
-      .first();
-
-    if (!event) {
-      return res.status(404).send("Event occurrence not found");
-    }
-
-    // 3. Validate registration deadline
-    const now = new Date();
-    const registrationDeadline = new Date(event.EventRegistrationDeadline);
-
-    if (now > registrationDeadline) {
-      return res.status(400).send("Registration deadline has passed");
-    }
-
-    // 4. Validate capacity
-    if (event.EventNumRegistered >= event.EventCapacity) {
-      return res.status(400).send("Event is full");
-    }
-
-    // 5. Insert registration
-    await knex('Registration').insert({
-      Participant_ID,
-      Event_ID,
-      EventDateTimeStart,
-      RegistrationStatus: "tbd",
-      RegistrationAttendedFlag: "F"
-      // RegistrationCreatedAt handled by DB default
-    });
-
-    // 6. Optionally increment event registered count
-    await knex('EventOccurrence')
-      .where({
-        Event_ID: Event_ID,
-        EventDateTimeStart: EventDateTimeStart
-      })
-      .update({
-        EventNumRegistered: event.EventNumRegistered + 1
-      });
-
-    res.status(200).send("Registration successful");
-    
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server error");
-  }
 });
 
 

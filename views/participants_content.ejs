@@ -1,2 +1,184 @@
-<h1>Participants</h1>
-<p>Manage participants here.</p>
+<div class="container my-4">
+
+    <!-- Page Header -->
+    <h1>Participants</h1>
+
+    <!-- Search Bar -->
+    <div style="margin: 20px 0;">
+        <input id="searchInput" type="text" placeholder="Search participants or users..." style="padding: 8px; width: 280px;" />
+    </div>
+
+    <!-- PARTICIPANTS SECTION -->
+    <h2>Participants (Attended an Event)</h2>
+
+    <table id="participantsTable" border="1" cellspacing="0" cellpadding="8" style="width:100%; margin-bottom:20px;">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <% if (user && user.role === "manager") { %>
+                    <th>Actions</th>
+                    <% } %>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (participants && participants.length > 0) { %>
+                <% participants.forEach((p, index) => { %>
+                    <tr class="participant-row <%= index >= 10 ? 'hidden-participant' : '' %>">
+                        <td>
+                            <a href="/profile/<%= p.Participant_ID %>">
+                                <%= p.name %>
+                            </a>
+                        </td>
+
+                        <% if (user && user.role === "manager") { %>
+                            <td>
+                                <button>Edit</button>
+                                <button onclick="confirmDelete('<%= p.Participant_ID %>')">Delete</button>
+                            </td>
+                            <% } %>
+                    </tr>
+                    <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="2">No participants found.</td>
+                            </tr>
+                            <% } %>
+        </tbody>
+    </table>
+
+    <!-- Show More Participants Button -->
+    <% if (participants && participants.length > 10) { %>
+        <button id="showMoreParticipants">Show More</button>
+        <% } %>
+
+            <!-- Total Participants Count -->
+            <p><strong>Total Participants: </strong>
+                <%= participants.length %>
+            </p>
+
+
+            <!-- USERS SECTION -->
+            <h2>All Users</h2>
+
+            <table id="usersTable" border="1" cellspacing="0" cellpadding="8" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <% if (user && user.role === "manager") { %>
+                            <th>Actions</th>
+                            <% } %>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (users && users.length > 0) { %>
+                        <% users.forEach((u, index) => { %>
+                            <tr class="user-row <%= index >= 10 ? 'hidden-user' : '' %>">
+                                <td>
+                                    <a href="/profile/<%= u.User_ID %>">
+                                        <%= u.name %>
+                                    </a>
+                                </td>
+
+                                <% if (user && user.role === "manager") { %>
+                                    <td>
+                                        <button>Edit</button>
+                                        <button onclick="confirmDeleteUser('<%= u.User_ID %>')">Delete</button>
+                                    </td>
+                                    <% } %>
+                            </tr>
+                            <% }) %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="2">No users found.</td>
+                                    </tr>
+                                    <% } %>
+                </tbody>
+            </table>
+
+            <!-- Show More Users Button -->
+            <% if (users && users.length > 10) { %>
+                <button id="showMoreUsers">Show More</button>
+                <% } %>
+
+</div>
+
+
+
+<!-- ============================= -->
+<!-- JS FOR SEARCH + SHOW MORE     -->
+<!-- ============================= -->
+<script>
+    // SEARCH FUNCTION
+    const searchInput = document.getElementById("searchInput");
+
+    searchInput.addEventListener("input", function() {
+        const filter = searchInput.value.toLowerCase();
+
+        filterTable("participantsTable", filter);
+        filterTable("usersTable", filter);
+    });
+
+    function filterTable(tableId, filter) {
+        const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+
+        rows.forEach(row => {
+            const firstCell = row.querySelector("td");
+            if (!firstCell) return;
+
+            const name = firstCell.innerText.toLowerCase();
+            row.style.display = name.includes(filter) ? "" : "none";
+        });
+    }
+
+
+    // SHOW MORE PARTICIPANTS
+    const showMoreParticipantsBtn = document.getElementById("showMoreParticipants");
+    if (showMoreParticipantsBtn) {
+        showMoreParticipantsBtn.addEventListener("click", () => {
+            document.querySelectorAll(".hidden-participant").forEach(row => {
+                row.style.display = "";
+            });
+            showMoreParticipantsBtn.style.display = "none";
+        });
+    }
+
+    // SHOW MORE USERS
+    const showMoreUsersBtn = document.getElementById("showMoreUsers");
+    if (showMoreUsersBtn) {
+        showMoreUsersBtn.addEventListener("click", () => {
+            document.querySelectorAll(".hidden-user").forEach(row => {
+                row.style.display = "";
+            });
+            showMoreUsersBtn.style.display = "none";
+        });
+    }
+
+
+    // CONFIRM DELETE POPUP
+    function confirmDelete(id) {
+        if (confirm("Are you sure you want to delete this participant?")) {
+            window.location.href = `/delete-participant/${id}`;
+        }
+    }
+
+    function confirmDeleteUser(id) {
+        if (confirm("Are you sure you want to delete this user?")) {
+            window.location.href = `/delete-user/${id}`;
+        }
+    }
+</script>
+
+<style>
+    /* hides rows for the "Show More" button */
+    
+    .hidden-participant,
+    .hidden-user {
+        display: none;
+    }
+    
+    button {
+        padding: 6px 12px;
+        margin: 2px;
+        cursor: pointer;
+    }
+</style>

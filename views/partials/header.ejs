@@ -3,7 +3,17 @@
 
     <nav class="navbar">
         <a href="/">Home</a>
-        <a href="/dashboard">Dashboard</a>
-        <a href="/login">Login</a>
+
+        <% if (user) { %>
+            <a href="/dashboard">Dashboard</a>
+
+            <% if (user.role === "manager") { %>
+                <a href="/participants">Participants</a>
+                <% } %>
+
+                    <a href="/logout">Logout</a>
+                    <% } else { %>
+                        <a href="/login">Login</a>
+                        <% } %>
     </nav>
 </header>
