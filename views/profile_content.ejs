@@ -1,0 +1,76 @@
+<div class="container my-5">
+    <h1 class="mb-4">Profile</h1>
+
+    <!-- User Info -->
+    <form action="/profile/update" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="Participant_ID" value="<%= profile.Participant_ID || '' %>">
+
+        <div class="mb-3">
+            <label class="form-label">First Name:</label>
+            <input class="form-control" type="text" name="ParticipantFirstName" value="<%= profile.ParticipantFirstName || '' %>" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Last Name:</label>
+            <input class="form-control" type="text" name="ParticipantLastName" value="<%= profile.ParticipantLastName || '' %>" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email:</label>
+            <input class="form-control" type="email" name="ParticipantEmail" value="<%= profile.ParticipantEmail || '' %>" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Phone:</label>
+            <input class="form-control" type="tel" name="ParticipantPhone" value="<%= profile.ParticipantPhone || '' %>">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Field of Interest:</label>
+            <input class="form-control" type="text" name="ParticipantFieldOfInterest" value="<%= profile.ParticipantFieldOfInterest || '' %>">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Profile Picture:</label>
+            <input class="form-control" type="file" name="ProfilePicture">
+        </div>
+
+        <button class="custom-btn" type="submit">Update Profile</button>
+    </form>
+
+    <!-- Milestones -->
+    <h2 class="mt-5">Milestones</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Date</th>
+                <% if (user.isManager || user.id === profile.Participant_ID) { %>
+                    <th>Actions</th>
+                    <% } %>
+            </tr>
+        </thead>
+        <tbody>
+            <% milestones.forEach(ms => { %>
+                <tr>
+                    <td>
+                        <%= ms.MilestoneTitle %>
+                    </td>
+                    <td>
+                        <%= ms.MilestoneDate %>
+                    </td>
+                    <% if (user.isManager || user.id === profile.Participant_ID) { %>
+                        <td>
+                            <button class="btn btn-sm btn-warning">Edit</button>
+                            <button class="btn btn-sm btn-danger">Delete</button>
+                        </td>
+                        <% } %>
+                </tr>
+                <% }) %>
+        </tbody>
+    </table>
+
+    <% if (user.isManager || user.id === profile.Participant_ID) { %>
+        <a href="/add_milestone?participant_id=<%= profile.Participant_ID %>" class="btn custom-btn mt-3">Add Milestone</a>
+        <% } %>
+</div>
