@@ -1,34 +1,33 @@
 <div class="container my-5">
     <h1 class="mb-4">Donations Info</h1>
 
-    <% if (user.role === 'M') { %>
+    <% if (user.role === 'admin') { %>
         <h3 class="mb-3">All Donations</h3>
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Donation ID</th>
-                    <th>User ID</th>
+                    <th>Participant ID</th>
                     <th>Donor Name</th>
                     <th>Amount</th>
                     <th>Date</th>
-                    <th>Notes</th>
                 </tr>
             </thead>
             <tbody>
                 <% donations.forEach(d => { %>
                     <tr>
-                        <td><%= d.id %></td>
-                        <td><%= d.userId %></td>
-                        <td><%= d.name %></td>
-                        <td>$<%= d.amount.toFixed(2) %></td>
-                        <td><%= d.date %></td>
-                        <td><%= d.notes %></td>
+                        <td><%= d.Donation_ID %></td>
+                        <td><%= d.Participant_ID %></td>
+                        <td><%= d.FirstName %> <%= d.LastName %></td>
+                        <td>$<%= Number(d.DonationAmount).toFixed(2) %></td>
+                        <td><%= d.DonationDate %></td>
                     </tr>
                 <% }) %>
             </tbody>
         </table>
         <h4>Total Donations: $<%= totalAmount.toFixed(2) %></h4>
-    <% } else if (user.role === 'U') { %>
+
+    <% } else if (user.role === 'participant') { %>
         <h3 class="mb-3">Your Donations</h3>
         <table class="table table-striped">
             <thead>
@@ -36,25 +35,22 @@
                     <th>Donation ID</th>
                     <th>Amount</th>
                     <th>Date</th>
-                    <th>Notes</th>
                 </tr>
             </thead>
             <tbody>
                 <% donations.forEach(d => { %>
                     <tr>
-                        <td><%= d.id %></td>
-                        <td>$<%= d.amount.toFixed(2) %></td>
-                        <td><%= d.date %></td>
-                        <td><%= d.notes %></td>
+                        <td><%= d.Donation_ID %></td>
+                        <td>$<%= Number(d.DonationAmount).toFixed(2) %></td>
+                        <td><%= d.DonationDate %></td>
                     </tr>
                 <% }) %>
             </tbody>
         </table>
         <h4>Total Donated: $<%= totalAmount.toFixed(2) %></h4>
+
         <form action="/donate" method="GET" class="mt-3">
             <button type="submit" class="btn btn-primary">Submit New Donation</button>
         </form>
-
     <% } %>
 </div>
-

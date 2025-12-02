@@ -1,45 +1,100 @@
-<div class="container my-5">
-  <h1 class="mb-4">Add Your Milestone</h1>
+<h2 class="mb-4">Add Milestone</h2>
 
-  <form action="/submit" method="POST">
+    <!-- ADMIN: Participant Search + Table -->
+    <% if (user.role === 'admin') { %>
 
-    <!-- Milestone -->
-    <div class="mb-3">
-      <label class="form-label">Select Milestone:</label>
-      <select class="form-select" id="qualification" name="qualification" required>
-        <option value="">Select...</option>
-        <option value="bachelor">Bachelor Degree</option>
-        <option value="associate">Associate Degree</option>
-        <option value="master">Master Degree</option>
-        <option value="certificate">Certificate</option>
-        <option value="high_school">High School Diploma</option>
-        <option value="middle_school">Middle School Diploma</option>
-        <option value="internship">Internship</option>
-        <option value="work_experience">Work Experience</option>
-        <option value="volunteer">Volunteer / Mentorship / Camp Counselor</option>
-        <option value="award">Competition / Award / Published Project</option>
-      </select>
-    </div>
+        <h4>Select a Participant</h4>
 
-    <!-- Dynamic text input (hidden by default) -->
-    <div class="mb-3" id="specificInputContainer" style="display:none;">
-      <label class="form-label">Please specify:</label>
-      <input type="text" class="form-control" id="specificInput" name="specificInput" placeholder="Type your specific program or experience">
-    </div>
+        <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Search participants..." 
+            class="form-control mb-2"
+        >
 
-    <button class="custom-btn" type="submit">Submit</button>
-  </form>
-</div>
+        <div style="max-height: 250px; overflow-y: auto;">
+            <table class="table table-bordered" id="participantsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>First</th>
+                        <th>Last</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% participants.forEach(p => { %>
+                        <tr onclick="chooseParticipant('<%= p.Participant_ID %>')" style="cursor: pointer;">
+                            <td><%= p.Participant_ID %></td>
+                            <td><%= p.FirstName %></td>
+                            <td><%= p.LastName %></td>
+                            <td><%= p.Email %></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
 
+        <hr class="my-4">
+
+    <% } %>
+
+
+    <!-- Milestone Form -->
+    <form action="/submit-milestone" method="POST">
+
+        <div class="mb-3">
+            <label for="participantID" class="form-label">Participant ID</label>
+
+            <% if (user.role === 'participant') { %>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="participantID" 
+                    name="Participant_ID" 
+                    value="<%= user.id %>" 
+                    readonly
+                >
+            <% } else { %>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="participantID" 
+                    name="Participant_ID" 
+                    placeholder="Select a participant or enter an ID"
+                >
+            <% } %>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Milestone Title</label>
+            <input type="text" name="MilestoneTitle" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Milestone Description</label>
+            <textarea name="MilestoneDescription" class="form-control" required></textarea>
+        </div>
+
+        <button class="btn btn-primary">Submit Milestone</button>
+    </form>
+
+
+<!-- Script (No EJS inside) -->
 <script>
-  const qualificationDropdown = document.getElementById('qualification');
-  const specificInputContainer = document.getElementById('specificInputContainer');
+// Fill participant ID from table
+  function chooseParticipant(id) {
+    document.getElementById("participantID").value = id;
+  }
 
-  qualificationDropdown.addEventListener('change', function() {
-    if (this.value) {
-      specificInputContainer.style.display = 'block';
-    } else {
-      specificInputContainer.style.display = 'none';
-    }
+  // Search participants
+  document.getElementById("searchInput")?.addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#participantsTable tbody tr");
+
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      row.style.display = text.includes(filter) ? "" : "none";
+    });
   });
 </script>

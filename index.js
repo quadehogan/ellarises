@@ -220,27 +220,28 @@ app.get('/donations', requireLogin, async (req, res) => {
     let totalAmount = 0;
 
     try {
-        if (user.role === 'admin') { // Admin: see all donations
-            donations = await knex('donations').select(
-                'Donation_ID',
-                'Participant_ID',
-                'DonationDate',
-                'DonationAmount'
-            );
-        } else if (user.role === 'participant') { // Participant: see only their donations
+        if (user.role === 'admin') {
+            // Admin: fetch all donations with donor name
+            donations = await knex('donations')
+                .join('participants', 'donations.Participant_ID', 'participants.ID')
+                .select(
+                    'donations.Donation_ID',
+                    'donations.Participant_ID',
+                    'donations.DonationAmount',
+                    'donations.DonationDate',
+                    'participants.FirstName',
+                    'participants.LastName'
+                );
+        } else if (user.role === 'participant') {
+            // Participant: fetch only their donations
             donations = await knex('donations')
                 .where({ Participant_ID: user.id })
-                .select(
-                    'Donation_ID',
-                    'Participant_ID',
-                    'DonationDate',
-                    'DonationAmount'
-                );
+                .select('Donation_ID', 'DonationAmount', 'DonationDate');
         } else {
             return res.status(403).send('Unauthorized role');
         }
 
-        // Calculate total donation amount
+        // Calculate total amount
         totalAmount = donations.reduce(
             (sum, d) => sum + Number(d.DonationAmount),
             0
@@ -254,6 +255,7 @@ app.get('/donations', requireLogin, async (req, res) => {
 });
 
 
+
 app.get('/enroll', (req, res) =>
     res.render('enroll'));
 
@@ -263,8 +265,23 @@ app.get('/create_user', requireLogin, (req, res) =>
 app.get('/add_events', requireLogin, (req, res) =>
     res.render('add_events'));
 
-app.get('/add_milestone', requireLogin, (req, res) =>
-    res.render('add_milestone'));
+// GET: Add Milestone Page
+app.get('/add_milestone', requireLogin, async (req, res) => {
+    const user = req.session.user;
+
+    let participants = [];
+
+    if (user.role === 'admin') {
+        // Admin sees the list of all participants
+        participants = await knex('participants')
+            .select('Participant_ID', 'FirstName', 'LastName', 'Email');
+    }
+
+    res.render('add_milestone', {
+        user,
+        participants
+    });
+});
 
 app.get('/add_survey', requireLogin, (req, res) =>
     res.render('add_survey'));
@@ -550,7 +567,27 @@ app.post('/registration/update', async(req, res) => {
     }
 });
 
+// POST: Submit Milestone
+app.post('/submit-milestone', requireLogin, async (req, res) => {
+    const user = req.session.user;
 
+    let { Participant_ID, MilestoneTitle, MilestoneDescription } = req.body;
+
+    // Participants cannot modify the ID
+    if (user.role === 'participant') {
+        Participant_ID = user.id;
+    }
+
+    // Insert milestone into DB
+    await knex('milestones').insert({
+        Participant_ID,
+        MilestoneTitle,
+        MilestoneDescription,
+        MilestoneDate: knex.fn.now() // store current date/time
+    });
+
+    res.redirect('/milestones');
+});
 
 // ==========================
 // Start Server
