@@ -1,2 +1,113 @@
-<h1>Events</h1>
-<p>Manage events here.</p>
+<div class="container my-5">
+    <h1 class="mb-4">Events</h1>
+
+    <% if (user && user.username === 'admin') { %>
+        <!-- Manager View -->
+        <div class="manager-events">
+            <div class="mb-3">
+                <button class="custom-btn" onclick="alert('Add event functionality coming soon')">Add Event</button>
+                <input type="text" placeholder="Search events..." id="event-search" />
+                <button onclick="alert('Search functionality coming soon')">Search</button>
+            </div>
+
+            <h2>Upcoming Events</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Sample Event 1</td>
+                        <td>Workshop</td>
+                        <td>2025-12-10</td>
+                        <td>Room 101</td>
+                        <td>
+                            <button onclick="alert('Edit functionality coming soon')">Edit</button>
+                            <button onclick="alert('Delete functionality coming soon')">Delete</button>
+                        </td>
+                    </tr>
+                    <!-- Add more upcoming events here -->
+                </tbody>
+            </table>
+
+            <h2>Past Events</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Sample Event 0</td>
+                        <td>Seminar</td>
+                        <td>2025-10-01</td>
+                        <td>Room 202</td>
+                        <td>
+                            <button onclick="alert('Cannot edit past event')">Edit</button>
+                            <button onclick="alert('Cannot delete past event')">Delete</button>
+                        </td>
+                    </tr>
+                    <!-- Add more past events here -->
+                </tbody>
+            </table>
+        </div>
+        <% } else if (user) { %>
+            <!-- Regular User View -->
+            <div class="user-events">
+                <h2>Upcoming Events</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Sample Event 1</td>
+                            <td>Workshop</td>
+                            <td>2025-12-10</td>
+                            <td>Room 101</td>
+                        </tr>
+                        <!-- Add more upcoming events here -->
+                    </tbody>
+                </table>
+
+                <h2>Your Past Events</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Sample Event 0</td>
+                            <td>Seminar</td>
+                            <td>2025-10-01</td>
+                            <td>Room 202</td>
+                        </tr>
+                        <!-- Add more past events here -->
+                    </tbody>
+                </table>
+            </div>
+            <% } else { %>
+                <p>Please <a href="/login">log in</a> to view events.</p>
+                <% } %>
+</div>
