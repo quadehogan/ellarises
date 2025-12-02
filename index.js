@@ -123,6 +123,53 @@ app.get("/participants", async(req, res) => {
     }
 });
 
+// ==========================
+// Profile Routes
+// ==========================
+
+// View profile (user sees own profile, manager can view any participant)
+app.get('/profile/:id?', requireLogin, async(req, res) => {
+    const userId = req.params.id || req.session.user.id; // manager can pass id
+
+    // TODO: Query the database for this participant
+    // Example:
+    // const profile = await db.query('SELECT * FROM Participants WHERE Participant_ID = ?', [userId]);
+    // const milestones = await db.query('SELECT * FROM Milestones WHERE Participant_ID = ?', [userId]);
+
+    // For now, just pass empty arrays/objects so the template works
+    const profile = {};
+    const milestones = [];
+
+    res.render('profile', { user: req.session.user, profile, milestones });
+});
+
+// Update profile (user or manager)
+app.post('/profile/update', requireLogin, async(req, res) => {
+    const userId = req.body.Participant_ID || req.session.user.id;
+
+    // TODO: Update participant info in the database
+    // Example:
+    // await db.query('UPDATE Participants SET ... WHERE Participant_ID = ?', [userId]);
+
+    res.redirect(`/profile/${userId}`);
+});
+
+// Delete user (manager only)
+app.post('/profile/delete', requireLogin, async(req, res) => {
+    if (!req.session.user.isManager) return res.status(403).send('Forbidden');
+
+    const userId = req.body.Participant_ID;
+
+    // TODO: Delete participant and milestones from database
+    // Example:
+    // await db.query('DELETE FROM Milestones WHERE Participant_ID = ?', [userId]);
+    // await db.query('DELETE FROM Participants WHERE Participant_ID = ?', [userId]);
+
+    res.redirect('/participants');
+});
+
+
+
 app.get('/events', requireLogin, (req, res) =>
     res.render('events'));
 
@@ -171,69 +218,69 @@ app.get('/teapot', (req, res) => {
 });
 
 // POST routes
-app.post('/enroll', async (req, res) => {
-  const data = req.body;
+app.post('/enroll', async(req, res) => {
+    const data = req.body;
 
-  try {
-    await knex('Participant').insert({
-      ParticipantEmail: data.ParticipantEmail,
-      ParticipantFirstName: data.ParticipantFirstName,
-      ParticipantLastName: data.ParticipantLastName,
-      ParticipantDOB: data.ParticipantDOB,
-      ParticipantRole: "participant", // enforced
-      ParticipantPhone: data.ParticipantPhone,
-      ParticipantCity: data.ParticipantCity,
-      ParticipantState: data.ParticipantState,
-      ParticipantZip: data.ParticipantZip,
-      ParticipantSchoolOrEmployer: data.ParticipantSchoolOrEmployer,
-      ParticipantFieldOfInterest: data.ParticipantFieldOfInterest
-    });
+    try {
+        await knex('Participant').insert({
+            ParticipantEmail: data.ParticipantEmail,
+            ParticipantFirstName: data.ParticipantFirstName,
+            ParticipantLastName: data.ParticipantLastName,
+            ParticipantDOB: data.ParticipantDOB,
+            ParticipantRole: "participant", // enforced
+            ParticipantPhone: data.ParticipantPhone,
+            ParticipantCity: data.ParticipantCity,
+            ParticipantState: data.ParticipantState,
+            ParticipantZip: data.ParticipantZip,
+            ParticipantSchoolOrEmployer: data.ParticipantSchoolOrEmployer,
+            ParticipantFieldOfInterest: data.ParticipantFieldOfInterest
+        });
 
-    res.redirect('/success');
+        res.redirect('/success');
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error enrolling participant");
-  }
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error enrolling participant");
+    }
 });
 
-app.post('/create-user-submit', async (req, res) => {
-  const {
-    ParticipantEmail,
-    ParticipantFirstName,
-    ParticipantLastName,
-    ParticipantDOB,
-    ParticipantRole,
-    ParticipantPhone,
-    ParticipantCity,
-    ParticipantState,
-    ParticipantZip,
-    ParticipantSchoolOrEmployer,
-    ParticipantFieldOfInterest
-  } = req.body;
+app.post('/create-user-submit', async(req, res) => {
+    const {
+        ParticipantEmail,
+        ParticipantFirstName,
+        ParticipantLastName,
+        ParticipantDOB,
+        ParticipantRole,
+        ParticipantPhone,
+        ParticipantCity,
+        ParticipantState,
+        ParticipantZip,
+        ParticipantSchoolOrEmployer,
+        ParticipantFieldOfInterest
+    } = req.body;
 
-  try {
-    await knex('Participant').insert({
-      ParticipantEmail,
-      ParticipantFirstName,
-      ParticipantLastName,
-      ParticipantDOB,
-      ParticipantRole,
-      ParticipantPhone,
-      ParticipantCity,
-      ParticipantState,
-      ParticipantZip,
-      ParticipantSchoolOrEmployer,
-      ParticipantFieldOfInterest,
-      CreatedAt: knex.fn.now()
-    });
+    try {
+        await knex('Participant').insert({
+            ParticipantEmail,
+            ParticipantFirstName,
+            ParticipantLastName,
+            ParticipantDOB,
+            ParticipantRole,
+            ParticipantPhone,
+            ParticipantCity,
+            ParticipantState,
+            ParticipantZip,
+            ParticipantSchoolOrEmployer,
+            ParticipantFieldOfInterest,
+            CreatedAt: knex.fn.now()
+        });
 
-    res.redirect('/participants'); // or wherever your success page is
+        res.redirect('/participants'); // or wherever your success page is
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error creating user");
-  }
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error creating user");
+    }
 });
 
 
@@ -367,80 +414,80 @@ app.post('/register', async(req, res) => {
     }
 });
 
-app.post('/registration/update', async (req, res) => {
-  const { Participant_ID, Event_ID, EventDateTimeStart, action } = req.body;
+app.post('/registration/update', async(req, res) => {
+    const { Participant_ID, Event_ID, EventDateTimeStart, action } = req.body;
 
-  let updateFields = {};
+    let updateFields = {};
 
-  if (action === "attended") {
-    updateFields = {
-      RegistrationStatus: "attended",
-      RegistrationAttendedFlag: "T"
-    };
+    if (action === "attended") {
+        updateFields = {
+            RegistrationStatus: "attended",
+            RegistrationAttendedFlag: "T"
+        };
 
-  } else if (action === "absent") {
-    updateFields = {
-      RegistrationStatus: "no-show",
-      RegistrationAttendedFlag: "F"
-    };
+    } else if (action === "absent") {
+        updateFields = {
+            RegistrationStatus: "no-show",
+            RegistrationAttendedFlag: "F"
+        };
 
-  } else if (action === "cancel") {
-    updateFields = {
-      RegistrationStatus: "cancelled",
-      RegistrationAttendedFlag: "F"
-    };
+    } else if (action === "cancel") {
+        updateFields = {
+            RegistrationStatus: "cancelled",
+            RegistrationAttendedFlag: "F"
+        };
 
-  } else {
-    return res.status(400).send("Invalid action");
-  }
-
-  try {
-    // Get the existing registration BEFORE updating — we need to know if it was already cancelled
-    const existingReg = await knex('Registration')
-      .where({
-        Participant_ID,
-        Event_ID,
-        EventDateTimeStart
-      })
-      .first();
-
-    // Update the registration first
-    await knex('Registration')
-      .where({
-        Participant_ID,
-        Event_ID,
-        EventDateTimeStart
-      })
-      .update(updateFields);
-
-    // Handle capacity adjustment ONLY if action = cancel AND it was NOT already cancelled
-    if (action === "cancel" && existingReg.RegistrationStatus !== "cancelled") {
-      const event = await knex('EventOccurrence')
-        .where({
-          Event_ID,
-          EventDateTimeStart
-        })
-        .first();
-
-      // Decrement the registered count, but do NOT allow negative values
-      const newCount = Math.max(0, event.EventNumRegistered - 1);
-
-      await knex('EventOccurrence')
-        .where({
-          Event_ID,
-          EventDateTimeStart
-        })
-        .update({
-          EventNumRegistered: newCount
-        });
+    } else {
+        return res.status(400).send("Invalid action");
     }
 
-    res.redirect('back');
+    try {
+        // Get the existing registration BEFORE updating — we need to know if it was already cancelled
+        const existingReg = await knex('Registration')
+            .where({
+                Participant_ID,
+                Event_ID,
+                EventDateTimeStart
+            })
+            .first();
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error updating registration");
-  }
+        // Update the registration first
+        await knex('Registration')
+            .where({
+                Participant_ID,
+                Event_ID,
+                EventDateTimeStart
+            })
+            .update(updateFields);
+
+        // Handle capacity adjustment ONLY if action = cancel AND it was NOT already cancelled
+        if (action === "cancel" && existingReg.RegistrationStatus !== "cancelled") {
+            const event = await knex('EventOccurrence')
+                .where({
+                    Event_ID,
+                    EventDateTimeStart
+                })
+                .first();
+
+            // Decrement the registered count, but do NOT allow negative values
+            const newCount = Math.max(0, event.EventNumRegistered - 1);
+
+            await knex('EventOccurrence')
+                .where({
+                    Event_ID,
+                    EventDateTimeStart
+                })
+                .update({
+                    EventNumRegistered: newCount
+                });
+        }
+
+        res.redirect('back');
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error updating registration");
+    }
 });
 
 

@@ -6,14 +6,17 @@
 
         <% if (user) { %>
             <a href="/dashboard">Dashboard</a>
+            <a href="/events">Events</a>
 
-            <% if (user.role === "manager") { %>
+            <% if (user.isManager) { %>
                 <a href="/participants">Participants</a>
-                <% } %>
+                <% } else { %>
+                    <a href="/profile">Profile</a>
+                    <% } %>
 
-                    <a href="/logout">Logout</a>
-                    <% } else { %>
-                        <a href="/login">Login</a>
-                        <% } %>
+                        <a href="/logout">Logout</a>
+                        <% } else { %>
+                            <a href="/login">Login</a>
+                            <% } %>
     </nav>
 </header>
