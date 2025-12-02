@@ -263,15 +263,15 @@ main {
 
 /* Set individual card images */
 .card1 {
-  background-image: url('/images/sponsor_photo.avif');
+  background-image: url('/images/cultural_dress.jpeg');
 }
 
 .card2 {
-  background-image: url('/images/enroll_photo.avif');
+  background-image: url('/images/labcoats1.jpeg');
 }
 
 .card3 {
-  background-image: url('/images/volunteer_photo.avif');
+  background-image: url('/images/single_girl_desk.NEF.jpg');
 }
 
 /* Subtle overlay for better text visibility */
@@ -321,7 +321,7 @@ main {
 .section-cta-hero {
   position: relative;
   min-height: 500px;
-  background-image: url('/images/Summer_Summit.avif'); /* Replace with your image path */
+  background-image: url('/images/SummerSummit2.jpg'); /* Replace with your image path */
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
