@@ -84,7 +84,7 @@ app.get('/events', requireLogin, (req, res) =>
 app.get('/surveys', (req, res) => 
     res.render('surveys'));
 
-app.get('/milestones', requireLogin, (req, res) => 
+app.get('/milestones', (req, res) => 
     res.render('milestones'));
 
 app.get('/donations', requireLogin, (req, res) => 
