@@ -116,8 +116,8 @@ app.get('/events_nonverified', async (req, res) => {
   try {
     const now = new Date();
 
-    const events = await knex('EventOccurance as eo')
-      .join('EventTemplate as et', 'eo.Event_ID', 'et.Event_ID')
+    const events = await knex('EventOccurrence as eo')
+      .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
       .select(
         'et.EventName',
         'et.EventDescription',
