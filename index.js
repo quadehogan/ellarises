@@ -196,6 +196,70 @@ app.post('/submit-donation', async (req, res) => {
     }
 });
 
+app.post('/register', async (req, res) => {
+  const { Participant_ID, Event_ID, EventDateTimeStart } = req.body;
+
+  try {
+    // 1. Validate required inputs
+    if (!Participant_ID || !Event_ID || !EventDateTimeStart) {
+      return res.status(400).send("Missing required fields");
+    }
+
+    // 2. Look up event occurrence
+    const event = await knex('EventOccurrence')
+      .where({
+        Event_ID: Event_ID,
+        EventDateTimeStart: EventDateTimeStart
+      })
+      .first();
+
+    if (!event) {
+      return res.status(404).send("Event occurrence not found");
+    }
+
+    // 3. Validate registration deadline
+    const now = new Date();
+    const registrationDeadline = new Date(event.EventRegistrationDeadline);
+
+    if (now > registrationDeadline) {
+      return res.status(400).send("Registration deadline has passed");
+    }
+
+    // 4. Validate capacity
+    if (event.EventNumRegistered >= event.EventCapacity) {
+      return res.status(400).send("Event is full");
+    }
+
+    // 5. Insert registration
+    await knex('Registration').insert({
+      Participant_ID,
+      Event_ID,
+      EventDateTimeStart,
+      RegistrationStatus: "tbd",
+      RegistrationAttendedFlag: "F"
+      // RegistrationCreatedAt handled by DB default
+    });
+
+    // 6. Optionally increment event registered count
+    await knex('EventOccurrence')
+      .where({
+        Event_ID: Event_ID,
+        EventDateTimeStart: EventDateTimeStart
+      })
+      .update({
+        EventNumRegistered: event.EventNumRegistered + 1
+      });
+
+    res.status(200).send("Registration successful");
+    
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+});
+
+
+
 
 // ==========================
 // Start Server
