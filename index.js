@@ -87,8 +87,20 @@ app.get('/surveys', (req, res) =>
 app.get('/milestones', (req, res) => 
     res.render('milestones'));
 
-app.get('/donations', requireLogin, (req, res) => 
-    res.render('donations'));
+app.get('/donations', requireLogin, async (req, res) => {
+    const user = req.session.user; // Logged-in user
+    let donations, totalAmount;
+
+    if (user.role === 'M') {
+        donations = await db.query('SELECT * FROM donations'); // All donations
+        totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
+    } else if (user.role === 'U') {
+        donations = await db.query('SELECT * FROM donations WHERE userId = ?', [user.id]);
+        totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
+    }
+
+    res.render('donations', { user, donations, totalAmount });
+});
 
 app.get('/enroll', (req, res) => 
     res.render('enroll'));
