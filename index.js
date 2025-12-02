@@ -24,6 +24,19 @@ app.use(session({
     saveUninitialized: true
 }));
 
+////////////////// KNEX SETUP //////////////////
+const knex = require("knex")({
+   client: "pg",
+   connection: {
+     host: process.env.DB_HOST,        
+     user: process.env.DB_USER,        
+     password: process.env.DB_PASSWORD, 
+     database: process.env.DB_NAME,    
+     port: Number(process.env.DB_PORT),         
+     ssl: process.env.DB_SSL ? {rejectUnauthorized: false} : false 
+    }
+});
+
 // Authentication helper
 function requireLogin(req, res, next) {
     if (!req.session.user) return res.redirect('/login');
@@ -167,8 +180,6 @@ app.post('/profile/delete', requireLogin, async(req, res) => {
 
     res.redirect('/participants');
 });
-
-
 
 app.get('/events', requireLogin, (req, res) =>
     res.render('events'));
