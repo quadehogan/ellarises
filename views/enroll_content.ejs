@@ -1,0 +1,67 @@
+<div class="container mt-5" style="max-width: 700px;">
+  
+  <h1 class="text-center mb-4">Enroll Now</h1>
+
+  <form action="/enroll" method="POST" class="card p-4 shadow-sm">
+
+    <div class="mb-3">
+      <label for="ParticipantEmail" class="form-label">Email</label>
+      <input type="email" class="form-control" id="ParticipantEmail" name="ParticipantEmail" required>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="ParticipantFirstName" class="form-label">First Name</label>
+        <input type="text" class="form-control" id="ParticipantFirstName" name="ParticipantFirstName" required>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label for="ParticipantLastName" class="form-label">Last Name</label>
+        <input type="text" class="form-control" id="ParticipantLastName" name="ParticipantLastName" required>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="ParticipantDOB" class="form-label">Date of Birth</label>
+      <input type="date" class="form-control" id="ParticipantDOB" name="ParticipantDOB" required>
+    </div>
+
+    <!-- Hidden ParticipantRole field -->
+    <input type="hidden" name="ParticipantRole" value="participant">
+
+    <div class="mb-3">
+      <label for="ParticipantPhone" class="form-label">Phone Number</label>
+      <input type="text" class="form-control" id="ParticipantPhone" name="ParticipantPhone" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="ParticipantCity" class="form-label">City</label>
+      <input type="text" class="form-control" id="ParticipantCity" name="ParticipantCity" required>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="ParticipantState" class="form-label">State</label>
+        <input type="text" class="form-control" id="ParticipantState" name="ParticipantState" required>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label for="ParticipantZip" class="form-label">Zip Code</label>
+        <input type="text" class="form-control" id="ParticipantZip" name="ParticipantZip" required>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="ParticipantSchoolOrEmployer" class="form-label">School or Employer</label>
+      <input type="text" class="form-control" id="ParticipantSchoolOrEmployer" name="ParticipantSchoolOrEmployer" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="ParticipantFieldOfInterest" class="form-label">Field of Interest</label>
+      <input type="text" class="form-control" id="ParticipantFieldOfInterest" name="ParticipantFieldOfInterest" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Submit Enrollment</button>
+
+  </form>
+</div>
