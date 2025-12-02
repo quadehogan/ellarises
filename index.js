@@ -112,6 +112,28 @@ app.get('/logout', (req, res) => {
     });
 });
 
+app.get('/events_nonverified', async (req, res) => {
+  try {
+    const now = new Date();
+
+    const events = await knex('EventOccurance as eo')
+      .join('EventTemplate as et', 'eo.Event_ID', 'et.Event_ID')
+      .select(
+        'et.EventName',
+        'et.EventDescription',
+        'eo.EventDateTimeStart'
+      )
+      .where('eo.EventDateTimeStart', '>', now)
+      .orderBy('eo.EventDateTimeStart', 'asc');
+
+    res.render('events_nonverified', { events });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
+
 // Dashboard (requires login)
 app.get('/dashboard', requireLogin, (req, res) => {
     res.render('dashboard', { user: req.session.user });
