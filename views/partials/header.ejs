@@ -2,21 +2,35 @@
     <h2 class="logo">Ella Rises</h2>
 
     <nav class="navbar">
+        <!-- Home always on the left -->
         <a href="/">Home</a>
 
-        <% if (user) { %>
-            <a href="/dashboard">Dashboard</a>
-            <a href="/events">Events</a>
+        <!-- Events always visible -->
+        <a href="/events">Events</a>
 
-            <% if (user.isManager) { %>
+        <% if (!user) { %>
+            <!-- NOT LOGGED IN -->
+            <a href="/enroll">Enroll</a>
+            <a href="/login">Login</a>
+
+        <% } else { %>
+            <!-- LOGGED IN USER -->
+
+            <% if (user.ParticipantRole === "participant") { %>
+                <!-- PARTICIPANT ROLE -->
+                <a href="/donations">Donations</a>
+                <a href="/profile/<%= user.Participant_ID %>">Profile</a>
+
+            <% } else if (user.ParticipantRole === "admin") { %>
+                <!-- ADMIN ROLE -->
+                <a href="/donations">Donations</a>
                 <a href="/participants">Participants</a>
-                <% } else { %>
-                    <a href="/profile">Profile</a>
-                    <% } %>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/create-user">Create User</a>
+            <% } %>
 
-                        <a href="/logout">Logout</a>
-                        <% } else { %>
-                            <a href="/login">Login</a>
-                            <% } %>
+            <!-- Logout always for logged-in users -->
+            <a href="/logout">Logout</a>
+        <% } %>
     </nav>
 </header>

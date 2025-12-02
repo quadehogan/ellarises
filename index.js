@@ -37,6 +37,12 @@ const knex = require("knex")({
     }
 });
 
+// Make user info available in all views
+app.use((req, res, next) => {
+    res.locals.user = req.session.user || null; // user stored in session
+    next();
+});
+
 // Authentication helper
 function requireLogin(req, res, next) {
     if (!req.session.user) return res.redirect('/login');
