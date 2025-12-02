@@ -1,45 +1,4 @@
-<div class="container my-5">
-  <h1 class="mb-4">Add Your Milestone</h1>
-
-  <form action="/submit" method="POST">
-
-    <!-- Milestone -->
-    <div class="mb-3">
-      <label class="form-label">Select Milestone:</label>
-      <select class="form-select" id="qualification" name="qualification" required>
-        <option value="">Select...</option>
-        <option value="bachelor">Bachelor Degree</option>
-        <option value="associate">Associate Degree</option>
-        <option value="master">Master Degree</option>
-        <option value="certificate">Certificate</option>
-        <option value="high_school">High School Diploma</option>
-        <option value="middle_school">Middle School Diploma</option>
-        <option value="internship">Internship</option>
-        <option value="work_experience">Work Experience</option>
-        <option value="volunteer">Volunteer / Mentorship / Camp Counselor</option>
-        <option value="award">Competition / Award / Published Project</option>
-      </select>
-    </div>
-
-    <!-- Dynamic text input (hidden by default) -->
-    <div class="mb-3" id="specificInputContainer" style="display:none;">
-      <label class="form-label">Please specify:</label>
-      <input type="text" class="form-control" id="specificInput" name="specificInput" placeholder="Type your specific program or experience">
-    </div>
-
-    <button class="custom-btn" type="submit">Submit</button>
-  </form>
-</div>
-
-<script>
-  const qualificationDropdown = document.getElementById('qualification');
-  const specificInputContainer = document.getElementById('specificInputContainer');
-
-  qualificationDropdown.addEventListener('change', function() {
-    if (this.value) {
-      specificInputContainer.style.display = 'block';
-    } else {
-      specificInputContainer.style.display = 'none';
-    }
-  });
-</script>
+<%- include('layout', {
+    title: 'Add Milestone',
+    body: include('add_milestone_content')
+}) %>
