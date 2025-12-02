@@ -1,0 +1,90 @@
+<!-- Hero Slideshow -->
+<div class="slideshow-container">
+  <div class="slide">
+    <img src="/images/big_room.avif" alt="Slide 2">
+  </div>
+  <div class="slide">
+    <img src="/images/group_girls.avif" alt="Slide 3">
+  </div>
+  <div class="slide">
+    <img src="/images/instructor_talking.avif" alt="Slide 4">
+  </div>
+</div>
+
+<!-- JavaScript Slideshow -->
+<script>
+  let slideIndex = 0;
+  const slides = document.querySelectorAll('.slide');
+
+  function showSlides() {
+    slides.forEach(slide => slide.style.display = "none");
+    slideIndex++;
+    if (slideIndex > slides.length) { slideIndex = 1 }
+    slides[slideIndex - 1].style.display = "block";
+    setTimeout(showSlides, 10000); // rotate every 10 seconds
+  }
+
+  showSlides();
+</script>
+
+<!-- Mission + Stats Section -->
+<div class="section section-mission-stats">
+  <div class="mission">
+    <h2>Our Mission</h2>
+    <p>Our mission is to provide an exceptional learning environment where participants grow, connect, and thrive. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent euismod ex at dui laoreet, ut cursus libero iaculis.</p>
+  </div>
+
+  <div class="stats">
+    <h2>Our Stats</h2>
+    <ul>
+      <li><strong>500+</strong> Participants trained</li>
+      <li><strong>120</strong> Events held</li>
+      <li><strong>95%</strong> Satisfaction rate</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Video Section -->
+<div class="section section-video">
+  <h2>Watch Our Introduction</h2>
+  <video controls>
+    <source src="https://video.wixstatic.com/video/e5f869_f075e19ca2744354bb20a65881dce28f/1080p/mp4/file.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<!-- Cards Section -->
+<div class="section section-cards">
+  <div class="card card1">
+    <div class="card-overlay"></div>
+    <div class="card-content">
+      <h3>Milestones</h3>
+      <a href="#" class="custom-btn">Learn More</a>
+    </div>
+  </div>
+  <div class="card card2">
+    <div class="card-overlay"></div>
+    <div class="card-content">
+      <h3>Upcoming Events</h3>
+      <a href="#" class="custom-btn">Learn More</a>
+    </div>
+  </div>
+  <div class="card card3">
+    <div class="card-overlay"></div>
+    <div class="card-content">
+      <h3>Get Involved</h3>
+      <a href="#" class="custom-btn">Learn More</a>
+    </div>
+  </div>
+</div>
+
+<!-- Spacer -->
+<div class="section-spacer"></div>
+
+<!-- Call to Action Hero Section -->
+<div class="section section-cta-hero">
+  <div class="cta-overlay"></div>
+  <div class="cta-content">
+    <a href="#" class="cta-btn">Enroll Now</a>
+  </div>
+</div>
