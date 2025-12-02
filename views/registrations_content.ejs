@@ -1,0 +1,43 @@
+<h2><%= event.EventName %></h2>
+<p><strong>Date:</strong> <%= event.EventDateTimeStart %></p>
+<p><strong>Location:</strong> <%= event.EventLocation %></p>
+
+<table class="table mt-4">
+  <thead>
+    <tr>
+      <th>Participant</th>
+      <th>Status</th>
+      <th>Attended?</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% registrations.forEach(reg => { %>
+      <tr>
+        <td><%= reg.ParticipantName %></td>
+        <td><%= reg.RegistrationStatus %></td>
+        <td><%= reg.RegistrationAttendedFlag %></td>
+
+        <td class="d-flex gap-2">
+
+            <form action="/registration/update" method="POST">
+                <input type="hidden" name="Participant_ID" value="<%= reg.Participant_ID %>">
+                <input type="hidden" name="Event_ID" value="<%= reg.Event_ID %>">
+                <input type="hidden" name="EventDateTimeStart" value="<%= reg.EventDateTimeStart %>">
+                <input type="hidden" name="action" value="attended">
+                <button class="btn btn-success btn-sm" type="submit">Attended</button>
+            </form>
+
+            <form action="/registration/update" method="POST">
+                <input type="hidden" name="Participant_ID" value="<%= reg.Participant_ID %>">
+                <input type="hidden" name="Event_ID" value="<%= reg.Event_ID %>">
+                <input type="hidden" name="EventDateTimeStart" value="<%= reg.EventDateTimeStart %>">
+                <input type="hidden" name="action" value="absent">
+                <button class="btn btn-danger btn-sm" type="submit">Absent</button>
+            </form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>

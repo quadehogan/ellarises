@@ -258,6 +258,81 @@ app.post('/register', async (req, res) => {
   }
 });
 
+app.post('/registration/update', async (req, res) => {
+  const { Participant_ID, Event_ID, EventDateTimeStart, action } = req.body;
+
+  let updateFields = {};
+
+  if (action === "attended") {
+    updateFields = {
+      RegistrationStatus: "attended",
+      RegistrationAttendedFlag: "T"
+    };
+
+  } else if (action === "absent") {
+    updateFields = {
+      RegistrationStatus: "no-show",
+      RegistrationAttendedFlag: "F"
+    };
+
+  } else if (action === "cancel") {
+    updateFields = {
+      RegistrationStatus: "cancelled",
+      RegistrationAttendedFlag: "F"
+    };
+
+  } else {
+    return res.status(400).send("Invalid action");
+  }
+
+  try {
+    // Get the existing registration BEFORE updating — we need to know if it was already cancelled
+    const existingReg = await knex('Registration')
+      .where({
+        Participant_ID,
+        Event_ID,
+        EventDateTimeStart
+      })
+      .first();
+
+    // Update the registration first
+    await knex('Registration')
+      .where({
+        Participant_ID,
+        Event_ID,
+        EventDateTimeStart
+      })
+      .update(updateFields);
+
+    // Handle capacity adjustment ONLY if action = cancel AND it was NOT already cancelled
+    if (action === "cancel" && existingReg.RegistrationStatus !== "cancelled") {
+      const event = await knex('EventOccurrence')
+        .where({
+          Event_ID,
+          EventDateTimeStart
+        })
+        .first();
+
+      // Decrement the registered count, but do NOT allow negative values
+      const newCount = Math.max(0, event.EventNumRegistered - 1);
+
+      await knex('EventOccurrence')
+        .where({
+          Event_ID,
+          EventDateTimeStart
+        })
+        .update({
+          EventNumRegistered: newCount
+        });
+    }
+
+    res.redirect('back');
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error updating registration");
+  }
+});
 
 
 

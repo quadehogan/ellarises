@@ -91,6 +91,15 @@
                                     <button type="submit" class="btn btn-primary">Register</button>
                                 </form>
 
+                                <!-- Cancel -->
+                                <form action="/registration/update" method="POST">
+                                    <input type="hidden" name="Participant_ID" value="<%= reg.Participant_ID %>">
+                                    <input type="hidden" name="Event_ID" value="<%= reg.Event_ID %>">
+                                    <input type="hidden" name="EventDateTimeStart" value="<%= reg.EventDateTimeStart %>">
+                                    <input type="hidden" name="action" value="cancel">
+                                    <button class="btn btn-warning btn-sm" type="submit">Cancel</button>
+                                </form>
+
                             </td>
                         </tr>
                         <!-- Add more upcoming events here -->
