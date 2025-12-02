@@ -168,6 +168,34 @@ app.post('/submit-survey', requireLogin, (req, res) => {
     res.send('Survey submitted successfully!');
 });
 
+app.post('/submit-donation', async (req, res) => {
+    try {
+        const userId = req.session.userId; // assuming user ID is stored in session
+        const amount = parseFloat(req.body.amount);
+
+        if (isNaN(amount) || amount <= 0) {
+            return res.status(400).send("Invalid donation amount.");
+        }
+
+        // Insert donation record
+        await db.query(
+            'INSERT INTO donations (user_id, amount, created_at) VALUES ($1, $2, NOW())',
+            [userId, amount]
+        );
+
+        // Update running total in users table
+        await db.query(
+            'UPDATE users SET total_donations = total_donations + $1 WHERE id = $2',
+            [amount, userId]
+        );
+
+        res.redirect('/donations'); // redirect back to donations page
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error submitting donation.");
+    }
+});
+
 
 // ==========================
 // Start Server

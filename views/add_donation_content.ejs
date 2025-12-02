@@ -1,0 +1,14 @@
+<div class="container my-5">
+    <h1 class="mb-4">New Donation</h1>
+
+    <form action="/submit-donation" method="POST">
+
+        <!-- Donation Amount -->
+        <div class="mb-3">
+            <label for="donationAmount" class="form-label">Donation Amount:</label>
+            <input type="number" step="0.01" class="form-control" name="amount" id="donationAmount" placeholder="Enter donation amount" required>
+        </div>
+
+        <button type="submit" class="custom-btn">Submit Donation</button>
+    </form>
+</div>
