@@ -17,6 +17,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
+
 // Session setup
 app.use(session({
     secret: process.env.SESSION_SECRET || 'tempsecret',
