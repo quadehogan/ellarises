@@ -1,16 +1,11 @@
-<h2 class="mb-4">Add Milestone</h2>
+<div class="container my-5">
+    <h2 class="mb-4">Add Milestone</h2>
 
-    <!-- ADMIN: Participant Search + Table -->
-    <% if (user.role === 'admin') { %>
-
+    <!-- MANAGER: Search + Select Participant -->
+    <% if (user.isManager) { %>
         <h4>Select a Participant</h4>
 
-        <input 
-            type="text" 
-            id="searchInput" 
-            placeholder="Search participants..." 
-            class="form-control mb-2"
-        >
+        <input type="text" id="searchInput" placeholder="Search participants..." class="form-control mb-2">
 
         <div style="max-height: 250px; overflow-y: auto;">
             <table class="table table-bordered" id="participantsTable">
@@ -25,76 +20,71 @@
                 <tbody>
                     <% participants.forEach(p => { %>
                         <tr onclick="chooseParticipant('<%= p.Participant_ID %>')" style="cursor: pointer;">
-                            <td><%= p.Participant_ID %></td>
-                            <td><%= p.FirstName %></td>
-                            <td><%= p.LastName %></td>
-                            <td><%= p.Email %></td>
+                            <td>
+                                <%= p.Participant_ID %>
+                            </td>
+                            <td>
+                                <%= p.ParticipantFirstName %>
+                            </td>
+                            <td>
+                                <%= p.ParticipantLastName %>
+                            </td>
+                            <td>
+                                <%= p.ParticipantEmail %>
+                            </td>
                         </tr>
-                    <% }) %>
+                        <% }) %>
                 </tbody>
             </table>
         </div>
 
         <hr class="my-4">
+        <% } %>
 
-    <% } %>
+            <!-- Milestone Form -->
+            <form action="/milestone/add" method="POST">
+                <div class="mb-3">
+                    <label for="participantID" class="form-label">Participant ID</label>
 
+                    <% if (!user.isManager) { %>
+                        <!-- Regular user: only their own ID -->
+                        <input type="text" class="form-control" id="participantID" name="Participant_ID" value="<%= user.id %>" readonly>
+                        <% } else { %>
+                            <!-- Manager: can set ID manually or via search table -->
+                            <input type="text" class="form-control" id="participantID" name="Participant_ID" placeholder="Select a participant or enter an ID" value="<%= participant_id || '' %>" required>
+                            <% } %>
+                </div>
 
-    <!-- Milestone Form -->
-    <form action="/submit-milestone" method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Milestone Title</label>
+                    <input type="text" name="MilestoneTitle" class="form-control" required>
+                </div>
 
-        <div class="mb-3">
-            <label for="participantID" class="form-label">Participant ID</label>
+                <div class="mb-3">
+                    <label class="form-label">Milestone Date</label>
+                    <input type="date" name="MilestoneDate" class="form-control" required>
+                </div>
 
-            <% if (user.role === 'participant') { %>
-                <input 
-                    type="text" 
-                    class="form-control" 
-                    id="participantID" 
-                    name="Participant_ID" 
-                    value="<%= user.id %>" 
-                    readonly
-                >
-            <% } else { %>
-                <input 
-                    type="text" 
-                    class="form-control" 
-                    id="participantID" 
-                    name="Participant_ID" 
-                    placeholder="Select a participant or enter an ID"
-                >
-            <% } %>
-        </div>
+                <button class="custom-btn">Add Milestone</button>
+                <a href="/profile/<%= participant_id || user.id %>" class="btn btn-secondary ms-3">Cancel</a>
+            </form>
+</div>
 
-        <div class="mb-3">
-            <label class="form-label">Milestone Title</label>
-            <input type="text" name="MilestoneTitle" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Milestone Description</label>
-            <textarea name="MilestoneDescription" class="form-control" required></textarea>
-        </div>
-
-        <button class="btn btn-primary">Submit Milestone</button>
-    </form>
-
-
-<!-- Script (No EJS inside) -->
+<!-- Script -->
 <script>
-// Fill participant ID from table
-  function chooseParticipant(id) {
-    document.getElementById("participantID").value = id;
-  }
+    // For manager: clicking a row fills the ID box
+    function chooseParticipant(id) {
+        document.getElementById("participantID").value = id;
+    }
 
-  // Search participants
-  document.getElementById("searchInput")?.addEventListener("input", function () {
-    const filter = this.value.toLowerCase();
-    const rows = document.querySelectorAll("#participantsTable tbody tr");
+    // Search filtering
+    document.getElementById("searchInput") ? .addEventListener("input", function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#participantsTable tbody tr");
 
-    rows.forEach(row => {
-      const text = row.innerText.toLowerCase();
-      row.style.display = text.includes(filter) ? "" : "none";
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(filter) ? "" : "none";
+        });
     });
-  });
 </script>

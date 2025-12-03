@@ -191,47 +191,76 @@ app.get("/participants", async(req, res) => {
 // ==========================
 // Profile Routes
 // ==========================
+app.get('/profile/:id?', requireLogin, async(req, res) => {
+    try {
+        const id = req.params.id || req.session.user.Participant_ID;
 
-// View profile (user sees own profile, manager can view any participant)
-app.get('/profile/:id', requireLogin, async(req, res) => {
-    const userId = req.params.id || req.session.user.id; // manager can pass id
+        const profile = await knex('Participants')
+            .where({ Participant_ID: id })
+            .first();
 
-    // TODO: Query the database for this participant
-    // Example:
-    // const profile = await db.query('SELECT * FROM Participants WHERE Participant_ID = ?', [userId]);
-    // const milestones = await db.query('SELECT * FROM Milestones WHERE Participant_ID = ?', [userId]);
+        const milestones = await knex('Milestones')
+            .where({ Participant_ID: id })
+            .orderBy('MilestoneDate', 'desc');
 
-    // For now, just pass empty arrays/objects so the template works
-    const profile = {};
-    const milestones = [];
-
-    res.render('profile', { user: req.session.user, profile, milestones });
+        res.render('profile', {
+            user: req.session.user,
+            profile,
+            milestones
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error loading profile");
+    }
 });
 
-// Update profile (user or manager)
-app.post('/profile/update', requireLogin, async(req, res) => {
-    const userId = req.body.Participant_ID || req.session.user.id;
+app.post('/profile/update', upload.single('ProfilePicture'), requireLogin, async(req, res) => {
+    try {
+        const id = req.body.Participant_ID;
 
-    // TODO: Update participant info in the database
-    // Example:
-    // await db.query('UPDATE Participants SET ... WHERE Participant_ID = ?', [userId]);
+        const updateData = {
+            ParticipantFirstName: req.body.ParticipantFirstName,
+            ParticipantLastName: req.body.ParticipantLastName,
+            ParticipantEmail: req.body.ParticipantEmail,
+            ParticipantDOB: req.body.ParticipantDOB,
+            ParticipantPhone: req.body.ParticipantPhone,
+            ParticipantSchoolorEmployer: req.body.ParticipantSchoolorEmployer,
+            ParticipantFieldOfInterest: req.body.ParticipantFieldOfInterest
+        };
 
-    res.redirect(`/profile/${userId}`);
+        if (req.file) {
+            updateData.ProfilePicture = req.file.filename;
+        }
+
+        await knex('Participants')
+            .where({ Participant_ID: id })
+            .update(updateData);
+
+        res.redirect(`/profile/${id}`);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Update failed");
+    }
 });
 
-// Delete user (manager only)
 app.post('/profile/delete', requireLogin, async(req, res) => {
-    if (!req.session.user.isManager) return res.status(403).send('Forbidden');
+    if (!req.session.user.isManager) return res.status(403).send("Forbidden");
 
-    const userId = req.body.Participant_ID;
+    try {
+        const id = req.body.Participant_ID;
 
-    // TODO: Delete participant and milestones from database
-    // Example:
-    // await db.query('DELETE FROM Milestones WHERE Participant_ID = ?', [userId]);
-    // await db.query('DELETE FROM Participants WHERE Participant_ID = ?', [userId]);
+        await knex('Milestones').where({ Participant_ID: id }).del();
+        await knex('Participants').where({ Participant_ID: id }).del();
 
-    res.redirect('/participants');
+        res.redirect('/participants');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Delete failed");
+    }
 });
+
+
+
 
 // ===== EVENTS ROUTE =====
 app.get('/events', async(req, res) => {
@@ -352,9 +381,59 @@ app.get('/surveys/:eventId/:eventDateTimeStart', async(req, res) => {
 });
 
 
+// ---------------------------
+// MILESTONE ROUTES
+// ---------------------------
 
-app.get('/milestones', (req, res) =>
-    res.render('milestones'));
+// Show all milestones
+app.get('/milestones', async(req, res) => {
+    try {
+        const [rows] = await req.db.execute(
+            "SELECT * FROM milestones ORDER BY id DESC"
+        );
+        res.render('milestones', { milestones: rows });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error loading milestones");
+    }
+});
+
+// Show add milestone page
+app.get('/milestones/add', (req, res) => {
+    res.render('add_milestone');
+});
+
+// Handle add milestone form
+app.post('/milestones/add', async(req, res) => {
+    const { title, due_date, details } = req.body;
+
+    try {
+        await req.db.execute(
+            `INSERT INTO milestones (title, due_date, details)
+             VALUES (?, ?, ?)`, [title, due_date, details]
+        );
+        res.redirect('/milestones');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error adding milestone");
+    }
+});
+
+// Delete a milestone
+app.get('/milestones/delete/:id', async(req, res) => {
+    const id = req.params.id;
+
+    try {
+        await req.db.execute("DELETE FROM milestones WHERE id = ?", [id]);
+        res.redirect('/milestones');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error deleting milestone");
+    }
+});
+
+
+
 
 app.get('/donations', requireLogin, async(req, res) => {
     const user = req.session.user; // Logged-in user
