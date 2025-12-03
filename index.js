@@ -150,9 +150,32 @@ app.get('/events', async (req, res) => {
 
 
 // Dashboard (requires login)
-app.get('/dashboard', requireLogin, (req, res) => {
-    res.render('dashboard', { user: req.session.user });
+app.get('/dashboard', requireLogin, async (req, res) => {
+    const user = req.session.user;
+
+    try {
+        // Fetch milestones with participant names
+        const milestones = await knex('Milestones as m')
+            .join('Participants as p', 'm.Participant_ID', 'p.Participant_ID')
+            .select(
+                'm.Participant_ID',
+                'p.ParticipantFirstName',
+                'p.ParticipantLastName',
+                'm.MilestoneTitles',
+                'm.MilestoneDates'
+            )
+            .orderBy('m.MilestoneDates', 'desc');
+
+        res.render('dashboard', {
+            user,
+            milestones
+        });
+    } catch (err) {
+        console.error('Error loading dashboard:', err);
+        res.status(500).send('Server error.');
+    }
 });
+
 
 // ===== Participants page (admin only) =====
 app.get('/participants', requireLogin, async (req, res) => {
