@@ -191,7 +191,7 @@ app.get("/participants", async(req, res) => {
 // ==========================
 // Profile Routes
 // ==========================
-app.get('/profile/:id?', requireLogin, async(req, res) => {
+app.get('/profile/:id', requireLogin, async(req, res) => {
     try {
         const id = req.params.id || req.session.user.Participant_ID;
 
