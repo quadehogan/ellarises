@@ -97,7 +97,7 @@ app.post('/login', async (req, res) => {
             role: participant.ParticipantRole // save role for frequent access
         };
 
-        return res.redirect('/index');
+        return res.redirect('/');
     } catch (err) {
         console.error('Login error:', err);
         return res.status(500).send('Server error');
