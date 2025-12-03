@@ -75,7 +75,7 @@ app.post('/login', async (req, res) => {
 
     try {
         // Look up participant by email
-        const participant = await knex('participants')
+        const participant = await knex('Participants')
             .where({ ParticipantEmail: email })
             .first();
 
