@@ -1,33 +1,45 @@
-// ==========================
-// index.js — All-in-One Frontend + Auth
-// ==========================
+// index.js — Clean KNEX-only version, session fixed, Multer, and routes normalized
 
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ==========================
-// Middleware
-// ==========================
+// Ensure uploads folder exists (so multer dest won't fail)
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+    // optionally add a .gitkeep locally so the folder is tracked
+}
+
+// ===== Middleware & Parsers =====
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
-const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
-
-// Session setup
+// Session should be registered before any route that depends on it
 app.use(session({
     secret: process.env.SESSION_SECRET || 'tempsecret',
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: false, // do not save empty sessions
+    cookie: {
+        maxAge: 24 * 60 * 60 * 1000,            // 1 day
+        secure: process.env.NODE_ENV === 'production', // set true in production w/ HTTPS
+        sameSite: 'lax'
+    }
 }));
 
-////////////////// KNEX SETUP //////////////////
+// Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Multer (file uploads)
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
+
+// ===== Knex setup =====
 const knex = require("knex")({
     client: "pg",
     connection: {
@@ -35,14 +47,15 @@ const knex = require("knex")({
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
-        port: Number(process.env.DB_PORT),
+        port: Number(process.env.DB_PORT) || 5432,
         ssl: process.env.DB_SSL ? { rejectUnauthorized: false } : false
-    }
+    },
+    pool: { min: 0, max: 10 }
 });
 
-// Make user info available in all views
+// Make user available in all views as `user`
 app.use((req, res, next) => {
-    res.locals.user = req.session.user || null; // user stored in session
+    res.locals.user = req.session.user || null;
     next();
 });
 
@@ -52,52 +65,44 @@ function requireLogin(req, res, next) {
     next();
 }
 
-// ==========================
-// View Engine
-// ==========================
+// ===== View Engine =====
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// ==========================
-// Routes
-// ==========================
+// ===== Routes =====
 
-// Home page
+// Home
 app.get('/', (req, res) => {
-    res.render('index');
+    res.render('index'); // res.locals.user is available in EJS
 });
 
-// Login page
+// Login pages
 app.get('/login', (req, res) => {
     res.render('login', { error: null });
 });
 
-// Login handler (demo user: admin/admin)
-app.post('/login', async(req, res) => {
+app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Look up participant by email
         const participant = await knex('Participants')
             .where({ ParticipantEmail: email })
             .first();
 
         if (!participant) {
-            // Email not found
             return res.render('login', { error: 'Invalid login' });
         }
 
-        // Check password
-        // If you store hashed passwords, use bcrypt.compare(password, participant.Password)
+        // TODO: If using hashed passwords, use bcrypt.compare()
         if (participant.ParticipantPassword !== password) {
             return res.render('login', { error: 'Invalid login' });
         }
 
-        // Save minimal info in session
+        // Save minimal session info: id, email, role
         req.session.user = {
-            id: participant.Participant_ID,               // store ID for later
+            id: participant.Participant_ID,
             email: participant.ParticipantEmail,
-            role: participant.ParticipantRole // save role for frequent access
+            role: participant.ParticipantRole // expected values: 'participant' or 'admin'
         };
 
         return res.redirect('/');
@@ -107,25 +112,22 @@ app.post('/login', async(req, res) => {
     }
 });
 
-
 // Logout
 app.get('/logout', (req, res) => {
-    req.session.destroy(() => {
+    req.session.destroy(err => {
+        if (err) console.error('Session destroy error:', err);
         res.redirect('/');
     });
 });
 
-app.get('/events_nonverified', async(req, res) => {
+// Events (non-verified upcoming)
+app.get('/events_nonverified', async (req, res) => {
     try {
         const now = new Date();
 
         const events = await knex('EventOccurrence as eo')
             .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
-            .select(
-                'et.EventName',
-                'et.EventDescription',
-                'eo.EventDateTimeStart'
-            )
+            .select('et.EventName', 'et.EventDescription', 'eo.EventDateTimeStart')
             .where('eo.EventDateTimeStart', '>', now)
             .orderBy('eo.EventDateTimeStart', 'asc');
 
@@ -136,67 +138,54 @@ app.get('/events_nonverified', async(req, res) => {
     }
 });
 
-
 // Dashboard (requires login)
 app.get('/dashboard', requireLogin, (req, res) => {
     res.render('dashboard', { user: req.session.user });
 });
 
-// GET routes
-// ----------------------
-// PARTICIPANTS PAGE
-// ----------------------
-app.get("/participants", async(req, res) => {
+// ===== Participants page (admin only) =====
+app.get('/participants', requireLogin, async (req, res) => {
     const user = req.session.user;
-    // Must be logged in
-    if (!user) {
-        return res.redirect("/login");
+    if (!user || user.role !== 'admin') {
+        return res.status(403).send('Access denied');
     }
-    // Must be admin
-    if (user.role !== "admin") {
-        return res.status(403).send("Access denied");
-    }
+
     try {
-        // 1. Get ALL users
-        const [users] = await db.query(`
-            SELECT User_ID, FirstName, LastName
-            FROM Users
-        `);
-        // 2. Get participants who attended (RegistrationAttendedFlag = 'T')
-        const [participants] = await db.query(`
-            SELECT r.Participant_ID, u.FirstName, u.LastName
-            FROM Registration r
-            JOIN Users u 
-                ON r.Participant_ID = u.User_ID
-            WHERE r.RegistrationAttendedFlag = 'T'
-        `);
-        // 3. Format the data the way your EJS expects
+        // 1) Get all users from Users table
+        const users = await knex('Users').select('User_ID', 'FirstName', 'LastName');
+
+        // 2) Get participants who attended (RegistrationAttendedFlag = 'T') joining Registration -> Users
+        const participants = await knex('Registration as r')
+            .join('Users as u', 'r.Participant_ID', 'u.User_ID')
+            .select('r.Participant_ID', 'u.FirstName', 'u.LastName')
+            .where('r.RegistrationAttendedFlag', 'T');
+
         const formattedUsers = users.map(u => ({
             User_ID: u.User_ID,
             name: `${u.FirstName} ${u.LastName}`
         }));
+
         const formattedParticipants = participants.map(p => ({
             Participant_ID: p.Participant_ID,
             name: `${p.FirstName} ${p.LastName}`
         }));
-        // Render the page
-        res.render("participants", {
+
+        res.render('participants', {
             user,
             users: formattedUsers,
             participants: formattedParticipants
         });
     } catch (err) {
-        console.error("Error loading participants:", err);
-        res.status(500).send("Database error.");
+        console.error('Error loading participants:', err);
+        res.status(500).send('Database error.');
     }
 });
 
-// ==========================
-// Profile Routes
-// ==========================
-app.get('/profile/:id', requireLogin, async(req, res) => {
+// ===== Profile Routes =====
+app.get('/profile/:id?', requireLogin, async (req, res) => {
     try {
-        const id = req.params.id || req.session.user.Participant_ID;
+        // If id param provided use it, otherwise use current user's id
+        const id = req.params.id || req.session.user.id;
 
         const profile = await knex('Participants')
             .where({ Participant_ID: id })
@@ -213,13 +202,16 @@ app.get('/profile/:id', requireLogin, async(req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send("Error loading profile");
+        res.status(500).send('Error loading profile');
     }
 });
 
-app.post('/profile/update', upload.single('ProfilePicture'), requireLogin, async(req, res) => {
+app.post('/profile/update', upload.single('ProfilePicture'), requireLogin, async (req, res) => {
     try {
         const id = req.body.Participant_ID;
+
+        // Basic validation
+        if (!id) return res.status(400).send('Missing Participant_ID');
 
         const updateData = {
             ParticipantFirstName: req.body.ParticipantFirstName,
@@ -241,102 +233,71 @@ app.post('/profile/update', upload.single('ProfilePicture'), requireLogin, async
 
         res.redirect(`/profile/${id}`);
     } catch (err) {
-        console.error(err);
-        res.status(500).send("Update failed");
+        console.error('Profile update error:', err);
+        res.status(500).send('Update failed');
     }
 });
 
-app.post('/profile/delete', requireLogin, async(req, res) => {
-    if (!req.session.user.isManager) return res.status(403).send("Forbidden");
+app.post('/profile/delete', requireLogin, async (req, res) => {
+    const user = req.session.user;
+    // Only admins can delete participants
+    if (!user || user.role !== 'admin') return res.status(403).send('Forbidden');
 
     try {
         const id = req.body.Participant_ID;
+        if (!id) return res.status(400).send('Missing Participant_ID');
 
         await knex('Milestones').where({ Participant_ID: id }).del();
         await knex('Participants').where({ Participant_ID: id }).del();
 
         res.redirect('/participants');
     } catch (err) {
-        console.error(err);
-        res.status(500).send("Delete failed");
+        console.error('Profile delete error:', err);
+        res.status(500).send('Delete failed');
     }
 });
 
-
-
-
-// ===== EVENTS ROUTE =====
-app.get('/events', async(req, res) => {
+// ===== Events route (public but shows user if logged in) =====
+app.get('/events', async (req, res) => {
     try {
-        // 1. Fetch all events from EventOccurrence
+        // Fetch events (EventOccurrence table)
         const events = await knex('EventOccurrence')
-            .select(
-                'Event_ID',
-                'EventName',
-                'EventType',
-                'EventDateTimeStart',
-                'EventLocation'
-            )
+            .select('Event_ID', 'EventName', 'EventType', 'EventDateTimeStart', 'EventLocation')
             .orderBy('EventDateTimeStart', 'asc');
 
         const now = new Date();
 
-        // 2. Split into upcoming and past events
         const upcomingEvents = events.filter(e => new Date(e.EventDateTimeStart) >= now);
         const pastEvents = events.filter(e => new Date(e.EventDateTimeStart) < now);
 
-        // 3. Render the events page
         res.render('events', {
             user: req.session.user,
             upcomingEvents,
             pastEvents
         });
-
     } catch (err) {
         console.error('Knex Events route error:', err);
         res.status(500).send('Error retrieving events');
     }
 });
 
-
-
-// ===== SURVEYS ROUTE (Composite Key Version) =====
-app.get('/surveys/:eventId/:eventDateTimeStart', async(req, res) => {
+// ===== Surveys route (composite key) =====
+app.get('/surveys/:eventId/:eventDateTimeStart', async (req, res) => {
     const { eventId, eventDateTimeStart } = req.params;
 
     try {
-        // 1. Fetch event info using composite key
-        const event = await knex("EventOccurrence")
-            .select("Event_ID", "EventName", "EventDateTimeStart")
-            .where({
-                Event_ID: eventId,
-                EventDateTimeStart: eventDateTimeStart
-            })
+        const event = await knex('EventOccurrence')
+            .select('Event_ID', 'EventName', 'EventDateTimeStart')
+            .where({ Event_ID: eventId, EventDateTimeStart: eventDateTimeStart })
             .first();
 
-        if (!event) {
-            return res.status(404).send("Event not found");
-        }
+        if (!event) return res.status(404).send('Event not found');
 
-        // 2. Fetch surveys for this event occurrence
-        const surveys = await knex("Surveys as s")
-            .join(
-                "Participants as p",
-                "s.Participant_ID",
-                "=",
-                "p.Participant_ID"
-            )
-            .select(
-                "s.*",
-                "p.ParticipantFirstName",
-                "p.ParticipantLastName"
-            )
-            .where({
-                "s.Event_ID": eventId,
-                "s.EventDateTimeStart": eventDateTimeStart
-            });
+        const surveys = await knex('Surveys as s')
+            .join('Participants as p', 's.Participant_ID', 'p.Participant_ID')
+            .select('s.*', 'p.ParticipantFirstName', 'p.ParticipantLastName')
+            .where({ 's.Event_ID': eventId, 's.EventDateTimeStart': eventDateTimeStart });
 
-        // 3. Compute averages
         const averages = {
             overall: 0,
             satisfaction: 0,
@@ -347,129 +308,97 @@ app.get('/surveys/:eventId/:eventDateTimeStart', async(req, res) => {
 
         if (surveys.length > 0) {
             const count = surveys.length;
-
-            averages.overall = (
-                surveys.reduce((t, r) => t + r.SurveyOverallScore, 0) / count
-            ).toFixed(2);
-
-            averages.satisfaction = (
-                surveys.reduce((t, r) => t + r.SurveySatisfactionScore, 0) / count
-            ).toFixed(2);
-
-            averages.usefulness = (
-                surveys.reduce((t, r) => t + r.SurveyUsefulnessScore, 0) / count
-            ).toFixed(2);
-
-            averages.instructor = (
-                surveys.reduce((t, r) => t + r.SurveyInstructorScore, 0) / count
-            ).toFixed(2);
-
-            averages.recommendation = (
-                surveys.reduce((t, r) => t + r.SurveyRecommendationScore, 0) / count
-            ).toFixed(2);
+            averages.overall = (surveys.reduce((t, r) => t + Number(r.SurveyOverallScore || 0), 0) / count).toFixed(2);
+            averages.satisfaction = (surveys.reduce((t, r) => t + Number(r.SurveySatisfactionScore || 0), 0) / count).toFixed(2);
+            averages.usefulness = (surveys.reduce((t, r) => t + Number(r.SurveyUsefulnessScore || 0), 0) / count).toFixed(2);
+            averages.instructor = (surveys.reduce((t, r) => t + Number(r.SurveyInstructorScore || 0), 0) / count).toFixed(2);
+            averages.recommendation = (surveys.reduce((t, r) => t + Number(r.SurveyRecommendationScore || 0), 0) / count).toFixed(2);
         }
 
-        // 4. Render the survey page
-        res.render("surveys", {
+        res.render('surveys', {
             event,
             surveys,
             averages,
             user: req.session.user
         });
-
     } catch (err) {
-        console.error("Knex Surveys route error:", err);
-        res.status(500).send("Error retrieving surveys");
+        console.error('Knex Surveys route error:', err);
+        res.status(500).send('Error retrieving surveys');
     }
 });
 
-
-// ---------------------------
-// MILESTONE ROUTES
-// ---------------------------
-
-// Show all milestones
-app.get('/milestones', async(req, res) => {
+// ===== Milestones (use KNEX) =====
+app.get('/milestones', async (req, res) => {
     try {
-        const [rows] = await req.db.execute(
-            "SELECT * FROM milestones ORDER BY id DESC"
-        );
-        res.render('milestones', { milestones: rows });
+        // Use Milestones table (capitalization consistent with other routes)
+        const rows = await knex('Milestones').select('*').orderBy('id', 'desc');
+        res.render('milestones', { milestones: rows, user: req.session.user });
     } catch (err) {
-        console.error(err);
-        res.status(500).send("Error loading milestones");
+        console.error('Error loading milestones:', err);
+        res.status(500).send('Error loading milestones');
     }
 });
 
-// Show add milestone page
 app.get('/milestones/add', (req, res) => {
-    res.render('add_milestone');
+    res.render('add_milestone', { user: req.session.user });
 });
 
-// Handle add milestone form
-app.post('/milestones/add', async(req, res) => {
+app.post('/milestones/add', requireLogin, async (req, res) => {
     const { title, due_date, details } = req.body;
 
     try {
-        await req.db.execute(
-            `INSERT INTO milestones (title, due_date, details)
-             VALUES (?, ?, ?)`, [title, due_date, details]
-        );
+        await knex('Milestones').insert({
+            title,
+            due_date,
+            details
+        });
         res.redirect('/milestones');
     } catch (err) {
-        console.error(err);
-        res.status(500).send("Error adding milestone");
+        console.error('Error adding milestone:', err);
+        res.status(500).send('Error adding milestone');
     }
 });
 
-// Delete a milestone
-app.get('/milestones/delete/:id', async(req, res) => {
+app.get('/milestones/delete/:id', requireLogin, async (req, res) => {
     const id = req.params.id;
 
     try {
-        await req.db.execute("DELETE FROM milestones WHERE id = ?", [id]);
+        await knex('Milestones').where({ id }).del();
         res.redirect('/milestones');
     } catch (err) {
-        console.error(err);
-        res.status(500).send("Error deleting milestone");
+        console.error('Error deleting milestone:', err);
+        res.status(500).send('Error deleting milestone');
     }
 });
 
-
-
-
-app.get('/donations', requireLogin, async(req, res) => {
-    const user = req.session.user; // Logged-in user
-    let donations = [];
-    let totalAmount = 0;
-
+// ===== Donations =====
+app.get('/donations', requireLogin, async (req, res) => {
+    const user = req.session.user;
     try {
+        let donations = [];
+
         if (user.role === 'admin') {
-            // Admin: fetch all donations with donor name
-            donations = await knex('donations')
-                .join('participants', 'donations.Participant_ID', 'participants.ID')
+            donations = await knex('Donations')
+                .join('Participants', 'Donations.Participant_ID', 'Participants.Participant_ID')
                 .select(
-                    'donations.Donation_ID',
-                    'donations.Participant_ID',
-                    'donations.DonationAmount',
-                    'donations.DonationDate',
-                    'participants.FirstName',
-                    'participants.LastName'
-                );
+                    'Donations.Donation_ID',
+                    'Donations.Participant_ID',
+                    'Donations.DonationAmount',
+                    'Donations.DonationDate',
+                    'Participants.ParticipantFirstName',
+                    'Participants.ParticipantLastName'
+                )
+                .orderBy('Donations.DonationDate', 'desc');
         } else if (user.role === 'participant') {
-            // Participant: fetch only their donations
-            donations = await knex('donations')
+            donations = await knex('Donations')
                 .where({ Participant_ID: user.id })
-                .select('Donation_ID', 'DonationAmount', 'DonationDate');
+                .select('Donation_ID', 'DonationAmount', 'DonationDate')
+                .orderBy('DonationDate', 'desc');
         } else {
             return res.status(403).send('Unauthorized role');
         }
 
-        // Calculate total amount
-        totalAmount = donations.reduce(
-            (sum, d) => sum + Number(d.DonationAmount),
-            0
-        );
+        const totalAmount = donations.reduce((sum, d) => sum + Number(d.DonationAmount || 0), 0);
 
         res.render('donations', { user, donations, totalAmount });
     } catch (err) {
@@ -478,57 +407,74 @@ app.get('/donations', requireLogin, async(req, res) => {
     }
 });
 
+// Submit donation (POST)
+app.post('/submit-donation', requireLogin, async (req, res) => {
+    try {
+        const user = req.session.user;
+        const amount = parseFloat(req.body.amount);
 
+        if (isNaN(amount) || amount <= 0) {
+            return res.status(400).send('Invalid donation amount.');
+        }
 
-app.get('/enroll', (req, res) =>
-    res.render('enroll'));
+        // Insert donation with proper Participant_ID
+        await knex('Donations').insert({
+            Participant_ID: user.id,
+            DonationAmount: amount,
+            DonationDate: knex.fn.now()
+        });
 
-app.get('/create_user', requireLogin, (req, res) =>
-    res.render('create_user'));
+        // Best-effort: try to update a total on Participants if such a column exists.
+        // Wrap in try/catch so missing column won't crash things.
+        try {
+            await knex('Participants')
+                .where({ Participant_ID: user.id })
+                .increment('TotalDonations', amount);
+        } catch (e) {
+            // ignore if column doesn't exist or update fails
+            console.warn('Could not update participants total (maybe column missing):', e.message || e);
+        }
 
-app.get('/add_events', requireLogin, (req, res) =>
-    res.render('add_events'));
+        res.redirect('/donations');
+    } catch (err) {
+        console.error('Error submitting donation:', err);
+        res.status(500).send('Error submitting donation.');
+    }
+});
 
-// GET: Add Milestone Page
-app.get('/add_milestone', requireLogin, async(req, res) => {
+// ===== Enroll / Create User / Add Events (render forms) =====
+app.get('/enroll', (req, res) => res.render('enroll', { user: req.session.user }));
+app.get('/create_user', requireLogin, (req, res) => res.render('create_user', { user: req.session.user }));
+app.get('/add_events', requireLogin, (req, res) => res.render('add_events', { user: req.session.user }));
+
+// Add milestone form page (admin sees participant list)
+app.get('/add_milestone', requireLogin, async (req, res) => {
     const user = req.session.user;
-
     let participants = [];
 
     if (user.role === 'admin') {
-        // Admin sees the list of all participants
-        participants = await knex('participants')
-            .select('Participant_ID', 'FirstName', 'LastName', 'Email');
+        participants = await knex('Participants').select('Participant_ID', 'FirstName', 'LastName', 'Email');
     }
 
-    res.render('add_milestone', {
-        user,
-        participants
-    });
+    res.render('add_milestone', { user, participants });
 });
 
-app.get('/add_survey', requireLogin, (req, res) =>
-    res.render('add_survey'));
+app.get('/add_survey', requireLogin, (req, res) => res.render('add_survey', { user: req.session.user }));
+app.get('/add_donation', (req, res) => res.render('add_donation', { user: req.session.user }));
 
-app.get('/add_donation', (req, res) =>
-    res.render('add_donation'));
+// Teapot
+app.get('/teapot', (req, res) => res.status(418).send("I'm a teapot ☕"));
 
-// Fun IS 404 requirement route
-app.get('/teapot', (req, res) => {
-    res.status(418).send("I'm a teapot ☕");
-});
-
-// POST routes
-app.post('/enroll', async(req, res) => {
+// ===== POST: Enroll =====
+app.post('/enroll', async (req, res) => {
     const data = req.body;
-
     try {
         await knex('Participant').insert({
             ParticipantEmail: data.ParticipantEmail,
             ParticipantFirstName: data.ParticipantFirstName,
             ParticipantLastName: data.ParticipantLastName,
             ParticipantDOB: data.ParticipantDOB,
-            ParticipantRole: "participant", // enforced
+            ParticipantRole: 'participant',
             ParticipantPhone: data.ParticipantPhone,
             ParticipantCity: data.ParticipantCity,
             ParticipantState: data.ParticipantState,
@@ -536,284 +482,195 @@ app.post('/enroll', async(req, res) => {
             ParticipantSchoolOrEmployer: data.ParticipantSchoolOrEmployer,
             ParticipantFieldOfInterest: data.ParticipantFieldOfInterest
         });
-
         res.redirect('/success');
-
     } catch (err) {
-        console.error(err);
-        res.status(500).send("Error enrolling participant");
+        console.error('Error enrolling participant:', err);
+        res.status(500).send('Error enrolling participant');
     }
 });
 
-app.post('/create-user-submit', async(req, res) => {
-    const {
-        ParticipantEmail,
-        ParticipantFirstName,
-        ParticipantLastName,
-        ParticipantDOB,
-        ParticipantRole,
-        ParticipantPhone,
-        ParticipantCity,
-        ParticipantState,
-        ParticipantZip,
-        ParticipantSchoolOrEmployer,
-        ParticipantFieldOfInterest
-    } = req.body;
-
+// ===== POST: Create user (admin) =====
+app.post('/create-user-submit', requireLogin, async (req, res) => {
+    const body = req.body;
     try {
         await knex('Participant').insert({
-            ParticipantEmail,
-            ParticipantFirstName,
-            ParticipantLastName,
-            ParticipantDOB,
-            ParticipantRole,
-            ParticipantPhone,
-            ParticipantCity,
-            ParticipantState,
-            ParticipantZip,
-            ParticipantSchoolOrEmployer,
-            ParticipantFieldOfInterest,
+            ParticipantEmail: body.ParticipantEmail,
+            ParticipantFirstName: body.ParticipantFirstName,
+            ParticipantLastName: body.ParticipantLastName,
+            ParticipantDOB: body.ParticipantDOB,
+            ParticipantRole: body.ParticipantRole,
+            ParticipantPhone: body.ParticipantPhone,
+            ParticipantCity: body.ParticipantCity,
+            ParticipantState: body.ParticipantState,
+            ParticipantZip: body.ParticipantZip,
+            ParticipantSchoolOrEmployer: body.ParticipantSchoolOrEmployer,
+            ParticipantFieldOfInterest: body.ParticipantFieldOfInterest,
+            CreatedAt: knex.fn.now()
+        });
+        res.redirect('/participants');
+    } catch (err) {
+        console.error('Error creating user:', err);
+        res.status(500).send('Error creating user');
+    }
+});
+
+// ===== POST: Submit Survey (example storing) =====
+app.post('/submit-survey', requireLogin, async (req, res) => {
+    try {
+        const {
+            SurveySatisfactionScore,
+            SurveyUsefulnessScore,
+            SurveyInstructorScore,
+            SurveyRecommendationScore,
+            SurveyComments,
+            Event_ID,
+            EventDateTimeStart
+        } = req.body;
+
+        const sat = parseInt(SurveySatisfactionScore || 0);
+        const use = parseInt(SurveyUsefulnessScore || 0);
+        const instr = parseInt(SurveyInstructorScore || 0);
+        const rec = parseInt(SurveyRecommendationScore || 0);
+
+        const overall = ((sat + use + instr) / 3).toFixed(2);
+
+        let npsBucket;
+        if (rec === 5) npsBucket = 'Promoter';
+        else if (rec === 4) npsBucket = 'Passive';
+        else npsBucket = 'Detractor';
+
+        await knex('Surveys').insert({
+            Participant_ID: req.session.user.id,
+            Event_ID,
+            EventDateTimeStart,
+            SurveySatisfactionScore: sat,
+            SurveyUsefulnessScore: use,
+            SurveyInstructorScore: instr,
+            SurveyRecommendationScore: rec,
+            SurveyOverallScore: overall,
+            SurveyNPSBucket: npsBucket,
+            SurveyComments,
             CreatedAt: knex.fn.now()
         });
 
-        res.redirect('/participants'); // or wherever your success page is
-
+        res.send('Survey submitted successfully!');
     } catch (err) {
-        console.error(err);
-        res.status(500).send("Error creating user");
+        console.error('Error saving survey:', err);
+        res.status(500).send('Error submitting survey');
     }
 });
 
-
-app.post('/submit-survey', requireLogin, (req, res) => {
-    const {
-        SurveySatisfactionScore,
-        SurveyUsefulnessScore,
-        SurveyInstructorScore,
-        SurveyRecommendationScore,
-        SurveyComments
-    } = req.body;
-
-    // Parse scores as integers
-    const sat = parseInt(SurveySatisfactionScore);
-    const use = parseInt(SurveyUsefulnessScore);
-    const instr = parseInt(SurveyInstructorScore);
-    const rec = parseInt(SurveyRecommendationScore);
-
-    // Calculate overall score (average of first 3)
-    const overall = ((sat + use + instr) / 3).toFixed(2);
-
-    // Determine NPS bucket
-    let npsBucket;
-    if (rec === 5) npsBucket = 'Promoter';
-    else if (rec === 4) npsBucket = 'Passive';
-    else npsBucket = 'Detractor';
-
-    // Example: save to database
-    const surveyData = {
-        SurveySatisfactionScore: sat,
-        SurveyUsefulnessScore: use,
-        SurveyInstructorScore: instr,
-        SurveyRecommendationScore: rec,
-        SurveyOverallScore: overall,
-        SurveyNPSBucket: npsBucket,
-        SurveyComments
-    };
-
-    // TODO: insert surveyData into your database
-    console.log('Saving survey:', surveyData);
-
-    // Redirect or render a success page
-    res.send('Survey submitted successfully!');
-});
-
-app.post('/submit-donation', async(req, res) => {
-    try {
-        const userId = req.session.userId; // assuming user ID is stored in session
-        const amount = parseFloat(req.body.amount);
-
-        if (isNaN(amount) || amount <= 0) {
-            return res.status(400).send("Invalid donation amount.");
-        }
-
-        // Insert donation record
-        await db.query(
-            'INSERT INTO donations (user_id, amount, created_at) VALUES ($1, $2, NOW())', [userId, amount]
-        );
-
-        // Update running total in users table
-        await db.query(
-            'UPDATE users SET total_donations = total_donations + $1 WHERE id = $2', [amount, userId]
-        );
-
-        res.redirect('/donations'); // redirect back to donations page
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Error submitting donation.");
-    }
-});
-
-app.post('/register', async(req, res) => {
+// ===== Registration routes =====
+app.post('/register', async (req, res) => {
     const { Participant_ID, Event_ID, EventDateTimeStart } = req.body;
 
     try {
-        // 1. Validate required inputs
         if (!Participant_ID || !Event_ID || !EventDateTimeStart) {
-            return res.status(400).send("Missing required fields");
+            return res.status(400).send('Missing required fields');
         }
 
-        // 2. Look up event occurrence
         const event = await knex('EventOccurrence')
-            .where({
-                Event_ID: Event_ID,
-                EventDateTimeStart: EventDateTimeStart
-            })
+            .where({ Event_ID, EventDateTimeStart })
             .first();
 
-        if (!event) {
-            return res.status(404).send("Event occurrence not found");
-        }
+        if (!event) return res.status(404).send('Event occurrence not found');
 
-        // 3. Validate registration deadline
         const now = new Date();
-        const registrationDeadline = new Date(event.EventRegistrationDeadline);
+        const registrationDeadline = new Date(event.EventRegistrationDeadline || 0);
 
-        if (now > registrationDeadline) {
-            return res.status(400).send("Registration deadline has passed");
+        if (registrationDeadline && now > registrationDeadline) {
+            return res.status(400).send('Registration deadline has passed');
         }
 
-        // 4. Validate capacity
         if (event.EventNumRegistered >= event.EventCapacity) {
-            return res.status(400).send("Event is full");
+            return res.status(400).send('Event is full');
         }
 
-        // 5. Insert registration
         await knex('Registration').insert({
             Participant_ID,
             Event_ID,
             EventDateTimeStart,
-            RegistrationStatus: "tbd",
-            RegistrationAttendedFlag: "F"
-                // RegistrationCreatedAt handled by DB default
+            RegistrationStatus: 'tbd',
+            RegistrationAttendedFlag: 'F'
         });
 
-        // 6. Optionally increment event registered count
+        // increment count safely
         await knex('EventOccurrence')
-            .where({
-                Event_ID: Event_ID,
-                EventDateTimeStart: EventDateTimeStart
-            })
-            .update({
-                EventNumRegistered: event.EventNumRegistered + 1
-            });
+            .where({ Event_ID, EventDateTimeStart })
+            .increment('EventNumRegistered', 1);
 
-        res.status(200).send("Registration successful");
-
+        res.status(200).send('Registration successful');
     } catch (err) {
-        console.error(err);
-        res.status(500).send("Server error");
+        console.error('Error registering:', err);
+        res.status(500).send('Server error');
     }
 });
 
-app.post('/registration/update', async(req, res) => {
+app.post('/registration/update', async (req, res) => {
     const { Participant_ID, Event_ID, EventDateTimeStart, action } = req.body;
 
-    let updateFields = {};
-
-    if (action === "attended") {
-        updateFields = {
-            RegistrationStatus: "attended",
-            RegistrationAttendedFlag: "T"
-        };
-
-    } else if (action === "absent") {
-        updateFields = {
-            RegistrationStatus: "no-show",
-            RegistrationAttendedFlag: "F"
-        };
-
-    } else if (action === "cancel") {
-        updateFields = {
-            RegistrationStatus: "cancelled",
-            RegistrationAttendedFlag: "F"
-        };
-
-    } else {
-        return res.status(400).send("Invalid action");
-    }
-
     try {
-        // Get the existing registration BEFORE updating — we need to know if it was already cancelled
+        if (!Participant_ID || !Event_ID || !EventDateTimeStart) {
+            return res.status(400).send('Missing required fields');
+        }
+
+        const updateFields = (action === 'attended') ? { RegistrationStatus: 'attended', RegistrationAttendedFlag: 'T' }
+            : (action === 'absent') ? { RegistrationStatus: 'no-show', RegistrationAttendedFlag: 'F' }
+            : (action === 'cancel') ? { RegistrationStatus: 'cancelled', RegistrationAttendedFlag: 'F' }
+            : null;
+
+        if (!updateFields) return res.status(400).send('Invalid action');
+
         const existingReg = await knex('Registration')
-            .where({
-                Participant_ID,
-                Event_ID,
-                EventDateTimeStart
-            })
+            .where({ Participant_ID, Event_ID, EventDateTimeStart })
             .first();
 
-        // Update the registration first
         await knex('Registration')
-            .where({
-                Participant_ID,
-                Event_ID,
-                EventDateTimeStart
-            })
+            .where({ Participant_ID, Event_ID, EventDateTimeStart })
             .update(updateFields);
 
-        // Handle capacity adjustment ONLY if action = cancel AND it was NOT already cancelled
-        if (action === "cancel" && existingReg.RegistrationStatus !== "cancelled") {
+        if (action === 'cancel' && existingReg && existingReg.RegistrationStatus !== 'cancelled') {
             const event = await knex('EventOccurrence')
-                .where({
-                    Event_ID,
-                    EventDateTimeStart
-                })
+                .where({ Event_ID, EventDateTimeStart })
                 .first();
 
-            // Decrement the registered count, but do NOT allow negative values
-            const newCount = Math.max(0, event.EventNumRegistered - 1);
+            const newCount = Math.max(0, (event.EventNumRegistered || 0) - 1);
 
             await knex('EventOccurrence')
-                .where({
-                    Event_ID,
-                    EventDateTimeStart
-                })
-                .update({
-                    EventNumRegistered: newCount
-                });
+                .where({ Event_ID, EventDateTimeStart })
+                .update({ EventNumRegistered: newCount });
         }
 
         res.redirect('back');
-
     } catch (err) {
-        console.error(err);
-        res.status(500).send("Error updating registration");
+        console.error('Error updating registration:', err);
+        res.status(500).send('Error updating registration');
     }
 });
 
-// POST: Submit Milestone
-app.post('/submit-milestone', requireLogin, async(req, res) => {
-    const user = req.session.user;
+// ===== Submit milestone (participants limited) =====
+app.post('/submit-milestone', requireLogin, async (req, res) => {
+    try {
+        const user = req.session.user;
+        let { Participant_ID, MilestoneTitle, MilestoneDescription } = req.body;
 
-    let { Participant_ID, MilestoneTitle, MilestoneDescription } = req.body;
+        if (user.role === 'participant') {
+            Participant_ID = user.id;
+        }
 
-    // Participants cannot modify the ID
-    if (user.role === 'participant') {
-        Participant_ID = user.id;
+        await knex('Milestones').insert({
+            Participant_ID,
+            MilestoneTitle,
+            MilestoneDescription,
+            MilestoneDate: knex.fn.now()
+        });
+
+        res.redirect('/milestones');
+    } catch (err) {
+        console.error('Error creating milestone:', err);
+        res.status(500).send('Error creating milestone');
     }
-
-    // Insert milestone into DB
-    await knex('milestones').insert({
-        Participant_ID,
-        MilestoneTitle,
-        MilestoneDescription,
-        MilestoneDate: knex.fn.now() // store current date/time
-    });
-
-    res.redirect('/milestones');
 });
 
-// ==========================
-// Start Server
-// ==========================
+// ===== Start server =====
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
