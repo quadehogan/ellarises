@@ -140,8 +140,9 @@ main {
   max-height: 600px;
   overflow: hidden;
   border-radius: 0.5rem;
-  box-shadow: 0 4px 12px var(--color-neutral-dark);
+  box-shadow: 0 4px 12px black;
   margin-bottom: 2rem;
+  background-color: var(--color-neutral-dark);
 }
 
 /* ===== Slide Images ===== */

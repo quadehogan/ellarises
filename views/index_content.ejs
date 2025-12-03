@@ -34,40 +34,49 @@
 
 <!-- JavaScript Slideshow -->
 <script>
-  let slideIndex = 0;
-  const slides = document.querySelectorAll('.slide');
+  window.addEventListener("load", () => {
+    let slideIndex = 0;
+    const slides = document.querySelectorAll('.slide');
 
-  // Preload images
-  slides.forEach(slide => {
-    const img = slide.querySelector('img');
-    if (img) {
-      const image = new Image();
-      image.src = img.src;
+    if (!slides.length) {
+      console.error("No slides found.");
+      return;
     }
+
+    // Preload images
+    slides.forEach(slide => {
+      const img = slide.querySelector('img');
+      if (img) {
+        const preload = new Image();
+        preload.src = img.src;
+      }
+    });
+
+    // Make first slide visible immediately
+    slides[0].classList.add('active');
+
+    function showSlides() {
+      const previousIndex = slideIndex;
+      slideIndex = (slideIndex + 1) % slides.length;
+
+      const currentSlide = slides[slideIndex];
+      const previousSlide = slides[previousIndex];
+
+      currentSlide.classList.add('active');
+
+      if (previousSlide && previousSlide !== currentSlide) {
+        setTimeout(() => {
+          previousSlide.classList.remove('active');
+        }, 500);
+      }
+
+      setTimeout(showSlides, 10000);
+    }
+
+    setTimeout(showSlides, 10000); // Wait 10s before first fade
   });
-
-  function showSlides() {
-    const previousIndex = slideIndex;
-    slideIndex = (slideIndex + 1) % slides.length;
-
-    const currentSlide = slides[slideIndex];
-    const previousSlide = slides[previousIndex];
-
-    // Fade in current slide
-    currentSlide.classList.add('active');
-
-    // Fade out previous slide after delay to overlap
-    if (previousSlide && previousSlide !== currentSlide) {
-      setTimeout(() => {
-        previousSlide.classList.remove('active');
-      }, 500); // overlap 0.5s
-    }
-
-    setTimeout(showSlides, 10000); // 10-second interval
-  }
-
-  window.addEventListener('load', showSlides);
 </script>
+
 
 
 <!-- Mission + Stats Section -->
