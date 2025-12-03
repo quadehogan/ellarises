@@ -3,39 +3,59 @@
 
     <!-- User Info -->
     <form action="/profile/update" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="Participant_ID" value="<%= profile.Participant_ID || '' %>">
+        <input type="hidden" name="Participant_ID" value="<%= profile.Participant_ID %>">
 
         <div class="mb-3">
             <label class="form-label">First Name:</label>
-            <input class="form-control" type="text" name="ParticipantFirstName" value="<%= profile.ParticipantFirstName || '' %>" required>
+            <input class="form-control" type="text" name="ParticipantFirstName" value="<%= profile.ParticipantFirstName %>" required>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Last Name:</label>
-            <input class="form-control" type="text" name="ParticipantLastName" value="<%= profile.ParticipantLastName || '' %>" required>
+            <input class="form-control" type="text" name="ParticipantLastName" value="<%= profile.ParticipantLastName %>" required>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Email:</label>
-            <input class="form-control" type="email" name="ParticipantEmail" value="<%= profile.ParticipantEmail || '' %>" required>
+            <input class="form-control" type="email" name="ParticipantEmail" value="<%= profile.ParticipantEmail %>" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">DOB:</label>
+            <input class="form-control" type="date" name="ParticipantDOB" value="<%= profile.ParticipantDOB %>">
         </div>
 
         <div class="mb-3">
             <label class="form-label">Phone:</label>
-            <input class="form-control" type="tel" name="ParticipantPhone" value="<%= profile.ParticipantPhone || '' %>">
+            <input class="form-control" type="tel" name="ParticipantPhone" value="<%= profile.ParticipantPhone %>">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">School/Employer:</label>
+            <input class="form-control" type="text" name="ParticipantSchoolorEmployer" value="<%= profile.ParticipantSchoolorEmployer %>">
         </div>
 
         <div class="mb-3">
             <label class="form-label">Field of Interest:</label>
-            <input class="form-control" type="text" name="ParticipantFieldOfInterest" value="<%= profile.ParticipantFieldOfInterest || '' %>">
+            <input class="form-control" type="text" name="ParticipantFieldOfInterest" value="<%= profile.ParticipantFieldOfInterest %>">
         </div>
 
         <div class="mb-3">
             <label class="form-label">Profile Picture:</label>
             <input class="form-control" type="file" name="ProfilePicture">
+            <% if (profile.ProfilePicture) { %>
+                <img src="/uploads/<%= profile.ProfilePicture %>" class="img-thumbnail mt-2" width="150">
+                <% } %>
         </div>
 
         <button class="custom-btn" type="submit">Update Profile</button>
+
+        <% if (user.isManager && user.id !== profile.Participant_ID) { %>
+            <button formaction="/profile/delete" formmethod="POST" class="btn btn-danger mt-3" onclick="return confirm('Delete this user?');">
+                Delete User
+            </button>
+            <input type="hidden" name="Participant_ID" value="<%= profile.Participant_ID %>">
+            <% } %>
     </form>
 
     <!-- Milestones -->
@@ -59,10 +79,15 @@
                     <td>
                         <%= ms.MilestoneDate %>
                     </td>
+
                     <% if (user.isManager || user.id === profile.Participant_ID) { %>
                         <td>
-                            <button class="btn btn-sm btn-warning">Edit</button>
-                            <button class="btn btn-sm btn-danger">Delete</button>
+                            <a href="/milestone/edit/<%= ms.Milestone_ID %>" class="btn btn-sm btn-warning">Edit</a>
+
+                            <form action="/milestone/delete" method="POST" style="display:inline;">
+                                <input type="hidden" name="Milestone_ID" value="<%= ms.Milestone_ID %>">
+                                <button class="btn btn-sm btn-danger">Delete</button>
+                            </form>
                         </td>
                         <% } %>
                 </tr>
@@ -71,6 +96,8 @@
     </table>
 
     <% if (user.isManager || user.id === profile.Participant_ID) { %>
-        <a href="/add_milestone?participant_id=<%= profile.Participant_ID %>" class="btn custom-btn mt-3">Add Milestone</a>
+        <a href="/milestone/add/<%= profile.Participant_ID %>" class="btn custom-btn mt-3">
+           Add Milestone
+        </a>
         <% } %>
 </div>
