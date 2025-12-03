@@ -157,30 +157,35 @@ app.get('/dashboard', requireLogin, (req, res) => {
 // ===== Participants page (admin only) =====
 app.get('/participants', requireLogin, async (req, res) => {
     const user = req.session.user;
+
+    // Only admins can access
     if (!user || user.role !== 'admin') {
         return res.status(403).send('Access denied');
     }
 
     try {
-        // 1) Get all users from Users table
-        const users = await knex('Users').select('User_ID', 'FirstName', 'LastName');
+        // 1) Get all participants
+        const users = await knex('Participants')
+            .select('Participant_ID', 'ParticipantFirstName', 'ParticipantLastName');
 
-        // 2) Get participants who attended (RegistrationAttendedFlag = 'T') joining Registration -> Users
+        // 2) Get participants who attended (RegistrationAttendedFlag = 'T')
         const participants = await knex('Registration as r')
-            .join('Users as u', 'r.Participant_ID', 'u.User_ID')
-            .select('r.Participant_ID', 'u.FirstName', 'u.LastName')
+            .join('Participants as p', 'r.Participant_ID', 'p.Participant_ID')
+            .select('r.Participant_ID', 'p.ParticipantFirstName', 'p.ParticipantLastName')
             .where('r.RegistrationAttendedFlag', 'T');
 
-        const formattedUsers = users.map(u => ({
-            User_ID: u.User_ID,
-            name: `${u.FirstName} ${u.LastName}`
+        // Format for template
+        const formattedUsers = users.map(p => ({
+            Participant_ID: p.Participant_ID,
+            name: `${p.ParticipantFirstName} ${p.ParticipantLastName}`
         }));
 
         const formattedParticipants = participants.map(p => ({
             Participant_ID: p.Participant_ID,
-            name: `${p.FirstName} ${p.LastName}`
+            name: `${p.ParticipantFirstName} ${p.ParticipantLastName}`
         }));
 
+        // Render participants page with both lists
         res.render('participants', {
             user,
             users: formattedUsers,
@@ -191,6 +196,7 @@ app.get('/participants', requireLogin, async (req, res) => {
         res.status(500).send('Database error.');
     }
 });
+
 
 // ===== Profile Routes =====
 app.get('/profile/:id', requireLogin, async (req, res) => {
