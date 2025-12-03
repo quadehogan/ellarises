@@ -72,19 +72,22 @@
 
 <!-- Script -->
 <script>
-    // For manager: clicking a row fills the ID box
+    // Fill participant ID from table
     function chooseParticipant(id) {
         document.getElementById("participantID").value = id;
     }
 
-    // Search filtering
-    document.getElementById("searchInput") ? .addEventListener("input", function() {
-        const filter = this.value.toLowerCase();
-        const rows = document.querySelectorAll("#participantsTable tbody tr");
+    // Search participants
+    const searchInput = document.getElementById("searchInput");
+    if (searchInput) {
+        searchInput.addEventListener("input", function() {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll("#participantsTable tbody tr");
 
-        rows.forEach(row => {
-            const text = row.innerText.toLowerCase();
-            row.style.display = text.includes(filter) ? "" : "none";
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(filter) ? "" : "none";
+            });
         });
-    });
+    }
 </script>
