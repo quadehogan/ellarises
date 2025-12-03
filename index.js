@@ -26,14 +26,14 @@ app.use(session({
 
 ////////////////// KNEX SETUP //////////////////
 const knex = require("knex")({
-   client: "pg",
-   connection: {
-     host: process.env.DB_HOST,        
-     user: process.env.DB_USER,        
-     password: process.env.DB_PASSWORD, 
-     database: process.env.DB_NAME,    
-     port: Number(process.env.DB_PORT),         
-     ssl: process.env.DB_SSL ? {rejectUnauthorized: false} : false 
+    client: "pg",
+    connection: {
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        port: Number(process.env.DB_PORT),
+        ssl: process.env.DB_SSL ? { rejectUnauthorized: false } : false
     }
 });
 
@@ -70,7 +70,7 @@ app.get('/login', (req, res) => {
 });
 
 // Login handler (demo user: admin/admin)
-app.post('/login', async (req, res) => {
+app.post('/login', async(req, res) => {
     const { email, password } = req.body;
 
     try {
@@ -92,7 +92,7 @@ app.post('/login', async (req, res) => {
 
         // Save minimal info in session
         req.session.user = {
-            id: participant.ID,               // store ID for later
+            id: participant.ID, // store ID for later
             email: participant.Email,
             role: participant.ParticipantRole // save role for frequent access
         };
@@ -112,25 +112,25 @@ app.get('/logout', (req, res) => {
     });
 });
 
-app.get('/events_nonverified', async (req, res) => {
-  try {
-    const now = new Date();
+app.get('/events_nonverified', async(req, res) => {
+    try {
+        const now = new Date();
 
-    const events = await knex('EventOccurance as eo')
-      .join('EventTemplate as et', 'eo.Event_ID', 'et.Event_ID')
-      .select(
-        'et.EventName',
-        'et.EventDescription',
-        'eo.EventDateTimeStart'
-      )
-      .where('eo.EventDateTimeStart', '>', now)
-      .orderBy('eo.EventDateTimeStart', 'asc');
+        const events = await knex('EventOccurance as eo')
+            .join('EventTemplate as et', 'eo.Event_ID', 'et.Event_ID')
+            .select(
+                'et.EventName',
+                'et.EventDescription',
+                'eo.EventDateTimeStart'
+            )
+            .where('eo.EventDateTimeStart', '>', now)
+            .orderBy('eo.EventDateTimeStart', 'asc');
 
-    res.render('events_nonverified', { events });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Server Error');
-  }
+        res.render('events_nonverified', { events });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
 });
 
 
@@ -233,16 +233,130 @@ app.post('/profile/delete', requireLogin, async(req, res) => {
     res.redirect('/participants');
 });
 
-app.get('/events', requireLogin, (req, res) =>
-    res.render('events'));
+// ===== EVENTS ROUTE =====
+app.get('/events', async(req, res) => {
+    try {
+        // 1. Fetch all events from EventOccurrence
+        const events = await knex('EventOccurrence')
+            .select(
+                'Event_ID',
+                'EventName',
+                'EventType',
+                'EventDateTimeStart',
+                'EventLocation'
+            )
+            .orderBy('EventDateTimeStart', 'asc');
 
-app.get('/surveys', (req, res) =>
-    res.render('surveys'));
+        const now = new Date();
+
+        // 2. Split into upcoming and past events
+        const upcomingEvents = events.filter(e => new Date(e.EventDateTimeStart) >= now);
+        const pastEvents = events.filter(e => new Date(e.EventDateTimeStart) < now);
+
+        // 3. Render the events page
+        res.render('events', {
+            user: req.session.user,
+            upcomingEvents,
+            pastEvents
+        });
+
+    } catch (err) {
+        console.error('Knex Events route error:', err);
+        res.status(500).send('Error retrieving events');
+    }
+});
+
+
+
+// ===== SURVEYS ROUTE (Composite Key Version) =====
+app.get('/surveys/:eventId/:eventDateTimeStart', async(req, res) => {
+    const { eventId, eventDateTimeStart } = req.params;
+
+    try {
+        // 1. Fetch event info using composite key
+        const event = await knex("EventOccurrence")
+            .select("Event_ID", "EventName", "EventDateTimeStart")
+            .where({
+                Event_ID: eventId,
+                EventDateTimeStart: eventDateTimeStart
+            })
+            .first();
+
+        if (!event) {
+            return res.status(404).send("Event not found");
+        }
+
+        // 2. Fetch surveys for this event occurrence
+        const surveys = await knex("Surveys as s")
+            .join(
+                "Participants as p",
+                "s.Participant_ID",
+                "=",
+                "p.Participant_ID"
+            )
+            .select(
+                "s.*",
+                "p.ParticipantFirstName",
+                "p.ParticipantLastName"
+            )
+            .where({
+                "s.Event_ID": eventId,
+                "s.EventDateTimeStart": eventDateTimeStart
+            });
+
+        // 3. Compute averages
+        const averages = {
+            overall: 0,
+            satisfaction: 0,
+            usefulness: 0,
+            instructor: 0,
+            recommendation: 0
+        };
+
+        if (surveys.length > 0) {
+            const count = surveys.length;
+
+            averages.overall = (
+                surveys.reduce((t, r) => t + r.SurveyOverallScore, 0) / count
+            ).toFixed(2);
+
+            averages.satisfaction = (
+                surveys.reduce((t, r) => t + r.SurveySatisfactionScore, 0) / count
+            ).toFixed(2);
+
+            averages.usefulness = (
+                surveys.reduce((t, r) => t + r.SurveyUsefulnessScore, 0) / count
+            ).toFixed(2);
+
+            averages.instructor = (
+                surveys.reduce((t, r) => t + r.SurveyInstructorScore, 0) / count
+            ).toFixed(2);
+
+            averages.recommendation = (
+                surveys.reduce((t, r) => t + r.SurveyRecommendationScore, 0) / count
+            ).toFixed(2);
+        }
+
+        // 4. Render the survey page
+        res.render("surveys", {
+            event,
+            surveys,
+            averages,
+            user: req.session.user
+        });
+
+    } catch (err) {
+        console.error("Knex Surveys route error:", err);
+        res.status(500).send("Error retrieving surveys");
+    }
+});
+
+
 
 app.get('/milestones', (req, res) =>
     res.render('milestones'));
 
-app.get('/donations', requireLogin, async (req, res) => {
+app.get('/donations', requireLogin, async(req, res) => {
     const user = req.session.user; // Logged-in user
     let donations = [];
     let totalAmount = 0;
@@ -294,7 +408,7 @@ app.get('/add_events', requireLogin, (req, res) =>
     res.render('add_events'));
 
 // GET: Add Milestone Page
-app.get('/add_milestone', requireLogin, async (req, res) => {
+app.get('/add_milestone', requireLogin, async(req, res) => {
     const user = req.session.user;
 
     let participants = [];
@@ -596,7 +710,7 @@ app.post('/registration/update', async(req, res) => {
 });
 
 // POST: Submit Milestone
-app.post('/submit-milestone', requireLogin, async (req, res) => {
+app.post('/submit-milestone', requireLogin, async(req, res) => {
     const user = req.session.user;
 
     let { Participant_ID, MilestoneTitle, MilestoneDescription } = req.body;

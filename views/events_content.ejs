@@ -19,20 +19,33 @@
                         <th>Date</th>
                         <th>Location</th>
                         <th>Actions</th>
+                        <th>Survey</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Sample Event 1</td>
-                        <td>Workshop</td>
-                        <td>2025-12-10</td>
-                        <td>Room 101</td>
-                        <td>
-                            <button onclick="alert('Edit functionality coming soon')">Edit</button>
-                            <button onclick="alert('Delete functionality coming soon')">Delete</button>
-                        </td>
-                    </tr>
-                    <!-- Add more upcoming events here -->
+                    <% upcomingEvents.forEach(event => { %>
+                        <tr>
+                            <td>
+                                <%= event.EventName %>
+                            </td>
+                            <td>
+                                <%= event.EventType %>
+                            </td>
+                            <td>
+                                <%= new Date(event.EventDateTimeStart).toLocaleString() %>
+                            </td>
+                            <td>
+                                <%= event.EventLocation %>
+                            </td>
+                            <td>
+                                <button onclick="alert('Edit functionality coming soon')">Edit</button>
+                                <button onclick="alert('Delete functionality coming soon')">Delete</button>
+                            </td>
+                            <td>
+                                <a href="/surveys/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart.toISOString()) %>" class="custom-btn">Survey</a>
+                            </td>
+                        </tr>
+                        <% }) %>
                 </tbody>
             </table>
 
@@ -45,20 +58,33 @@
                         <th>Date</th>
                         <th>Location</th>
                         <th>Actions</th>
+                        <th>Survey</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Sample Event 0</td>
-                        <td>Seminar</td>
-                        <td>2025-10-01</td>
-                        <td>Room 202</td>
-                        <td>
-                            <button onclick="alert('Cannot edit past event')">Edit</button>
-                            <button onclick="alert('Cannot delete past event')">Delete</button>
-                        </td>
-                    </tr>
-                    <!-- Add more past events here -->
+                    <% pastEvents.forEach(event => { %>
+                        <tr>
+                            <td>
+                                <%= event.EventName %>
+                            </td>
+                            <td>
+                                <%= event.EventType %>
+                            </td>
+                            <td>
+                                <%= new Date(event.EventDateTimeStart).toLocaleString() %>
+                            </td>
+                            <td>
+                                <%= event.EventLocation %>
+                            </td>
+                            <td>
+                                <button onclick="alert('Cannot edit past event')">Edit</button>
+                                <button onclick="alert('Cannot delete past event')">Delete</button>
+                            </td>
+                            <td>
+                                <a href="/surveys/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart.toISOString()) %>" class="custom-btn">Survey</a>
+                            </td>
+                        </tr>
+                        <% }) %>
                 </tbody>
             </table>
         </div>
@@ -73,36 +99,29 @@
                             <th>Type</th>
                             <th>Date</th>
                             <th>Location</th>
-                            <th></th>
+                            <th>Survey</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Sample Event 1</td>
-                            <td>Workshop</td>
-                            <td>2025-12-10</td>
-                            <td>Room 101</td>
-                            <td>
-                                <form action="/register" method="POST">
-                                    <input type="hidden" name="Participant_ID" value="123">
-                                    <input type="hidden" name="Event_ID" value="45">
-                                    <input type="hidden" name="EventDateTimeStart" value="2025-12-10 10:00:00">
-
-                                    <button type="submit" class="btn btn-primary">Register</button>
-                                </form>
-
-                                <!-- Cancel -->
-                                <form action="/registration/update" method="POST">
-                                    <input type="hidden" name="Participant_ID" value="<%= reg.Participant_ID %>">
-                                    <input type="hidden" name="Event_ID" value="<%= reg.Event_ID %>">
-                                    <input type="hidden" name="EventDateTimeStart" value="<%= reg.EventDateTimeStart %>">
-                                    <input type="hidden" name="action" value="cancel">
-                                    <button class="btn btn-warning btn-sm" type="submit">Cancel</button>
-                                </form>
-
-                            </td>
-                        </tr>
-                        <!-- Add more upcoming events here -->
+                        <% upcomingEvents.forEach(event => { %>
+                            <tr>
+                                <td>
+                                    <%= event.EventName %>
+                                </td>
+                                <td>
+                                    <%= event.EventType %>
+                                </td>
+                                <td>
+                                    <%= new Date(event.EventDateTimeStart).toLocaleString() %>
+                                </td>
+                                <td>
+                                    <%= event.EventLocation %>
+                                </td>
+                                <td>
+                                    <a href="/surveys/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart.toISOString()) %>" class="custom-btn">Survey</a>
+                                </td>
+                            </tr>
+                            <% }) %>
                     </tbody>
                 </table>
 
@@ -114,16 +133,29 @@
                             <th>Type</th>
                             <th>Date</th>
                             <th>Location</th>
+                            <th>Survey</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Sample Event 0</td>
-                            <td>Seminar</td>
-                            <td>2025-10-01</td>
-                            <td>Room 202</td>
-                        </tr>
-                        <!-- Add more past events here -->
+                        <% pastEvents.forEach(event => { %>
+                            <tr>
+                                <td>
+                                    <%= event.EventName %>
+                                </td>
+                                <td>
+                                    <%= event.EventType %>
+                                </td>
+                                <td>
+                                    <%= new Date(event.EventDateTimeStart).toLocaleString() %>
+                                </td>
+                                <td>
+                                    <%= event.EventLocation %>
+                                </td>
+                                <td>
+                                    <a href="/surveys/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart.toISOString()) %>" class="custom-btn">Survey</a>
+                                </td>
+                            </tr>
+                            <% }) %>
                     </tbody>
                 </table>
             </div>

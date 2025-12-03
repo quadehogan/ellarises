@@ -1,22 +1,27 @@
-<div class="container mt-5">
+<div class="survey-page">
+
     <!-- Event Header -->
-    <h2>
-        <%= event.EventName %> — Surveys</h2>
-    <p class="text-muted">
+    <h1>
+        <%= event.EventName %>
+    </h1>
+    <p class="event-date">
         <strong>Date:</strong>
-        <%= event.EventDateTimeStart.toLocaleString() %><br>
-            <strong>Overall Score:</strong>
-            <%= averages.overall %>
+        <%= new Date(event.EventDateTimeStart).toLocaleString() %>
     </p>
 
+    <!-- Overall Score -->
+    <h2>Overall Score:
+        <%= averages.overall %>
+    </h2>
+
     <!-- Averages Table -->
-    <table class="table table-bordered mt-4">
+    <table class="averages-table">
         <thead>
             <tr>
-                <th>Satisfaction score</th>
-                <th>Usefulness score</th>
-                <th>Instructor score</th>
-                <th>Recommendation score</th>
+                <th>Satisfaction</th>
+                <th>Usefulness</th>
+                <th>Instructor</th>
+                <th>Recommendation</th>
             </tr>
         </thead>
         <tbody>
@@ -37,83 +42,85 @@
         </tbody>
     </table>
 
-    <!-- Survey Cards -->
-    <div class="row mt-4">
+    <hr>
+
+    <h2>Survey Submissions</h2>
+
+    <div class="survey-cards-container">
 
         <% surveys.forEach(s => { %>
-            <div class="col-md-4 mb-4">
-                <div class="card survey-card" data-satisfaction="<%= s.SurveySatisfactionScore %>" data-usefulness="<%= s.SurveyUsefulnessScore %>" data-instructor="<%= s.SurveyInstructorScore %>" data-recommendation="<%= s.SurveyRecommendationScore %>" data-comments="<%= s.SurveyComments %>"
-                    data-date="<%= s.SurveySubmissionDate.toLocaleString() %>">
-
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <%= s.ParticipantFirstName %>
-                                <%= s.ParticipantLastName %>
-                        </h5>
-                        <p class="card-text">
-                            <strong>Overall Score:</strong>
-                            <%= s.SurveyOverallScore %><br>
-                                <strong>NPS Bucket:</strong>
-                                <%= s.SurveyNPSBucket %>
-                        </p>
-                    </div>
-                </div>
+            <div class="survey-card" data-satisfaction="<%= s.SurveySatisfactionScore %>" data-usefulness="<%= s.SurveyUsefulnessScore %>" data-instructor="<%= s.SurveyInstructorScore %>" data-recommendation="<%= s.SurveyRecommendationScore %>" data-comments="<%= s.SurveyComments || 'No comments' %>"
+                data-date="<%= new Date(s.SurveySubmissionDate).toLocaleString() %>">
+                <h3>
+                    <%= s.ParticipantFirstName %>
+                        <%= s.ParticipantLastName %>
+                </h3>
+                <p><strong>Overall Score:</strong>
+                    <%= s.SurveyOverallScore %>
+                </p>
+                <p><strong>NPS Bucket:</strong>
+                    <%= s.SurveyNPSBucket %>
+                </p>
             </div>
             <% }) %>
 
     </div>
+
 </div>
 
-<!-- Hover Popup Styles -->
+<!-- Popup tooltip on hover -->
 <style>
     .survey-card {
+        background: #ffffff;
+        padding: 16px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+        width: 240px;
+        display: inline-block;
+        margin: 10px;
         position: relative;
+        transition: transform 0.15s ease-in-out;
         cursor: pointer;
-        transition: box-shadow 0.2s ease-in-out;
     }
     
     .survey-card:hover {
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        transform: translateY(-3px);
     }
     
-    .survey-tooltip {
-        position: absolute;
-        z-index: 999;
-        background: white;
-        padding: 12px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        width: 260px;
-        font-size: 0.9rem;
+    .tooltip-box {
         display: none;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        position: absolute;
+        top: 105%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #f9f9f9;
+        padding: 12px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        width: 260px;
+        z-index: 10;
+    }
+    
+    .survey-card:hover .tooltip-box {
+        display: block;
     }
 </style>
 
-<!-- Hover Details Script -->
 <script>
     document.querySelectorAll('.survey-card').forEach(card => {
+        // Build the tooltip dynamically
         const tooltip = document.createElement('div');
-        tooltip.className = 'survey-tooltip';
-        tooltip.innerHTML = `
-            <strong>Satisfaction:</strong> ${card.dataset.satisfaction}<br>
-            <strong>Usefulness:</strong> ${card.dataset.usefulness}<br>
-            <strong>Instructor:</strong> ${card.dataset.instructor}<br>
-            <strong>Recommendation:</strong> ${card.dataset.recommendation}<br>
-            <strong>Comments:</strong> ${card.dataset.comments || 'None'}<br>
-            <strong>Submission Date:</strong> ${card.dataset.date}
-        `;
-        card.appendChild(tooltip);
+        tooltip.classList.add('tooltip-box');
 
-        card.addEventListener('mouseenter', () => {
-            tooltip.style.display = 'block';
-        });
-        card.addEventListener('mouseleave', () => {
-            tooltip.style.display = 'none';
-        });
-        card.addEventListener('mousemove', (e) => {
-            tooltip.style.left = (e.offsetX + 20) + 'px';
-            tooltip.style.top = (e.offsetY + 20) + 'px';
-        });
+        tooltip.innerHTML = `
+        <strong>Satisfaction:</strong> ${card.dataset.satisfaction}<br>
+        <strong>Usefulness:</strong> ${card.dataset.usefulness}<br>
+        <strong>Instructor:</strong> ${card.dataset.instructor}<br>
+        <strong>Recommendation:</strong> ${card.dataset.recommendation}<br>
+        <strong>Comments:</strong> ${card.dataset.comments}<br>
+        <strong>Submitted:</strong> ${card.dataset.date}
+    `;
+
+        card.appendChild(tooltip);
     });
 </script>

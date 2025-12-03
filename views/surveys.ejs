@@ -1,8 +1,4 @@
 <%- include('layout', {
-    title: 'Event Surveys',
-    body: include('surveys_content', {
-        event: event,
-        averages: averages,
-        surveys: surveys
-    })
+    title: 'Surveys',
+    body: include('surveys_content', { event, surveys, averages, user: user })
 }) %>
