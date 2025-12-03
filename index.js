@@ -350,9 +350,17 @@ app.get('/surveys/:eventId/:eventDateTimeStart', async (req, res) => {
     const { eventId, eventDateTimeStart } = req.params;
 
     try {
-        const event = await knex('EventOccurrence')
-            .select('Event_ID', 'EventName', 'EventDateTimeStart')
-            .where({ Event_ID: eventId, EventDateTimeStart: eventDateTimeStart })
+        const event = await knex('EventOccurrence as eo')
+            .join('EventTemplate as et', 'eo.Event_ID', 'et.Event_ID')
+            .select(
+                'eo.Event_ID',
+                'eo.EventDateTimeStart',
+                'et.EventName'      // <-- pulled from EventTemplate
+            )
+            .where({
+                'eo.Event_ID': eventId,
+                'eo.EventDateTimeStart': eventDateTimeStart
+            })
             .first();
 
         if (!event) return res.status(404).send('Event not found');
