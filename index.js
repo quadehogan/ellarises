@@ -161,10 +161,10 @@ app.get('/dashboard', requireLogin, async (req, res) => {
                 'm.Participant_ID',
                 'p.ParticipantFirstName',
                 'p.ParticipantLastName',
-                'm.MilestoneTitles',
-                'm.MilestoneDates'
+                'm.MilestoneTitle',
+                'm.MilestoneDate'
             )
-            .orderBy('m.MilestoneDates', 'desc');
+            .orderBy('m.MilestoneDate', 'desc');
 
         res.render('dashboard', {
             user,
