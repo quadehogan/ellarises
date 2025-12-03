@@ -148,7 +148,6 @@ app.get('/events', async (req, res) => {
     }
 });
 
-
 // Dashboard (requires login)
 app.get('/dashboard', requireLogin, async (req, res) => {
     const user = req.session.user;

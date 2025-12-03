@@ -1,8 +1,7 @@
 <div class="container mt-5">
-
   <h2 class="mb-4 text-center">Events</h2>
 
-  <% if (upcomingEvents && upcomingEvents.length > 0) { %>
+  <% if ((upcomingEvents && upcomingEvents.length > 0) || (pastEvents && pastEvents.length > 0)) { %>
     
     <!-- Search bar -->
     <div class="mb-3">
@@ -10,42 +9,44 @@
     </div>
 
     <!-- Upcoming Events Table -->
-    <h4 class="mb-2">Upcoming Events</h4>
-    <div style="max-height: 400px; overflow-y: auto;">
-      <table class="table table-striped table-bordered" id="eventTable">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Date</th>
-            <th>Location</th>
-            <% if (user && user.username === 'admin') { %>
-              <th>Actions</th>
-            <% } %>
-            <th>Survey</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% upcomingEvents.forEach(event => { %>
+    <% if (upcomingEvents && upcomingEvents.length > 0) { %>
+      <h4 class="mb-2">Upcoming Events</h4>
+      <div style="max-height: 400px; overflow-y: auto;">
+        <table class="table table-striped table-bordered" id="eventTable">
+          <thead>
             <tr>
-              <td><%= event.EventName %></td>
-              <td><%= event.EventType %></td>
-              <td><%= new Date(event.EventDateTimeStart).toLocaleString() %></td>
-              <td><%= event.EventLocation %></td>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Date</th>
+              <th>Location</th>
               <% if (user && user.username === 'admin') { %>
-              <td>
-                <button onclick="alert('Edit functionality coming soon')">Edit</button>
-                <button onclick="alert('Delete functionality coming soon')">Delete</button>
-              </td>
+                <th>Actions</th>
               <% } %>
-              <td>
-                <a href="/surveys/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart.toISOString()) %>" class="custom-btn">Survey</a>
-              </td>
+              <th>Survey</th>
             </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            <% upcomingEvents.forEach(event => { %>
+              <tr>
+                <td><%= event.EventName %></td>
+                <td><%= event.EventType %></td>
+                <td><%= new Date(event.EventDateTimeStart).toLocaleString() %></td>
+                <td><%= event.EventLocation %></td>
+                <% if (user && user.username === 'admin') { %>
+                <td>
+                  <button onclick="alert('Edit coming soon')">Edit</button>
+                  <button onclick="alert('Delete coming soon')">Delete</button>
+                </td>
+                <% } %>
+                <td>
+                  <a href="/surveys/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart.toISOString()) %>" class="custom-btn">Survey</a>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
 
     <!-- Past Events Table -->
     <% if (pastEvents && pastEvents.length > 0) { %>
@@ -92,7 +93,6 @@
   <% } %>
 </div>
 
-<!-- Client-side search script -->
 <script>
   const eventSearchInput = document.getElementById('eventSearchInput');
   if (eventSearchInput) {
@@ -100,7 +100,6 @@
       const filter = this.value.toLowerCase();
       const rows = document.querySelectorAll('#eventTable tbody tr');
       const pastRows = document.querySelectorAll('#pastEventTable tbody tr');
-
       [...rows, ...pastRows].forEach(row => {
         const text = row.textContent.toLowerCase();
         row.style.display = text.includes(filter) ? '' : 'none';
@@ -108,3 +107,4 @@
     });
   }
 </script>
+
