@@ -9,26 +9,23 @@
             <!-- NOT LOGGED IN -->
             <a href="/enroll">Enroll</a>
             <a href="/login">Login</a>
-            <!-- Events always visible -->
             <a href="/events_nonverified">Events</a>
 
         <% } else { %>
             <!-- LOGGED IN USER -->
 
-            <% if (user.ParticipantRole === "participant") { %>
+            <% if (user.role === "participant") { %>
                 <!-- PARTICIPANT ROLE -->
                 <a href="/donations">Donations</a>
-                <a href="/profile/<%= user.Participant_ID %>">Profile</a>
-                <!-- Events always visible -->
+                <a href="/profile/<%= user.id %>">Profile</a>
                 <a href="/events">Events</a>
 
-            <% } else if (user.ParticipantRole === "admin") { %>
+            <% } else if (user.role === "admin") { %>
                 <!-- ADMIN ROLE -->
                 <a href="/donations">Donations</a>
                 <a href="/participants">Participants</a>
                 <a href="/dashboard">Dashboard</a>
                 <a href="/create-user">Create User</a>
-                <!-- Events always visible -->
                 <a href="/events">Events</a>
             <% } %>
 
