@@ -37,16 +37,38 @@
   let slideIndex = 0;
   const slides = document.querySelectorAll('.slide');
 
+  // Preload images
+  slides.forEach(slide => {
+    const img = slide.querySelector('img');
+    if (img) {
+      const image = new Image();
+      image.src = img.src;
+    }
+  });
+
   function showSlides() {
-    slides.forEach(slide => slide.style.display = "none");
-    slideIndex++;
-    if (slideIndex > slides.length) { slideIndex = 1 }
-    slides[slideIndex - 1].style.display = "block";
-    setTimeout(showSlides, 10000); // rotate every 10 seconds
+    const previousIndex = slideIndex;
+    slideIndex = (slideIndex + 1) % slides.length;
+
+    const currentSlide = slides[slideIndex];
+    const previousSlide = slides[previousIndex];
+
+    // Fade in current slide
+    currentSlide.classList.add('active');
+
+    // Fade out previous slide after delay to overlap
+    if (previousSlide && previousSlide !== currentSlide) {
+      setTimeout(() => {
+        previousSlide.classList.remove('active');
+      }, 500); // overlap 0.5s
+    }
+
+    setTimeout(showSlides, 10000); // 10-second interval
   }
 
-  showSlides();
+  window.addEventListener('load', showSlides);
 </script>
+
 
 <!-- Mission + Stats Section -->
 <div class="section section-mission-stats">
