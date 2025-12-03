@@ -76,7 +76,7 @@ app.post('/login', async (req, res) => {
     try {
         // Look up participant by email
         const participant = await knex('participants')
-            .where({ Email: email })
+            .where({ ParticipantEmail: email })
             .first();
 
         if (!participant) {
@@ -86,14 +86,14 @@ app.post('/login', async (req, res) => {
 
         // Check password
         // If you store hashed passwords, use bcrypt.compare(password, participant.Password)
-        if (participant.Password !== password) {
+        if (participant.ParticipantPassword !== password) {
             return res.render('login', { error: 'Invalid login' });
         }
 
         // Save minimal info in session
         req.session.user = {
-            id: participant.ID,               // store ID for later
-            email: participant.Email,
+            id: participant.Participant_ID,               // store ID for later
+            email: participant.ParticipantEmail,
             role: participant.ParticipantRole // save role for frequent access
         };
 
