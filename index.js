@@ -115,23 +115,39 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// Events (non-verified upcoming)
-app.get('/events_nonverified', async (req, res) => {
+// ===== Events route (public but shows user if logged in) =====
+app.get('/events', async (req, res) => {
     try {
         const now = new Date();
 
+        // Join EventOccurrence with EventTemplates to get full event info
         const events = await knex('EventOccurrence as eo')
             .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
-            .select('et.EventName', 'et.EventDescription', 'eo.EventDateTimeStart')
-            .where('eo.EventDateTimeStart', '>', now)
+            .select(
+                'et.Event_ID',
+                'et.EventName',
+                'et.EventDescription',
+                'et.EventType',
+                'eo.EventDateTimeStart',
+                'eo.EventLocation'
+            )
             .orderBy('eo.EventDateTimeStart', 'asc');
 
-        res.render('events_nonverified', { events });
+        // Separate upcoming vs past events
+        const upcomingEvents = events.filter(e => new Date(e.EventDateTimeStart) >= now);
+        const pastEvents = events.filter(e => new Date(e.EventDateTimeStart) < now);
+
+        res.render('events', {
+            user: req.session.user,
+            upcomingEvents,
+            pastEvents
+        });
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+        console.error('Knex Events route error:', err);
+        res.status(500).send('Error retrieving events');
     }
 });
+
 
 // Dashboard (requires login)
 app.get('/dashboard', requireLogin, (req, res) => {

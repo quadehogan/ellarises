@@ -80,21 +80,36 @@
     <div class="card-overlay"></div>
     <div class="card-content">
       <h3>Milestones</h3>
-      <a href="#" class="custom-btn">Learn More</a>
+      <a 
+        href="<%= user ? (user.role === 'admin' ? '/dashboard' : '/profile/' + user.id) : '/login' %>" 
+        class="custom-btn"
+      >
+        Learn More
+      </a>
     </div>
   </div>
   <div class="card card2">
     <div class="card-overlay"></div>
     <div class="card-content">
       <h3>Upcoming Events</h3>
-      <a href="#" class="custom-btn">Learn More</a>
+      <a 
+        href="<%= user ? '/events' : '/events_nonverified' %>" 
+        class="custom-btn"
+      >
+        Learn More
+      </a>
     </div>
   </div>
   <div class="card card3">
     <div class="card-overlay"></div>
     <div class="card-content">
       <h3>Get Involved</h3>
-      <a href="#" class="custom-btn">Learn More</a>
+      <a 
+        href="<%= user ? '/donations' : '/enroll' %>" 
+        class="custom-btn"
+      >
+        Learn More
+      </a>
     </div>
   </div>
 </div>
