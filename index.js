@@ -351,7 +351,7 @@ app.get('/surveys/:eventId/:eventDateTimeStart', async (req, res) => {
 
     try {
         const event = await knex('EventOccurrence as eo')
-            .join('EventTemplate as et', 'eo.Event_ID', 'et.Event_ID')
+            .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
             .select(
                 'eo.Event_ID',
                 'eo.EventDateTimeStart',
