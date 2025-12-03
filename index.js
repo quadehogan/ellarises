@@ -175,7 +175,6 @@ app.get('/dashboard', requireLogin, async (req, res) => {
     }
 });
 
-
 // ===== Participants page (admin only) =====
 app.get('/participants', requireLogin, async (req, res) => {
     const user = req.session.user;
@@ -187,37 +186,63 @@ app.get('/participants', requireLogin, async (req, res) => {
 
     try {
         // 1) Get all participants
-        const users = await knex('Participants')
-            .select('Participant_ID', 'ParticipantFirstName', 'ParticipantLastName');
+        const usersRaw = await knex('Participants')
+            .select('Participant_ID', 'ParticipantFirstName', 'ParticipantLastName', 'ParticipantEmail', 'ParticipantPhone');
 
         // 2) Get participants who attended (RegistrationAttendedFlag = 'T')
-        const participants = await knex('Registration as r')
+        const participantsRaw = await knex('Registration as r')
             .join('Participants as p', 'r.Participant_ID', 'p.Participant_ID')
-            .select('r.Participant_ID', 'p.ParticipantFirstName', 'p.ParticipantLastName')
+            .select(
+                'r.Participant_ID',
+                'p.ParticipantFirstName',
+                'p.ParticipantLastName',
+                'p.ParticipantEmail',
+                'p.ParticipantPhone'
+            )
             .where('r.RegistrationAttendedFlag', 'T');
 
-        // Format for template
-        const formattedUsers = users.map(p => ({
+        // Deduplicate by email for each list
+        const uniqueByEmail = (arr) => {
+            const seen = new Set();
+            return arr.filter(p => {
+                if (!seen.has(p.ParticipantEmail)) {
+                    seen.add(p.ParticipantEmail);
+                    return true;
+                }
+                return false;
+            });
+        };
+
+        const users = uniqueByEmail(usersRaw).map(p => ({
             Participant_ID: p.Participant_ID,
-            name: `${p.ParticipantFirstName} ${p.ParticipantLastName}`
+            firstName: p.ParticipantFirstName,
+            lastName: p.ParticipantLastName,
+            email: p.ParticipantEmail,
+            phone: p.ParticipantPhone
         }));
 
-        const formattedParticipants = participants.map(p => ({
+        const participants = uniqueByEmail(participantsRaw).map(p => ({
             Participant_ID: p.Participant_ID,
-            name: `${p.ParticipantFirstName} ${p.ParticipantLastName}`
+            firstName: p.ParticipantFirstName,
+            lastName: p.ParticipantLastName,
+            email: p.ParticipantEmail,
+            phone: p.ParticipantPhone
         }));
 
         // Render participants page with both lists
         res.render('participants', {
             user,
-            users: formattedUsers,
-            participants: formattedParticipants
+            users,
+            participants
         });
+
     } catch (err) {
         console.error('Error loading participants:', err);
         res.status(500).send('Database error.');
     }
 });
+
+
 
 
 // ===== Profile Routes =====
