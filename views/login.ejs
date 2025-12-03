@@ -1,7 +1,7 @@
-<%- include('layout', { title: 'Login' }) %>
+<%- include('layout', { 
+    title: 'Login', 
+    body: include('login_content', { error: error, user: user }) 
+}) %>
 
-<main>
-    <%- include('login_content', { error: error, user: user }) %>
-</main>
 
 

@@ -1,5 +1,5 @@
-<%- include('layout', { title: 'Add Milestone' }) %>
+<%- include('layout', { 
+    title: 'Add Milestone', 
+    body: include('add_milestone_content', { user: user, participants: participants }) 
+}) %>
 
-<main>
-    <%- include('add_milestone_content', { user: user, participants: participants }) %>
-</main>

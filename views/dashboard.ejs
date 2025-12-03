@@ -1,8 +1,8 @@
-<%- include('layout', { title: 'Dashboard' }) %>
+<%- include('layout', { 
+    title: 'Dashboard', 
+    body: include('dashboard_content', { user: user, milestones: milestones }) 
+}) %>
 
-<main>
-    <%- include('dashboard_content', { user: user, milestones: milestones }) %>
-</main>
 
 
 

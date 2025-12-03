@@ -1,6 +1,4 @@
-<%- include('layout', { title: 'Registrations' }) %>
-
-<main>
-    <%- include('registrations_content', { user: user }) %>
-</main>
-
+<%- include('layout', { 
+    title: 'Registrations', 
+    body: include('registrations_content', { user: user }) 
+}) %>
