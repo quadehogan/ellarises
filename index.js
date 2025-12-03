@@ -25,11 +25,6 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'tempsecret',
     resave: false,
     saveUninitialized: false, // do not save empty sessions
-    cookie: {
-        maxAge: 24 * 60 * 60 * 1000,            // 1 day
-        secure: process.env.NODE_ENV === 'production', // set true in production w/ HTTPS
-        sameSite: 'lax'
-    }
 }));
 
 // Serve static files
