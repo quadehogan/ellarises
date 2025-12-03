@@ -182,7 +182,7 @@ app.get('/participants', requireLogin, async (req, res) => {
 });
 
 // ===== Profile Routes =====
-app.get('/profile/:id?', requireLogin, async (req, res) => {
+app.get('/profile/:id', requireLogin, async (req, res) => {
     try {
         // If id param provided use it, otherwise use current user's id
         const id = req.params.id || req.session.user.id;
