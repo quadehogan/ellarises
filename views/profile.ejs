@@ -1,4 +1,5 @@
-<%- include('layout', {
-    title: 'Profile',
-    body: include('profile_content', { user: user, profile: profile, milestones: milestones })
-}) %>
+<%- include('layout', { title: 'Profile' }) %>
+
+<main>
+    <%- include('profile_content', { user: user, profile: profile, milestones: milestones }) %>
+</main>

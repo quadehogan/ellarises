@@ -1,5 +1,7 @@
-<%- include('layout', {
-    title: 'Donations',
-    body: include('donations_content', { user, donations, totalAmount })
-}) %>
+<%- include('layout', { title: 'Donations' }) %>
+
+<main>
+    <%- include('donations_content', { user: user, donations: donations, totalAmount: totalAmount }) %>
+</main>
+
 
