@@ -125,6 +125,8 @@ app.get('/events', requireLogin, async(req, res) => {
     }
 
     try {
+        const now = new Date();
+
         const events = await knex('EventOccurrence as eo')
             .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
             .select(
@@ -136,10 +138,15 @@ app.get('/events', requireLogin, async(req, res) => {
             )
             .orderBy('eo.EventDateTimeStart', 'asc');
 
+        const upcomingEvents = events.filter(e => new Date(e.EventDateTimeStart) >= now);
+        const pastEvents = events.filter(e => new Date(e.EventDateTimeStart) < now);
+
         res.render('events', {
             user: req.session.user,
-            events
+            upcomingEvents,
+            pastEvents
         });
+
     } catch (err) {
         console.error("Admin events error:", err);
         res.status(500).send("Error retrieving events");
@@ -956,41 +963,41 @@ app.post('/submit-milestone', requireLogin, async(req, res) => {
 
 // ===== ALL DELETE ROUTES =====
 // Soft delete / anonymize a participant via POST
-app.post('/participant/:id/delete', async (req, res) => {
-  const participantId = req.params.id;
+app.post('/participant/:id/delete', async(req, res) => {
+    const participantId = req.params.id;
 
-  try {
-    const updated = await knex('Participants')
-      .where({ Participant_ID: participantId })
-      .update({
-        ParticipantEmail: null,
-        ParticipantPassword: null,
-        ParticipantFirstName: null,
-        ParticipantLastName: null,
-        ParticipantDOB: null,
-        ParticipantRole: null,
-        ParticipantPhone: null,
-        ParticipantCity: null,
-        ParticipantState: null,
-        ParticipantZIP: null,
-        ParticipantSchoolorEmployer: null,
-        ParticipantFieldOfInterest: null
-      });
+    try {
+        const updated = await knex('Participants')
+            .where({ Participant_ID: participantId })
+            .update({
+                ParticipantEmail: null,
+                ParticipantPassword: null,
+                ParticipantFirstName: null,
+                ParticipantLastName: null,
+                ParticipantDOB: null,
+                ParticipantRole: null,
+                ParticipantPhone: null,
+                ParticipantCity: null,
+                ParticipantState: null,
+                ParticipantZIP: null,
+                ParticipantSchoolorEmployer: null,
+                ParticipantFieldOfInterest: null
+            });
 
-    if (updated) {
-      res.redirect('/participants'); // redirect back to the page
-    } else {
-      res.status(404).send('Participant not found.');
+        if (updated) {
+            res.redirect('/participants'); // redirect back to the page
+        } else {
+            res.status(404).send('Participant not found.');
+        }
+    } catch (err) {
+        console.error('Error anonymizing participant:', err);
+        res.status(500).send('Internal server error.');
     }
-  } catch (err) {
-    console.error('Error anonymizing participant:', err);
-    res.status(500).send('Internal server error.');
-  }
 });
 
 // Delete a specific donation by Donation_ID
-app.post('/donation/:id/delete', async (req, res) => {
-  const donationId = req.params.id;
+app.post('/donation/:id/delete', async(req, res) => {
+    const donationId = req.params.id;
 
     try {
         const deleted = await knex('Donations')
@@ -1009,8 +1016,8 @@ app.post('/donation/:id/delete', async (req, res) => {
 });
 
 // Delete a specific EventOccurrence by composite key
-app.post('/event-occurrence/:eventId/:startTime/delete', async (req, res) => {
-  const { eventId, startTime } = req.params;
+app.post('/event-occurrence/:eventId/:startTime/delete', async(req, res) => {
+    const { eventId, startTime } = req.params;
 
     try {
         const deleted = await knex('EventOccurrence')
@@ -1032,8 +1039,8 @@ app.post('/event-occurrence/:eventId/:startTime/delete', async (req, res) => {
 });
 
 // Delete a specific Milestone by composite key
-app.post('/milestone/:participantId/:title/delete', async (req, res) => {
-  const { participantId, title } = req.params;
+app.post('/milestone/:participantId/:title/delete', async(req, res) => {
+    const { participantId, title } = req.params;
 
     try {
         const deleted = await knex('Milestones')
@@ -1055,8 +1062,8 @@ app.post('/milestone/:participantId/:title/delete', async (req, res) => {
 });
 
 // Delete a specific Registration by composite key
-app.post('/registration/:participantId/:eventId/:startTime/delete', async (req, res) => {
-  const { participantId, eventId, startTime } = req.params;
+app.post('/registration/:participantId/:eventId/:startTime/delete', async(req, res) => {
+    const { participantId, eventId, startTime } = req.params;
 
     try {
         const deleted = await knex('Registration')
@@ -1079,8 +1086,8 @@ app.post('/registration/:participantId/:eventId/:startTime/delete', async (req, 
 });
 
 // Delete a specific Survey by composite key
-app.post('/survey/:participantId/:eventId/:startTime/delete', async (req, res) => {
-  const { participantId, eventId, startTime } = req.params;
+app.post('/survey/:participantId/:eventId/:startTime/delete', async(req, res) => {
+    const { participantId, eventId, startTime } = req.params;
 
     try {
         const deleted = await knex('Surveys')
