@@ -115,7 +115,7 @@ app.get('/logout', (req, res) => {
     });
 });
 
-app.get('/manage', requireLogin, (req, res) => {
+app.get('/manage_dashboard', requireLogin, (req, res) => {
     if (req.session.user.role !== 'admin') {
         return res.redirect('/dashboard');
     }
