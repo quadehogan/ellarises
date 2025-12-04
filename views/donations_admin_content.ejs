@@ -1,10 +1,12 @@
 <div class="container mt-5">
+
     <h2 class="mb-4 text-center">All Donations</h2>
 
     <% if (donations && donations.length > 0) { %>
 
+        <!-- Search bar -->
         <div class="mb-3">
-            <input type="text" id="donationSearchInput" class="form-control" placeholder="Search donations...">
+            <input type="text" id="donationSearchInput" class="form-control" placeholder="Search by any field">
         </div>
 
         <div style="max-height: 400px; overflow-y: auto;">
@@ -12,16 +14,21 @@
                 <thead>
                     <tr>
                         <th>Donation ID</th>
-                        <th>Participant</th>
+                        <th>Participant ID</th>
+                        <th>Donor Name</th>
                         <th>Amount</th>
                         <th>Date</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     <% donations.forEach(d => { %>
                         <tr>
                             <td>
                                 <%= d.Donation_ID %>
+                            </td>
+                            <td>
+                                <%= d.Participant_ID %>
                             </td>
                             <td>
                                 <%= d.ParticipantFirstName %>
@@ -34,7 +41,7 @@
                                 <%= d.DonationDate %>
                             </td>
                         </tr>
-                        <% }); %>
+                        <% }) %>
                 </tbody>
             </table>
         </div>
