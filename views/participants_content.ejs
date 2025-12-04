@@ -22,8 +22,8 @@
         </tr>
       </thead>
       <tbody>
-        <% if (participants && participants.length > 0) { %>
-          <% participants.forEach(p => { %>
+        <% if (participantsRaw && participantsRaw.length > 0) { %>
+          <% participantsRaw.forEach(p => { %>
             <tr>
               <td><%= p.firstName %></td>
               <td><%= p.lastName %></td>
@@ -49,7 +49,7 @@
     </table>
   </div>
 
-  <p><strong>Total Participants:</strong> <%= participants.length %></p>
+  <p><strong>Total Participants:</strong> <%= participantsRaw.length %></p>
 
   <!-- USERS SECTION -->
   <h2 class="mb-2 mt-4">All Users</h2>
