@@ -18,7 +18,7 @@
                 <!-- PARTICIPANT ROLE -->
                 <a href="/donations">Donations</a>
                 <a href="/profile/<%= user.id %>">Profile</a>
-                <a href="/events">Events</a>
+                <a href="/events_user/<%= user.id %>">Events</a>
 
             <% } else if (user.role === "admin") { %>
                 <!-- ADMIN ROLE -->
