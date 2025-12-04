@@ -702,7 +702,7 @@ app.post('/enroll', async (req, res) => {
             ParticipantCity: data.ParticipantCity,
             ParticipantState: data.ParticipantState,
             ParticipantZip: data.ParticipantZip,
-            ParticipantSchoolOrEmployer: data.ParticipantSchoolOrEmployer,
+            ParticipantSchoolorEmployer: data.ParticipantSchoolOrEmployer,
             ParticipantFieldOfInterest: data.ParticipantFieldOfInterest
         });
 
@@ -743,7 +743,7 @@ app.post('/create-user-submit', requireLogin, async (req, res) => {
             ParticipantCity: body.ParticipantCity,
             ParticipantState: body.ParticipantState,
             ParticipantZip: body.ParticipantZip,
-            ParticipantSchoolOrEmployer: body.ParticipantSchoolOrEmployer,
+            ParticipantSchoolorEmployer: body.ParticipantSchoolOrEmployer,
             ParticipantFieldOfInterest: body.ParticipantFieldOfInterest,
             CreatedAt: knex.fn.now()
         });
