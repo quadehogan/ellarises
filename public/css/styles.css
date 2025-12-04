@@ -375,3 +375,11 @@ main {
   width: 100% !important;
   height: auto !important;
 }
+
+.footer-logo {
+    width: 60px;
+    height: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
