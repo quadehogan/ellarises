@@ -77,7 +77,7 @@
                 <button class="custom-btn" onclick="window.location.href='/edit-user/<%= u.Participant_ID %>'">Edit</button>
               </td>
               <td>
-                <form action="/participant/<%= p.Participant_ID %>" method="POST" onsubmit="return confirm('Are you sure?');">
+                <form action="/participant/<%= u.Participant_ID %>" method="POST" onsubmit="return confirm('Are you sure?');">
                   <input type="hidden" name="_method" value="DELETE">
                   <button type="submit" class="custom-btn">Delete</button>
                 </form>
