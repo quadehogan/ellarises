@@ -1065,6 +1065,11 @@ app.post('/donation/:id/delete', async (req, res) => {
 
     if (deleted) {
       res.status(200).json({ message: 'Donation deleted successfully.' });
+      if (user.role === 'admin') {
+        res.redirect('/donations_admin');
+      } else {
+        res.redirect('/donations_user');
+      }
     } else {
       res.status(404).json({ message: 'Donation not found.' });
     }
@@ -1088,6 +1093,11 @@ app.post('/event-occurrence/:eventId/:startTime/delete', async (req, res) => {
 
     if (deleted) {
       res.status(200).json({ message: 'Event occurrence deleted successfully.' });
+      if (user.role === 'admin') {
+        res.redirect('/events_admin');
+      } else {
+        res.redirect('/events_user');
+      }
     } else {
       res.status(404).json({ message: 'Event occurrence not found.' });
     }
@@ -1111,6 +1121,11 @@ app.post('/milestone/:participantId/:title/delete', async (req, res) => {
 
     if (deleted) {
       res.status(200).json({ message: 'Milestone deleted successfully.' });
+        if (user.role === 'admin') {
+          res.redirect('/dashboard');
+        } else {
+          res.redirect(`/profile/${participantId}`);
+        }
     } else {
       res.status(404).json({ message: 'Milestone not found.' });
     }
@@ -1135,6 +1150,11 @@ app.post('/registration/:participantId/:eventId/:startTime/delete', async (req, 
 
     if (deleted) {
       res.status(200).json({ message: 'Registration deleted successfully.' });
+        if (user.role === 'admin') {
+            res.redirect('/registrations_content');  
+        } else {
+            res.redirect(`/profile/${participantId}`);
+        }
     } else {
       res.status(404).json({ message: 'Registration not found.' });
     }
@@ -1159,6 +1179,11 @@ app.post('/survey/:participantId/:eventId/:startTime/delete', async (req, res) =
 
     if (deleted) {
       res.status(200).json({ message: 'Survey deleted successfully.' });
+        if (user.role === 'admin') {
+            res.redirect('/surveys_content');  
+        } else {
+            res.redirect(`/profile/${participantId}`);
+        }
     } else {
       res.status(404).json({ message: 'Survey not found.' });
     }
