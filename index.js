@@ -76,7 +76,7 @@ app.get('/login', (req, res) => {
     res.render('login', { error: null });
 });
 
-app.post('/login', async (req, res) => {
+app.post('/login', async(req, res) => {
     const { email, password } = req.body;
 
     try {
@@ -116,7 +116,7 @@ app.get('/logout', (req, res) => {
 });
 
 // ===== Events route (public but shows user if logged in) =====
-app.get('/events', async (req, res) => {
+app.get('/events', async(req, res) => {
     try {
         const now = new Date();
 
@@ -149,7 +149,7 @@ app.get('/events', async (req, res) => {
 });
 
 // Dashboard (requires login)
-app.get('/dashboard', requireLogin, async (req, res) => {
+app.get('/dashboard', requireLogin, async(req, res) => {
     const user = req.session.user;
 
     try {
@@ -176,7 +176,7 @@ app.get('/dashboard', requireLogin, async (req, res) => {
 });
 
 // ===== Participants page (admin only) =====
-app.get('/participants', requireLogin, async (req, res) => {
+app.get('/participants', requireLogin, async(req, res) => {
     const user = req.session.user;
 
     // Only admins can access
@@ -246,7 +246,7 @@ app.get('/participants', requireLogin, async (req, res) => {
 
 
 // ===== Profile Routes =====
-app.get('/profile/:id', requireLogin, async (req, res) => {
+app.get('/profile/:id', requireLogin, async(req, res) => {
     try {
         // If id param provided use it, otherwise use current user's id
         const id = req.params.id || req.session.user.id;
@@ -270,7 +270,7 @@ app.get('/profile/:id', requireLogin, async (req, res) => {
     }
 });
 
-app.post('/profile/update', upload.single('ProfilePicture'), requireLogin, async (req, res) => {
+app.post('/profile/update', upload.single('ProfilePicture'), requireLogin, async(req, res) => {
     try {
         const id = req.body.Participant_ID;
 
@@ -302,7 +302,7 @@ app.post('/profile/update', upload.single('ProfilePicture'), requireLogin, async
     }
 });
 
-app.post('/profile/delete', requireLogin, async (req, res) => {
+app.post('/profile/delete', requireLogin, async(req, res) => {
     const user = req.session.user;
     // Only admins can delete participants
     if (!user || user.role !== 'admin') return res.status(403).send('Forbidden');
@@ -322,7 +322,7 @@ app.post('/profile/delete', requireLogin, async (req, res) => {
 });
 
 // ===== Events route (public but shows user if logged in) =====
-app.get('/events', async (req, res) => {
+app.get('/events', async(req, res) => {
     try {
         // Fetch events (EventOccurrence table)
         const events = await knex('EventOccurrence')
@@ -346,7 +346,7 @@ app.get('/events', async (req, res) => {
 });
 
 // ===== Surveys route (composite key) =====
-app.get('/surveys/:eventId/:eventDateTimeStart', async (req, res) => {
+app.get('/surveys/:eventId/:eventDateTimeStart', async(req, res) => {
     const { eventId, eventDateTimeStart } = req.params;
 
     try {
@@ -355,7 +355,7 @@ app.get('/surveys/:eventId/:eventDateTimeStart', async (req, res) => {
             .select(
                 'eo.Event_ID',
                 'eo.EventDateTimeStart',
-                'et.EventName'      // <-- pulled from EventTemplate
+                'et.EventName' // <-- pulled from EventTemplate
             )
             .where({
                 'eo.Event_ID': eventId,
@@ -400,7 +400,7 @@ app.get('/surveys/:eventId/:eventDateTimeStart', async (req, res) => {
 });
 
 // ===== Milestones (use KNEX) =====
-app.get('/milestones', async (req, res) => {
+app.get('/milestones', async(req, res) => {
     try {
         // Use Milestones table (capitalization consistent with other routes)
         const rows = await knex('Milestones').select('*').orderBy('id', 'desc');
@@ -415,7 +415,7 @@ app.get('/milestones/add', (req, res) => {
     res.render('add_milestone', { user: req.session.user });
 });
 
-app.post('/milestones/add', requireLogin, async (req, res) => {
+app.post('/milestones/add', requireLogin, async(req, res) => {
     const { title, due_date, details } = req.body;
 
     try {
@@ -431,7 +431,7 @@ app.post('/milestones/add', requireLogin, async (req, res) => {
     }
 });
 
-app.get('/milestones/delete/:id', requireLogin, async (req, res) => {
+app.get('/milestones/delete/:id', requireLogin, async(req, res) => {
     const id = req.params.id;
 
     try {
@@ -444,7 +444,7 @@ app.get('/milestones/delete/:id', requireLogin, async (req, res) => {
 });
 
 // ===== Donations =====
-app.get('/donations', requireLogin, async (req, res) => {
+app.get('/donations', requireLogin, async(req, res) => {
     const user = req.session.user;
     try {
         let donations = [];
@@ -480,7 +480,7 @@ app.get('/donations', requireLogin, async (req, res) => {
 });
 
 // Submit donation (POST)
-app.post('/submit-donation', requireLogin, async (req, res) => {
+app.post('/submit-donation', requireLogin, async(req, res) => {
     try {
         const user = req.session.user;
         const amount = parseFloat(req.body.amount);
@@ -519,17 +519,59 @@ app.get('/enroll', (req, res) => res.render('enroll', { user: req.session.user }
 app.get('/create_user', requireLogin, (req, res) => res.render('create_user', { user: req.session.user }));
 app.get('/add_events', requireLogin, (req, res) => res.render('add_events', { user: req.session.user }));
 
-// Add milestone form page (admin sees participant list)
-app.get('/add_milestone', requireLogin, async (req, res) => {
+
+
+// Add milestone form page (admin sees all participants)
+app.get('/add_milestone', requireLogin, async(req, res) => {
     const user = req.session.user;
+
     let participants = [];
 
-    if (user.role === 'admin') {
-        participants = await knex('Participants').select('Participant_ID', 'FirstName', 'LastName', 'Email');
+    // Managers/Admins can see participants
+    if (user.ParticipantRole === 'manager' || user.ParticipantRole === 'admin') {
+        participants = await knex('Participants')
+            .select(
+                'Participant_ID',
+                'ParticipantFirstName',
+                'ParticipantLastName',
+                'ParticipantEmail'
+            );
     }
 
-    res.render('add_milestone', { user, participants });
+    res.render('add_milestone', {
+        user,
+        participants,
+        participant_id: null // important fix to prevent EJS crash
+    });
 });
+
+
+// Add milestone POST route
+app.post('/milestone/add', requireLogin, async(req, res) => {
+    try {
+        const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
+
+        // Validation
+        if (!Participant_ID || !MilestoneTitle || !MilestoneDate) {
+            return res.status(400).send("Missing required fields.");
+        }
+
+        // Insert into DB
+        await knex('Milestones').insert({
+            Participant_ID,
+            MilestoneTitle,
+            MilestoneDate
+        });
+
+        // Redirect to participant profile OR dashboard
+        res.redirect(`/profile/${Participant_ID}`);
+
+    } catch (err) {
+        console.error("Error adding milestone:", err);
+        res.status(500).send("Server error");
+    }
+});
+
 
 app.get('/add_survey', requireLogin, (req, res) => res.render('add_survey', { user: req.session.user }));
 app.get('/add_donation', (req, res) => res.render('add_donation', { user: req.session.user }));
@@ -538,7 +580,7 @@ app.get('/add_donation', (req, res) => res.render('add_donation', { user: req.se
 app.get('/teapot', (req, res) => res.status(418).send("I'm a teapot ☕"));
 
 // ===== POST: Enroll =====
-app.post('/enroll', async (req, res) => {
+app.post('/enroll', async(req, res) => {
     const data = req.body;
     try {
         await knex('Participant').insert({
@@ -562,7 +604,7 @@ app.post('/enroll', async (req, res) => {
 });
 
 // ===== POST: Create user (admin) =====
-app.post('/create-user-submit', requireLogin, async (req, res) => {
+app.post('/create-user-submit', requireLogin, async(req, res) => {
     const body = req.body;
     try {
         await knex('Participant').insert({
@@ -587,7 +629,7 @@ app.post('/create-user-submit', requireLogin, async (req, res) => {
 });
 
 // ===== POST: Submit Survey (example storing) =====
-app.post('/submit-survey', requireLogin, async (req, res) => {
+app.post('/submit-survey', requireLogin, async(req, res) => {
     try {
         const {
             SurveySatisfactionScore,
@@ -633,7 +675,7 @@ app.post('/submit-survey', requireLogin, async (req, res) => {
 });
 
 // ===== Registration routes =====
-app.post('/register', async (req, res) => {
+app.post('/register', async(req, res) => {
     const { Participant_ID, Event_ID, EventDateTimeStart } = req.body;
 
     try {
@@ -678,7 +720,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
-app.post('/registration/update', async (req, res) => {
+app.post('/registration/update', async(req, res) => {
     const { Participant_ID, Event_ID, EventDateTimeStart, action } = req.body;
 
     try {
@@ -686,10 +728,10 @@ app.post('/registration/update', async (req, res) => {
             return res.status(400).send('Missing required fields');
         }
 
-        const updateFields = (action === 'attended') ? { RegistrationStatus: 'attended', RegistrationAttendedFlag: 'T' }
-            : (action === 'absent') ? { RegistrationStatus: 'no-show', RegistrationAttendedFlag: 'F' }
-            : (action === 'cancel') ? { RegistrationStatus: 'cancelled', RegistrationAttendedFlag: 'F' }
-            : null;
+        const updateFields = (action === 'attended') ? { RegistrationStatus: 'attended', RegistrationAttendedFlag: 'T' } :
+            (action === 'absent') ? { RegistrationStatus: 'no-show', RegistrationAttendedFlag: 'F' } :
+            (action === 'cancel') ? { RegistrationStatus: 'cancelled', RegistrationAttendedFlag: 'F' } :
+            null;
 
         if (!updateFields) return res.status(400).send('Invalid action');
 
@@ -721,7 +763,7 @@ app.post('/registration/update', async (req, res) => {
 });
 
 // ===== Submit milestone (participants limited) =====
-app.post('/submit-milestone', requireLogin, async (req, res) => {
+app.post('/submit-milestone', requireLogin, async(req, res) => {
     try {
         const user = req.session.user;
         let { Participant_ID, MilestoneTitle, MilestoneDescription } = req.body;

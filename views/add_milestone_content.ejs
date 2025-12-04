@@ -1,8 +1,7 @@
 <div class="container my-5">
     <h2 class="mb-4">Add Milestone</h2>
 
-    <!-- MANAGER: Search + Select Participant -->
-    <% if (user.isManager) { %>
+    <% if (user.ParticipantRole === "manager" || user.ParticipantRole === "admin") { %>
         <h4>Select a Participant</h4>
 
         <input type="text" id="searchInput" placeholder="Search participants..." class="form-control mb-2">
@@ -43,15 +42,16 @@
 
             <!-- Milestone Form -->
             <form action="/milestone/add" method="POST">
+
                 <div class="mb-3">
                     <label for="participantID" class="form-label">Participant ID</label>
 
-                    <% if (!user.isManager) { %>
-                        <!-- Regular user: only their own ID -->
-                        <input type="text" class="form-control" id="participantID" name="Participant_ID" value="<%= user.id %>" readonly>
+                    <% if (user.ParticipantRole !== "manager" && user.ParticipantRole !== "admin") { %>
+                        <!-- Regular user -->
+                        <input type="text" class="form-control" id="participantID" name="Participant_ID" value="<%= user.Participant_ID %>" readonly>
                         <% } else { %>
-                            <!-- Manager: can set ID manually or via search table -->
-                            <input type="text" class="form-control" id="participantID" name="Participant_ID" placeholder="Select a participant or enter an ID" value="<%= participant_id || '' %>" required>
+                            <!-- Manager/Admin -->
+                            <input type="text" class="form-control" id="participantID" name="Participant_ID" value="<%= participant_id || '' %>" required>
                             <% } %>
                 </div>
 
@@ -65,19 +65,17 @@
                     <input type="date" name="MilestoneDate" class="form-control" required>
                 </div>
 
-                <button class="custom-btn">Add Milestone</button>
-                <a href="/profile/<%= participant_id || user.id %>" class="btn btn-secondary ms-3">Cancel</a>
+                <button class="btn btn-primary">Add Milestone</button>
+
+                <a href="/profile/<%= participant_id || user.Participant_ID %>" class="btn btn-secondary ms-3">Cancel</a>
             </form>
 </div>
 
-<!-- Script -->
 <script>
-    // Fill participant ID from table
     function chooseParticipant(id) {
         document.getElementById("participantID").value = id;
     }
 
-    // Search participants
     const searchInput = document.getElementById("searchInput");
     if (searchInput) {
         searchInput.addEventListener("input", function() {
