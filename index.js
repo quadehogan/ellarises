@@ -997,15 +997,20 @@ app.post('/donation/:id/delete', async (req, res) => {
             .where({ Donation_ID: donationId })
             .del();
 
-        if (deleted) {
-            res.status(200).json({ message: 'Donation deleted successfully.' });
-        } else {
-            res.status(404).json({ message: 'Donation not found.' });
-        }
-    } catch (err) {
-        console.error('Error deleting donation:', err);
-        res.status(500).json({ message: 'Internal server error.' });
+    if (deleted) {
+      res.status(200).json({ message: 'Donation deleted successfully.' });
+      if (user.role === 'admin') {
+        res.redirect('/donations_admin');
+      } else {
+        res.redirect('/donations_user');
+      }
+    } else {
+      res.status(404).json({ message: 'Donation not found.' });
     }
+  } catch (err) {
+    console.error('Error deleting donation:', err);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
 });
 
 // Delete a specific EventOccurrence by composite key
@@ -1020,15 +1025,20 @@ app.post('/event-occurrence/:eventId/:startTime/delete', async (req, res) => {
             })
             .del();
 
-        if (deleted) {
-            res.status(200).json({ message: 'Event occurrence deleted successfully.' });
-        } else {
-            res.status(404).json({ message: 'Event occurrence not found.' });
-        }
-    } catch (err) {
-        console.error('Error deleting event occurrence:', err);
-        res.status(500).json({ message: 'Internal server error.' });
+    if (deleted) {
+      res.status(200).json({ message: 'Event occurrence deleted successfully.' });
+      if (user.role === 'admin') {
+        res.redirect('/events_admin');
+      } else {
+        res.redirect('/events_user');
+      }
+    } else {
+      res.status(404).json({ message: 'Event occurrence not found.' });
     }
+  } catch (err) {
+    console.error('Error deleting event occurrence:', err);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
 });
 
 // Delete a specific Milestone by composite key
@@ -1043,15 +1053,20 @@ app.post('/milestone/:participantId/:title/delete', async (req, res) => {
             })
             .del();
 
-        if (deleted) {
-            res.status(200).json({ message: 'Milestone deleted successfully.' });
+    if (deleted) {
+      res.status(200).json({ message: 'Milestone deleted successfully.' });
+        if (user.role === 'admin') {
+          res.redirect('/dashboard');
         } else {
-            res.status(404).json({ message: 'Milestone not found.' });
+          res.redirect(`/profile/${participantId}`);
         }
-    } catch (err) {
-        console.error('Error deleting milestone:', err);
-        res.status(500).json({ message: 'Internal server error.' });
+    } else {
+      res.status(404).json({ message: 'Milestone not found.' });
     }
+  } catch (err) {
+    console.error('Error deleting milestone:', err);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
 });
 
 // Delete a specific Registration by composite key
@@ -1067,15 +1082,20 @@ app.post('/registration/:participantId/:eventId/:startTime/delete', async (req, 
             })
             .del();
 
-        if (deleted) {
-            res.status(200).json({ message: 'Registration deleted successfully.' });
+    if (deleted) {
+      res.status(200).json({ message: 'Registration deleted successfully.' });
+        if (user.role === 'admin') {
+            res.redirect('/registrations_content');  
         } else {
-            res.status(404).json({ message: 'Registration not found.' });
+            res.redirect(`/profile/${participantId}`);
         }
-    } catch (err) {
-        console.error('Error deleting registration:', err);
-        res.status(500).json({ message: 'Internal server error.' });
+    } else {
+      res.status(404).json({ message: 'Registration not found.' });
     }
+  } catch (err) {
+    console.error('Error deleting registration:', err);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
 });
 
 // Delete a specific Survey by composite key
@@ -1091,15 +1111,20 @@ app.post('/survey/:participantId/:eventId/:startTime/delete', async (req, res) =
             })
             .del();
 
-        if (deleted) {
-            res.status(200).json({ message: 'Survey deleted successfully.' });
+    if (deleted) {
+      res.status(200).json({ message: 'Survey deleted successfully.' });
+        if (user.role === 'admin') {
+            res.redirect('/surveys_content');  
         } else {
-            res.status(404).json({ message: 'Survey not found.' });
+            res.redirect(`/profile/${participantId}`);
         }
-    } catch (err) {
-        console.error('Error deleting survey:', err);
-        res.status(500).json({ message: 'Internal server error.' });
+    } else {
+      res.status(404).json({ message: 'Survey not found.' });
     }
+  } catch (err) {
+    console.error('Error deleting survey:', err);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
 });
 
 // ===== Start server =====
