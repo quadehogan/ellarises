@@ -8,13 +8,14 @@
         <% if (!user) { %>
             <!-- NOT LOGGED IN -->
             <a href="/enroll">Enroll</a>
-            <a href="/login">Login</a>
 
             <!-- PUBLIC DONATION PAGE -->
             <a href="/donate-public">Donations</a>
 
             <!-- PUBLIC EVENTS PAGE -->
             <a href="/events_nonverified">Events</a>
+
+            <a href="/login">Login</a>
 
             <% } else { %>
                 <!-- LOGGED IN USER -->
@@ -27,11 +28,8 @@
 
                     <% } else if (user.role === "admin") { %>
                         <!-- ADMIN ROLE -->
-                        <a href="/donations">Donations</a>
-                        <a href="/participants">Participants</a>
-                        <a href="/dashboard">Member Statistics</a>
+                        <a href="/manage_dashboard">Management</a>
                         <a href="/create_user">Create User</a>
-                        <a href="/events">Events</a>
                         <% } %>
 
                             <!-- Logout always for logged-in users -->

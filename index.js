@@ -115,6 +115,16 @@ app.get('/logout', (req, res) => {
     });
 });
 
+app.get('/manage', requireLogin, (req, res) => {
+    if (req.session.user.role !== 'admin') {
+        return res.redirect('/dashboard');
+    }
+    
+    res.render('manage_dashboard', {
+        user: req.session.user
+    });
+});
+
 // ===============
 // EVENTS ROUTES 
 // ===============
