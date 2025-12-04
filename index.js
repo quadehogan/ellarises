@@ -186,7 +186,7 @@ app.get('/events_user/:id', async (req, res) => {
         );
 
 
-        res.render('events', {
+        res.render('events_user', {
             user: req.session.user,
             upcomingEvents,
             userPastEvents
