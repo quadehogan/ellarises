@@ -362,3 +362,16 @@ body {
 main {
     flex: 1; /* takes all remaining vertical space */
 }
+
+#dashboard {
+    width: 100%;
+    min-height: 600px; 
+    margin-bottom: 80px; /* keeps it off the footer */
+}
+
+/* Let Tableau auto-size */
+.tableauPlaceholder, 
+.tableauViz {
+  width: 100% !important;
+  height: auto !important;
+}
