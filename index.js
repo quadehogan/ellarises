@@ -1021,12 +1021,11 @@ app.post('/submit-milestone', requireLogin, async(req, res) => {
 });
 
 // ===== ALL DELETE ROUTES =====
-// Soft delete / anonymize a participant
-app.delete('/participant/:id', async (req, res) => {
+// Soft delete / anonymize a participant via POST
+app.post('/participant/:id/delete', async (req, res) => {
   const participantId = req.params.id;
 
   try {
-    // Update participant record, nullifying sensitive fields
     const updated = await knex('Participants')
       .where({ Participant_ID: participantId })
       .update({
@@ -1045,18 +1044,18 @@ app.delete('/participant/:id', async (req, res) => {
       });
 
     if (updated) {
-      res.status(200).json({ message: 'Participant anonymized successfully.' });
+      res.redirect('/participants'); // redirect back to the page
     } else {
-      res.status(404).json({ message: 'Participant not found.' });
+      res.status(404).send('Participant not found.');
     }
   } catch (err) {
     console.error('Error anonymizing participant:', err);
-    res.status(500).json({ message: 'Internal server error.' });
+    res.status(500).send('Internal server error.');
   }
 });
 
 // Delete a specific donation by Donation_ID
-app.delete('/donation/:id', async (req, res) => {
+app.post('/donation/:id/delete', async (req, res) => {
   const donationId = req.params.id;
 
   try {
@@ -1076,7 +1075,7 @@ app.delete('/donation/:id', async (req, res) => {
 });
 
 // Delete a specific EventOccurrence by composite key
-app.delete('/event-occurrence/:eventId/:startTime', async (req, res) => {
+app.post('/event-occurrence/:eventId/:startTime/delete', async (req, res) => {
   const { eventId, startTime } = req.params;
 
   try {
@@ -1099,7 +1098,7 @@ app.delete('/event-occurrence/:eventId/:startTime', async (req, res) => {
 });
 
 // Delete a specific Milestone by composite key
-app.delete('/milestone/:participantId/:title', async (req, res) => {
+app.post('/milestone/:participantId/:title/delete', async (req, res) => {
   const { participantId, title } = req.params;
 
   try {
@@ -1122,7 +1121,7 @@ app.delete('/milestone/:participantId/:title', async (req, res) => {
 });
 
 // Delete a specific Registration by composite key
-app.delete('/registration/:participantId/:eventId/:startTime', async (req, res) => {
+app.post('/registration/:participantId/:eventId/:startTime/delete', async (req, res) => {
   const { participantId, eventId, startTime } = req.params;
 
   try {
@@ -1146,7 +1145,7 @@ app.delete('/registration/:participantId/:eventId/:startTime', async (req, res) 
 });
 
 // Delete a specific Survey by composite key
-app.delete('/survey/:participantId/:eventId/:startTime', async (req, res) => {
+app.post('/survey/:participantId/:eventId/:startTime/delete', async (req, res) => {
   const { participantId, eventId, startTime } = req.params;
 
   try {

@@ -35,8 +35,11 @@
                   <button class="custom-btn" onclick="alert('Edit coming soon')">Edit</button>
                 </td>
                 <td>
-                  <form action="/event-occurrence/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart) %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this upcoming event?');" style="display: inline-block;">
-                    <input type="hidden" name="_method" value="DELETE">
+                  <form 
+                    action="/event-occurrence/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart) %>/delete" 
+                    method="POST" 
+                    onsubmit="return confirm('Are you sure you want to delete this upcoming event?');" 
+                    style="display: inline-block;">
                     <button type="submit" class="custom-btn" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">
                       Delete
                     </button>

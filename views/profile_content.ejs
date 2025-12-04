@@ -83,8 +83,10 @@
                     <td>
                         <a href="/milestone/edit/<%= ms.Milestone_ID %>" class="btn btn-sm btn-warning">Edit</a>
 
-                        <form action="/milestone/<%= profile.Participant_ID %>/<%= encodeURIComponent(ms.MilestoneTitle) %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this milestone?');">
-                            <input type="hidden" name="_method" value="DELETE">
+                        <form 
+                            action="/milestone/<%= profile.Participant_ID %>/<%= encodeURIComponent(ms.MilestoneTitle) %>/delete" 
+                            method="POST" 
+                            onsubmit="return confirm('Are you sure you want to delete this milestone?');">
                             <button type="submit" class="custom-btn">Delete</button>
                         </form>
                     </td>
