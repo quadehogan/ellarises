@@ -54,28 +54,41 @@
 
             <hr>
 
-            <h2>Survey Submissions</h2>
+<h2>Survey Submissions</h2>
 
-            <div class="survey-cards-container">
+    <div class="survey-cards-container">
 
-                <% surveys.forEach(s => { %>
-                    <div class="survey-card" data-satisfaction="<%= s.SurveySatisfactionScore %>" data-usefulness="<%= s.SurveyUsefulnessScore %>" data-instructor="<%= s.SurveyInstructorScore %>" data-recommendation="<%= s.SurveyRecommendationScore %>" data-comments="<%= s.SurveyComments || 'No comments' %>"
-                        data-date="<%= new Date(s.SurveySubmissionDate).toLocaleString() %>">
+  <% surveys.forEach(s => { %>
+    <div class="survey-card" 
+         data-satisfaction="<%= s.SurveySatisfactionScore %>" 
+         data-usefulness="<%= s.SurveyUsefulnessScore %>" 
+         data-instructor="<%= s.SurveyInstructorScore %>" 
+         data-recommendation="<%= s.SurveyRecommendationScore %>" 
+         data-comments="<%= s.SurveyComments || 'No comments' %>"
+         data-date="<%= new Date(s.SurveySubmissionDate).toLocaleString() %>">
 
-                        <h3>
-                            <%= s.ParticipantFirstName %>
-                                <%= s.ParticipantLastName %>
-                        </h3>
-                        <p><strong>Overall Score:</strong>
-                            <%= s.SurveyOverallScore %>
-                        </p>
-                        <p><strong>NPS Bucket:</strong>
-                            <%= s.SurveyNPSBucket %>
-                        </p>
-                    </div>
-                    <% }) %>
+      <h3>
+        <%= s.ParticipantFirstName %> <%= s.ParticipantLastName %>
+      </h3>
+      <p><strong>Overall Score:</strong> <%= s.SurveyOverallScore %></p>
+      <p><strong>NPS Bucket:</strong> <%= s.SurveyNPSBucket %></p>
 
-            </div>
+      <!-- Delete button at the bottom of the card -->
+      <form 
+        action="/survey/<%= s.Participant_ID %>/<%= s.Event_ID %>/<%= encodeURIComponent(s.EventDateTimeStart) %>" 
+        method="POST" 
+        onsubmit="return confirm('Are you sure you want to delete this survey?');"
+        style="margin-top: auto; text-align: center;"
+      >
+        <input type="hidden" name="_method" value="DELETE">
+        <button type="submit" class="custom-btn" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">Delete</button>
+      </form>
+
+    </div>
+  <% }) %>
+
+</div>
+
 
 </div>
 

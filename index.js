@@ -306,7 +306,9 @@ app.get('/participants', requireLogin, async(req, res) => {
                 'p.ParticipantFirstName',
                 'p.ParticipantLastName',
                 'p.ParticipantEmail',
-                'p.ParticipantPhone'
+                'p.ParticipantPhone',
+                'r.Event_ID',
+                'r.EventDateTimeStart'
             )
             .where('r.RegistrationAttendedFlag', 'T');
 
@@ -330,19 +332,11 @@ app.get('/participants', requireLogin, async(req, res) => {
             phone: p.ParticipantPhone
         }));
 
-        const participants = uniqueByEmail(participantsRaw).map(p => ({
-            Participant_ID: p.Participant_ID,
-            firstName: p.ParticipantFirstName,
-            lastName: p.ParticipantLastName,
-            email: p.ParticipantEmail,
-            phone: p.ParticipantPhone
-        }));
-
         // Render participants page with both lists
         res.render('participants', {
             user,
             users,
-            participants
+            participantsRaw
         });
 
     } catch (err) {
@@ -408,25 +402,6 @@ app.post('/profile/update', upload.single('ProfilePicture'), requireLogin, async
     } catch (err) {
         console.error('Profile update error:', err);
         res.status(500).send('Update failed');
-    }
-});
-
-app.post('/profile/delete', requireLogin, async(req, res) => {
-    const user = req.session.user;
-    // Only admins can delete participants
-    if (!user || user.role !== 'admin') return res.status(403).send('Forbidden');
-
-    try {
-        const id = req.body.Participant_ID;
-        if (!id) return res.status(400).send('Missing Participant_ID');
-
-        await knex('Milestones').where({ Participant_ID: id }).del();
-        await knex('Participants').where({ Participant_ID: id }).del();
-
-        res.redirect('/participants');
-    } catch (err) {
-        console.error('Profile delete error:', err);
-        res.status(500).send('Delete failed');
     }
 });
 
@@ -544,18 +519,6 @@ app.post('/milestones/add', requireLogin, async(req, res) => {
     } catch (err) {
         console.error('Error adding milestone:', err);
         res.status(500).send('Error adding milestone');
-    }
-});
-
-app.get('/milestones/delete/:id', requireLogin, async(req, res) => {
-    const id = req.params.id;
-
-    try {
-        await knex('Milestones').where({ id }).del();
-        res.redirect('/milestones');
-    } catch (err) {
-        console.error('Error deleting milestone:', err);
-        res.status(500).send('Error deleting milestone');
     }
 });
 
@@ -1039,6 +1002,155 @@ app.post('/submit-milestone', requireLogin, async(req, res) => {
         console.error('Error creating milestone:', err);
         res.status(500).send('Error creating milestone');
     }
+});
+
+// ===== ALL DELETE ROUTES =====
+// Soft delete / anonymize a participant
+app.delete('/participant/:id', async (req, res) => {
+  const participantId = req.params.id;
+
+  try {
+    // Update participant record, nullifying sensitive fields
+    const updated = await knex('Participants')
+      .where({ Participant_ID: participantId })
+      .update({
+        ParticipantEmail: null,
+        ParticipantPassword: null,
+        ParticipantFirstName: null,
+        ParticipantLastName: null,
+        ParticipantDOB: null,
+        ParticipantRole: null,
+        ParticipantPhone: null,
+        ParticipantCity: null,
+        ParticipantState: null,
+        ParticipantZIP: null,
+        ParticipantSchoolorEmployer: null,
+        ParticipantFieldOfInterest: null
+      });
+
+    if (updated) {
+      res.status(200).json({ message: 'Participant anonymized successfully.' });
+    } else {
+      res.status(404).json({ message: 'Participant not found.' });
+    }
+  } catch (err) {
+    console.error('Error anonymizing participant:', err);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+// Delete a specific donation by Donation_ID
+app.delete('/donation/:id', async (req, res) => {
+  const donationId = req.params.id;
+
+  try {
+    const deleted = await knex('Donations')
+      .where({ Donation_ID: donationId })
+      .del();
+
+    if (deleted) {
+      res.status(200).json({ message: 'Donation deleted successfully.' });
+    } else {
+      res.status(404).json({ message: 'Donation not found.' });
+    }
+  } catch (err) {
+    console.error('Error deleting donation:', err);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+// Delete a specific EventOccurrence by composite key
+app.delete('/event-occurrence/:eventId/:startTime', async (req, res) => {
+  const { eventId, startTime } = req.params;
+
+  try {
+    const deleted = await knex('EventOccurrence')
+      .where({
+        Event_ID: eventId,
+        EventDateTimeStart: startTime
+      })
+      .del();
+
+    if (deleted) {
+      res.status(200).json({ message: 'Event occurrence deleted successfully.' });
+    } else {
+      res.status(404).json({ message: 'Event occurrence not found.' });
+    }
+  } catch (err) {
+    console.error('Error deleting event occurrence:', err);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+// Delete a specific Milestone by composite key
+app.delete('/milestone/:participantId/:title', async (req, res) => {
+  const { participantId, title } = req.params;
+
+  try {
+    const deleted = await knex('Milestones')
+      .where({
+        Participant_ID: participantId,
+        MilestoneTitle: title
+      })
+      .del();
+
+    if (deleted) {
+      res.status(200).json({ message: 'Milestone deleted successfully.' });
+    } else {
+      res.status(404).json({ message: 'Milestone not found.' });
+    }
+  } catch (err) {
+    console.error('Error deleting milestone:', err);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+// Delete a specific Registration by composite key
+app.delete('/registration/:participantId/:eventId/:startTime', async (req, res) => {
+  const { participantId, eventId, startTime } = req.params;
+
+  try {
+    const deleted = await knex('Registration')
+      .where({
+        Participant_ID: participantId,
+        Event_ID: eventId,
+        EventDateTimeStart: startTime
+      })
+      .del();
+
+    if (deleted) {
+      res.status(200).json({ message: 'Registration deleted successfully.' });
+    } else {
+      res.status(404).json({ message: 'Registration not found.' });
+    }
+  } catch (err) {
+    console.error('Error deleting registration:', err);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+// Delete a specific Survey by composite key
+router.delete('/survey/:participantId/:eventId/:startTime', async (req, res) => {
+  const { participantId, eventId, startTime } = req.params;
+
+  try {
+    const deleted = await knex('Surveys')
+      .where({
+        Participant_ID: participantId,
+        Event_ID: eventId,
+        EventDateTimeStart: startTime
+      })
+      .del();
+
+    if (deleted) {
+      res.status(200).json({ message: 'Survey deleted successfully.' });
+    } else {
+      res.status(404).json({ message: 'Survey not found.' });
+    }
+  } catch (err) {
+    console.error('Error deleting survey:', err);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
 });
 
 // ===== Start server =====

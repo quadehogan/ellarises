@@ -80,24 +80,22 @@
                         <%= ms.MilestoneDate %>
                     </td>
 
-                    <% if (user.isManager || user.id === profile.Participant_ID) { %>
-                        <td>
-                            <a href="/milestone/edit/<%= ms.Milestone_ID %>" class="btn btn-sm btn-warning">Edit</a>
+                    <td>
+                        <a href="/milestone/edit/<%= ms.Milestone_ID %>" class="btn btn-sm btn-warning">Edit</a>
 
-                            <form action="/milestone/delete" method="POST" style="display:inline;">
-                                <input type="hidden" name="Milestone_ID" value="<%= ms.Milestone_ID %>">
-                                <button class="btn btn-sm btn-danger">Delete</button>
-                            </form>
-                        </td>
-                        <% } %>
+                        <form action="/milestone/<%= profile.Participant_ID %>/<%= encodeURIComponent(ms.MilestoneTitle) %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this milestone?');">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button type="submit" class="custom-btn">Delete</button>
+                        </form>
+                    </td>
                 </tr>
                 <% }) %>
         </tbody>
     </table>
 
-    <% if (user.isManager || user.id === profile.Participant_ID) { %>
+    <% if (user.id === profile.Participant_ID) { %>
         <!-- NEW correct add-milestone route -->
-        <a href="/milestone/add/<%= profile.Participant_ID %>" class="btn custom-btn mt-3">
+        <a href="/milestone/add/<%= profile.Participant_ID %>" class="custom-btn">
            Add Milestone
         </a>
         <% } %>

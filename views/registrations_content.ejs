@@ -21,21 +21,32 @@
 
         <td class="d-flex gap-2">
 
-            <form action="/registration/update" method="POST">
-                <input type="hidden" name="Participant_ID" value="<%= reg.Participant_ID %>">
-                <input type="hidden" name="Event_ID" value="<%= reg.Event_ID %>">
-                <input type="hidden" name="EventDateTimeStart" value="<%= reg.EventDateTimeStart %>">
-                <input type="hidden" name="action" value="attended">
-                <button class="btn btn-success btn-sm" type="submit">Attended</button>
-            </form>
+          <!-- Attended button -->
+          <form action="/registration/update" method="POST">
+            <input type="hidden" name="Participant_ID" value="<%= reg.Participant_ID %>">
+            <input type="hidden" name="Event_ID" value="<%= reg.Event_ID %>">
+            <input type="hidden" name="EventDateTimeStart" value="<%= reg.EventDateTimeStart %>">
+            <input type="hidden" name="action" value="attended">
+            <button class="btn btn-success btn-sm" type="submit">Attended</button>
+          </form>
 
-            <form action="/registration/update" method="POST">
-                <input type="hidden" name="Participant_ID" value="<%= reg.Participant_ID %>">
-                <input type="hidden" name="Event_ID" value="<%= reg.Event_ID %>">
-                <input type="hidden" name="EventDateTimeStart" value="<%= reg.EventDateTimeStart %>">
-                <input type="hidden" name="action" value="absent">
-                <button class="btn btn-danger btn-sm" type="submit">Absent</button>
-            </form>
+          <!-- Absent button -->
+          <form action="/registration/update" method="POST">
+            <input type="hidden" name="Participant_ID" value="<%= reg.Participant_ID %>">
+            <input type="hidden" name="Event_ID" value="<%= reg.Event_ID %>">
+            <input type="hidden" name="EventDateTimeStart" value="<%= reg.EventDateTimeStart %>">
+            <input type="hidden" name="action" value="absent">
+            <button class="btn btn-danger btn-sm" type="submit">Absent</button>
+          </form>
+
+          <!-- Delete button -->
+          <form 
+            action="/registration/<%= reg.Participant_ID %>/<%= reg.Event_ID %>/<%= encodeURIComponent(reg.EventDateTimeStart) %>" 
+            method="POST" 
+            onsubmit="return confirm('Are you sure you want to delete this registration?');">
+            <input type="hidden" name="_method" value="DELETE">
+            <button class="btn btn-secondary btn-sm" type="submit">Delete</button>
+          </form>
         </td>
       </tr>
     <% }) %>

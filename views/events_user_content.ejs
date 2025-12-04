@@ -19,9 +19,6 @@
               <th>Type</th>
               <th>Date</th>
               <th>Location</th>
-              <% if (user && user.username === 'admin') { %>
-                <th>Actions</th>
-              <% } %>
               <th>Survey</th>
             </tr>
           </thead>
@@ -32,12 +29,6 @@
                 <td><%= event.EventType %></td>
                 <td><%= new Date(event.EventDateTimeStart).toLocaleString() %></td>
                 <td><%= event.EventLocation %></td>
-                <% if (user && user.username === 'admin') { %>
-                <td>
-                  <button onclick="alert('Edit coming soon')">Edit</button>
-                  <button onclick="alert('Delete coming soon')">Delete</button>
-                </td>
-                <% } %>
                 <td>
                   <a href="/surveys/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart.toISOString()) %>" class="custom-btn">Survey</a>
                 </td>

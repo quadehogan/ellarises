@@ -33,8 +33,11 @@
                 <button class="custom-btn" onclick="window.location.href='/edit-participant/<%= p.Participant_ID %>'">Edit</button>
               </td>
               <td>
-                <button class="custom-btn" onclick="confirmDelete('<%= p.Participant_ID %>')">Delete</button>
-                </td>
+                <form action="/registration/<%= p.Participant_ID %>/<%= p.Event_ID %>/<%= encodeURIComponent(p.EventDateTimeStart) %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this registration?');">
+                  <input type="hidden" name="_method" value="DELETE">
+                  <button type="submit" class="custom-btn">Delete</button>
+                  </form>
+              </td>
             </tr>
           <% }) %>
         <% } else { %>
@@ -74,7 +77,10 @@
                 <button class="custom-btn" onclick="window.location.href='/edit-user/<%= u.Participant_ID %>'">Edit</button>
               </td>
               <td>
-                <button class="custom-btn" onclick="confirmDeleteUser('<%= u.Participant_ID %>')">Delete</button>
+                <form action="/participant/<%= p.Participant_ID %>" method="POST" onsubmit="return confirm('Are you sure?');">
+                  <input type="hidden" name="_method" value="DELETE">
+                  <button type="submit" class="custom-btn">Delete</button>
+                </form>
               </td>
             </tr>
           <% }) %>
