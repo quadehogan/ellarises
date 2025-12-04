@@ -148,6 +148,32 @@ app.get('/events', async(req, res) => {
     }
 });
 
+
+// Public donations page (no login)
+app.get('/donate', async(req, res) => {
+    res.render('add_donation_public'); // simple page: name, email, amount
+});
+
+app.post('/submit-donation-public', async(req, res) => {
+    const { firstName, lastName, email, amount } = req.body;
+    const numericAmount = parseFloat(amount);
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+        return res.status(400).send('Invalid donation amount.');
+    }
+
+    await knex('Donations').insert({
+        Participant_ID: null, // visitor
+        DonationAmount: numericAmount,
+        DonationDate: knex.fn.now(),
+        DonorFirstName: firstName,
+        DonorLastName: lastName,
+        DonorEmail: email
+    });
+
+    res.redirect('/'); // or a thank-you page
+});
+
+
 // ===== Events route (public but shows user if logged in) =====
 app.get('/events_user/:id', async(req, res) => {
     const id = req.params.id;
