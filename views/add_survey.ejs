@@ -1,5 +1,10 @@
 <%- include('layout', { 
-    title: 'Add Milestone', 
-    body: include('add_survey_content') 
+    title: 'Events', 
+    body: include('add_survey_content', { 
+        user: user, 
+        Participant_ID: Participant_ID, 
+        Event_ID: Event_ID, 
+        EventDateTimeStart: EventDateTimeStart 
+    }) 
 }) %>
 

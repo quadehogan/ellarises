@@ -636,7 +636,11 @@ app.post('/milestone/add', requireLogin, async(req, res) => {
 });
 
 
-app.get('/add_survey', requireLogin, (req, res) => res.render('add_survey', { user: req.session.user }));
+app.get('/add_survey/:Participant_ID/:Event_ID/:EventDateTimeStart', requireLogin, (req, res) => {
+    const { Participant_ID, Event_ID, EventDateTimeStart } = req.params;
+    res.render('add_survey', { user: req.session.user, Participant_ID, Event_ID, EventDateTimeStart });
+});
+
 app.get('/add_donation', (req, res) => res.render('add_donation', { user: req.session.user }));
 
 // Teapot
@@ -701,7 +705,8 @@ app.post('/submit-survey', requireLogin, async(req, res) => {
             SurveyRecommendationScore,
             SurveyComments,
             Event_ID,
-            EventDateTimeStart
+            EventDateTimeStart,
+            Participant_ID
         } = req.body;
 
         const sat = parseInt(SurveySatisfactionScore || 0);
@@ -717,7 +722,7 @@ app.post('/submit-survey', requireLogin, async(req, res) => {
         else npsBucket = 'Detractor';
 
         await knex('Surveys').insert({
-            Participant_ID: req.session.user.id,
+            Participant_ID,
             Event_ID,
             EventDateTimeStart,
             SurveySatisfactionScore: sat,
@@ -727,7 +732,7 @@ app.post('/submit-survey', requireLogin, async(req, res) => {
             SurveyOverallScore: overall,
             SurveyNPSBucket: npsBucket,
             SurveyComments,
-            CreatedAt: knex.fn.now()
+            SurveySubmissionDate: knex.fn.now()
         });
 
         res.send('Survey submitted successfully!');

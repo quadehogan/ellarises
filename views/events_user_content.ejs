@@ -70,7 +70,7 @@
                 <td><%= new Date(event.EventDateTimeStart).toLocaleString() %></td>
                 <td><%= event.EventLocation %></td>
                 <td>
-                  <a href="/add_survey/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart.toISOString()) %>" class="custom-btn">Survey</a>
+                  <a href="/add_survey/<%= user.Participant_ID %>/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart.toISOString()) %>" class="custom-btn">Survey</a>
                 </td>
               </tr>
             <% }) %>
