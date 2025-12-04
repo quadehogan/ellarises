@@ -25,10 +25,10 @@
         <% if (participantsRaw && participantsRaw.length > 0) { %>
           <% participantsRaw.forEach(p => { %>
             <tr>
-              <td><%= p.ParticipantsFirstName %></td>
-              <td><%= p.ParticipantsLastName %></td>
-              <td><%= p.ParticipantsEmail %></td>
-              <td><%= p.ParticipantsPhone %></td>
+              <td><%= p.ParticipantFirstName %></td>
+              <td><%= p.ParticipantLastName %></td>
+              <td><%= p.ParticipantEmail %></td>
+              <td><%= p.ParticipantPhone %></td>
               <td>
                 <button class="custom-btn" onclick="window.location.href='/edit-participant/<%= p.Participant_ID %>'">Edit</button>
               </td>
