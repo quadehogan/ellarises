@@ -4,14 +4,15 @@
     <h1>
         <%= event.EventName %>
     </h1>
+
     <p class="event-date">
         <strong>Date:</strong>
         <%= new Date(event.EventDateTimeStart).toLocaleString() %>
     </p>
 
-    <!-- ADD SURVEY BUTTON (ADMIN ONLY) -->
-    <% if (user && user.role === "admin") { %>
-        <div class="mb-4">
+    <!-- Add Survey Button (Admin or Manager) -->
+    <% if (user.role === "admin") { %>
+        <div class="my-3">
             <a href="/add_survey/<%= user.id %>/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart.toISOString()) %>" class="custom-btn">
                 Add Survey
             </a>
@@ -60,6 +61,7 @@
                 <% surveys.forEach(s => { %>
                     <div class="survey-card" data-satisfaction="<%= s.SurveySatisfactionScore %>" data-usefulness="<%= s.SurveyUsefulnessScore %>" data-instructor="<%= s.SurveyInstructorScore %>" data-recommendation="<%= s.SurveyRecommendationScore %>" data-comments="<%= s.SurveyComments || 'No comments' %>"
                         data-date="<%= new Date(s.SurveySubmissionDate).toLocaleString() %>">
+
                         <h3>
                             <%= s.ParticipantFirstName %>
                                 <%= s.ParticipantLastName %>
@@ -74,6 +76,62 @@
                     <% }) %>
 
             </div>
+
 </div>
 
-<!-- Styles & Tooltip Script remain unchanged -->
+<!-- Tooltip Styles -->
+<style>
+    .survey-card {
+        background: #ffffff;
+        padding: 16px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+        width: 240px;
+        display: inline-block;
+        margin: 10px;
+        position: relative;
+        transition: transform 0.15s ease-in-out;
+        cursor: pointer;
+    }
+    
+    .survey-card:hover {
+        transform: translateY(-3px);
+    }
+    
+    .tooltip-box {
+        display: none;
+        position: absolute;
+        top: 105%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #f9f9f9;
+        padding: 12px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        width: 260px;
+        z-index: 10;
+    }
+    
+    .survey-card:hover .tooltip-box {
+        display: block;
+    }
+</style>
+
+<!-- Tooltip Builder Script -->
+<script>
+    document.querySelectorAll('.survey-card').forEach(card => {
+        const tooltip = document.createElement('div');
+        tooltip.classList.add('tooltip-box');
+
+        tooltip.innerHTML = `
+            <strong>Satisfaction:</strong> ${card.dataset.satisfaction}<br>
+            <strong>Usefulness:</strong> ${card.dataset.usefulness}<br>
+            <strong>Instructor:</strong> ${card.dataset.instructor}<br>
+            <strong>Recommendation:</strong> ${card.dataset.recommendation}<br>
+            <strong>Comments:</strong> ${card.dataset.comments}<br>
+            <strong>Submitted:</strong> ${card.dataset.date}
+        `;
+
+        card.appendChild(tooltip);
+    });
+</script>
