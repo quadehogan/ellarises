@@ -687,15 +687,17 @@ app.get('/add_donation', (req, res) => res.render('add_donation', { user: req.se
 app.get('/teapot', (req, res) => res.status(418).send("I'm a teapot ☕"));
 
 // ===== POST: Enroll =====
-app.post('/enroll', async(req, res) => {
+app.post('/enroll', async (req, res) => {
     const data = req.body;
+
     try {
         await knex('Participant').insert({
             ParticipantEmail: data.ParticipantEmail,
+            ParticipantPassword: data.ParticipantPassword,
             ParticipantFirstName: data.ParticipantFirstName,
             ParticipantLastName: data.ParticipantLastName,
             ParticipantDOB: data.ParticipantDOB,
-            ParticipantRole: 'participant',
+            ParticipantRole: data.ParticipantRole,
             ParticipantPhone: data.ParticipantPhone,
             ParticipantCity: data.ParticipantCity,
             ParticipantState: data.ParticipantState,
@@ -703,19 +705,36 @@ app.post('/enroll', async(req, res) => {
             ParticipantSchoolOrEmployer: data.ParticipantSchoolOrEmployer,
             ParticipantFieldOfInterest: data.ParticipantFieldOfInterest
         });
-        res.redirect('/success');
+
+        res.redirect('/login');
+
     } catch (err) {
-        console.error('Error enrolling participant:', err);
-        res.status(500).send('Error enrolling participant');
+        console.error('Error enrolling participant:');
+
+        // Log full error object
+        console.error(err);
+
+        // PostgreSQL-specific info
+        if (err.code) console.error('Error code:', err.code);
+        if (err.constraint) console.error('Constraint failed:', err.constraint);
+        if (err.column) console.error('Column involved:', err.column);
+        if (err.detail) console.error('Detail:', err.detail);
+        if (err.hint) console.error('Hint:', err.hint);
+
+        // Return detailed message to client for debugging (optional)
+        res.status(500).send(`Error enrolling participant: ${err.message}`);
     }
 });
 
+
 // ===== POST: Create user (admin) =====
-app.post('/create-user-submit', requireLogin, async(req, res) => {
+app.post('/create-user-submit', requireLogin, async (req, res) => {
     const body = req.body;
+
     try {
         await knex('Participant').insert({
             ParticipantEmail: body.ParticipantEmail,
+            ParticipantPassword: body.ParticipantPassword,
             ParticipantFirstName: body.ParticipantFirstName,
             ParticipantLastName: body.ParticipantLastName,
             ParticipantDOB: body.ParticipantDOB,
@@ -728,12 +747,27 @@ app.post('/create-user-submit', requireLogin, async(req, res) => {
             ParticipantFieldOfInterest: body.ParticipantFieldOfInterest,
             CreatedAt: knex.fn.now()
         });
+
         res.redirect('/participants');
+
     } catch (err) {
-        console.error('Error creating user:', err);
-        res.status(500).send('Error creating user');
+        console.error('Error creating user:');
+
+        // Log full error object
+        console.error(err);
+
+        // PostgreSQL-specific info
+        if (err.code) console.error('Error code:', err.code);
+        if (err.constraint) console.error('Constraint failed:', err.constraint);
+        if (err.column) console.error('Column involved:', err.column);
+        if (err.detail) console.error('Detail:', err.detail);
+        if (err.hint) console.error('Hint:', err.hint);
+
+        // Return detailed message to client for debugging (optional)
+        res.status(500).send(`Error creating user: ${err.message}`);
     }
 });
+
 
 // ===== POST: Submit Survey (example storing) =====
 app.post('/submit-survey', requireLogin, async(req, res) => {
