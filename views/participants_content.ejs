@@ -17,9 +17,8 @@
           <th>Last Name</th>
           <th>Email</th>
           <th>Phone</th>
-          <% if (user && user.role === "admin") { %>
-            <th>Actions</th>
-          <% } %>
+          <th>Actions</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -30,17 +29,17 @@
               <td><%= p.lastName %></td>
               <td><%= p.email %></td>
               <td><%= p.phone %></td>
-              <% if (user && user.role === "admin") { %>
-                <td>
-                  <button onclick="window.location.href='/edit-participant/<%= p.Participant_ID %>'">Edit</button>
-                  <button onclick="confirmDelete('<%= p.Participant_ID %>')">Delete</button>
+              <td>
+                <button class="custom-btn" onclick="window.location.href='/edit-participant/<%= p.Participant_ID %>'">Edit</button>
+              </td>
+              <td>
+                <button class="custom-btn" onclick="confirmDelete('<%= p.Participant_ID %>')">Delete</button>
                 </td>
-              <% } %>
             </tr>
           <% }) %>
         <% } else { %>
           <tr>
-            <td colspan="5" class="text-center">No participants found.</td>
+            <td colspan="6" class="text-center">No participants found.</td>
           </tr>
         <% } %>
       </tbody>
@@ -59,9 +58,8 @@
           <th>Last Name</th>
           <th>Email</th>
           <th>Phone</th>
-          <% if (user && user.role === "admin") { %>
-            <th>Actions</th>
-          <% } %>
+          <th>Actions</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -72,12 +70,12 @@
               <td><%= u.lastName %></td>
               <td><%= u.email %></td>
               <td><%= u.phone %></td>
-              <% if (user && user.role === "admin") { %>
-                <td>
-                  <button onclick="window.location.href='/edit-user/<%= u.Participant_ID %>'">Edit</button>
-                  <button onclick="confirmDeleteUser('<%= u.Participant_ID %>')">Delete</button>
-                </td>
-              <% } %>
+              <td>
+                <button class="custom-btn" onclick="window.location.href='/edit-user/<%= u.Participant_ID %>'">Edit</button>
+              </td>
+              <td>
+                <button class="custom-btn" onclick="confirmDeleteUser('<%= u.Participant_ID %>')">Delete</button>
+              </td>
             </tr>
           <% }) %>
         <% } else { %>
