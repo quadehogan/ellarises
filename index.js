@@ -115,51 +115,42 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// ===== Events route (public but shows user if logged in) =====
-app.get('/events', async(req, res) => {
-    try {
-        const now = new Date();
+// ===============
+// EVENTS ROUTES 
+// ===============
+// Admin event route
+app.get('/events', requireLogin, async(req, res) => {
+    if (req.session.user.role !== 'admin') {
+        return res.redirect('/events_nonverified');
+    }
 
-        // Join EventOccurrence with EventTemplates to get full event info
+    try {
         const events = await knex('EventOccurrence as eo')
             .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
             .select(
                 'et.Event_ID',
                 'et.EventName',
                 'et.EventDescription',
-                'et.EventType',
                 'eo.EventDateTimeStart',
                 'eo.EventLocation'
             )
             .orderBy('eo.EventDateTimeStart', 'asc');
 
-        // Separate upcoming vs past events
-        const upcomingEvents = events.filter(e => new Date(e.EventDateTimeStart) >= now);
-        const pastEvents = events.filter(e => new Date(e.EventDateTimeStart) < now);
-
         res.render('events', {
             user: req.session.user,
-            upcomingEvents,
-            pastEvents
+            events
         });
     } catch (err) {
-        console.error('Knex Events route error:', err);
-        res.status(500).send('Error retrieving events');
+        console.error("Admin events error:", err);
+        res.status(500).send("Error retrieving events");
     }
 });
 
-
-
-// ===== Events route (public but shows user if logged in) =====
-app.get('/events_user/:id', async(req, res) => {
-    const id = req.params.id;
-
-    const userId = Number(req.params.id);
-
+// User event routes
+app.get('/events_user/:id', requireLogin, async(req, res) => {
+    const userId = req.session.user.id;
 
     try {
-        const now = new Date();
-
         const upcomingEvents = await knex('EventOccurrence as eo')
             .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
             .select(
@@ -167,7 +158,6 @@ app.get('/events_user/:id', async(req, res) => {
                 'eo.EventDateTimeStart',
                 'et.EventName',
                 'et.EventDescription',
-                'et.EventType',
                 'eo.EventLocation'
             )
             .where('eo.EventDateTimeStart', '>=', new Date())
@@ -185,77 +175,51 @@ app.get('/events_user/:id', async(req, res) => {
                 'eo.EventDateTimeStart',
                 'et.EventName',
                 'et.EventDescription',
-                'et.EventType',
                 'eo.EventLocation',
                 'r.RegistrationAttendedFlag'
             )
             .where('eo.EventDateTimeStart', '<', new Date())
             .andWhere('r.RegistrationAttendedFlag', '=', 'T')
-            .orderBy('eo.EventDateTimeStart', 'desc'); // most recent first
-
-
+            .orderBy('eo.EventDateTimeStart', 'desc');
 
         res.render('events_user', {
             user: req.session.user,
             upcomingEvents,
             userPastEvents
         });
-    } catch (err) {
-        console.error('Knex Events route error:', err);
-        res.status(500).send('Error retrieving events');
-    }
-}); // ===== Events route (public but shows user if logged in) =====
-app.get('/events_user/:id', async(req, res) => {
-    const id = req.params.id;
 
+    } catch (err) {
+        console.error("User events error:", err);
+        res.status(500).send("Server error");
+    }
+});
+
+// Public events route
+// PUBLIC — shows upcoming events only
+app.get('/events_nonverified', async(req, res) => {
     try {
         const now = new Date();
 
-        const upcomingEvents = await knex('EventOccurrence as eo')
+        const events = await knex('EventOccurrence as eo')
             .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
             .select(
-                'eo.Event_ID',
-                'eo.EventDateTimeStart',
                 'et.EventName',
                 'et.EventDescription',
-                'et.EventType',
-                'eo.EventLocation'
+                'eo.EventDateTimeStart'
             )
-            .where('eo.EventDateTimeStart', '>=', new Date())
+            .where('eo.EventDateTimeStart', '>=', now)
             .orderBy('eo.EventDateTimeStart', 'asc');
 
-        const userPastEvents = await knex('EventOccurrence as eo')
-            .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
-            .join('Registration as r', function() {
-                this.on('r.Event_ID', '=', 'eo.Event_ID')
-                    .andOn('r.EventDateTimeStart', '=', 'eo.EventDateTimeStart')
-                    .andOn('r.Participant_ID', '=', knex.raw('?', [id]));
-            })
-            .select(
-                'eo.Event_ID',
-                'eo.EventDateTimeStart',
-                'et.EventName',
-                'et.EventDescription',
-                'et.EventType',
-                'eo.EventLocation',
-                'r.RegistrationAttendedFlag'
-            )
-            .where('eo.EventDateTimeStart', '<', new Date())
-            .andWhere('r.RegistrationAttendedFlag', '=', 'T')
-            .orderBy('eo.EventDateTimeStart', 'desc'); // most recent first
-
-
-
-        res.render('events_user', {
+        res.render('events_nonverified', {
             user: req.session.user,
-            upcomingEvents,
-            userPastEvents
+            events
         });
     } catch (err) {
-        console.error('Knex Events route error:', err);
-        res.status(500).send('Error retrieving events');
+        console.error("Public events error:", err);
+        res.status(500).send("Server error");
     }
 });
+
 
 // Dashboard (requires login)
 app.get('/dashboard', requireLogin, async(req, res) => {
@@ -405,36 +369,6 @@ app.post('/profile/update', upload.single('ProfilePicture'), requireLogin, async
     }
 });
 
-// ===== Events route (public but shows user if logged in) =====
-app.get('/events', async(req, res) => {
-    try {
-        const now = new Date();
-
-        // Join EventOccurrence with EventTemplates to get full event info
-        const allevents = await knex('EventOccurrence as eo')
-            .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
-            .select(
-                'et.Event_ID',
-                'et.EventName',
-                'et.EventDescription',
-                'et.EventType',
-                'eo.EventDateTimeStart',
-                'eo.EventLocation'
-            )
-            .orderBy('eo.EventDateTimeStart', 'asc');
-
-        // Separate upcoming vs past events
-        const events = allevents.filter(e => new Date(e.EventDateTimeStart) >= now);
-
-        res.render('events', {
-            user: req.session.user,
-            events
-        });
-    } catch (err) {
-        console.error('Knex Events route error:', err);
-        res.status(500).send('Error retrieving events');
-    }
-});
 
 // ===== Surveys route (composite key) =====
 app.get('/surveys/:eventId/:eventDateTimeStart', async(req, res) => {
@@ -1022,151 +956,151 @@ app.post('/submit-milestone', requireLogin, async(req, res) => {
 
 // ===== ALL DELETE ROUTES =====
 // Soft delete / anonymize a participant
-app.delete('/participant/:id', async (req, res) => {
-  const participantId = req.params.id;
+app.delete('/participant/:id', async(req, res) => {
+    const participantId = req.params.id;
 
-  try {
-    // Update participant record, nullifying sensitive fields
-    const updated = await knex('Participants')
-      .where({ Participant_ID: participantId })
-      .update({
-        ParticipantEmail: null,
-        ParticipantPassword: null,
-        ParticipantFirstName: null,
-        ParticipantLastName: null,
-        ParticipantDOB: null,
-        ParticipantRole: null,
-        ParticipantPhone: null,
-        ParticipantCity: null,
-        ParticipantState: null,
-        ParticipantZIP: null,
-        ParticipantSchoolorEmployer: null,
-        ParticipantFieldOfInterest: null
-      });
+    try {
+        // Update participant record, nullifying sensitive fields
+        const updated = await knex('Participants')
+            .where({ Participant_ID: participantId })
+            .update({
+                ParticipantEmail: null,
+                ParticipantPassword: null,
+                ParticipantFirstName: null,
+                ParticipantLastName: null,
+                ParticipantDOB: null,
+                ParticipantRole: null,
+                ParticipantPhone: null,
+                ParticipantCity: null,
+                ParticipantState: null,
+                ParticipantZIP: null,
+                ParticipantSchoolorEmployer: null,
+                ParticipantFieldOfInterest: null
+            });
 
-    if (updated) {
-      res.status(200).json({ message: 'Participant anonymized successfully.' });
-    } else {
-      res.status(404).json({ message: 'Participant not found.' });
+        if (updated) {
+            res.status(200).json({ message: 'Participant anonymized successfully.' });
+        } else {
+            res.status(404).json({ message: 'Participant not found.' });
+        }
+    } catch (err) {
+        console.error('Error anonymizing participant:', err);
+        res.status(500).json({ message: 'Internal server error.' });
     }
-  } catch (err) {
-    console.error('Error anonymizing participant:', err);
-    res.status(500).json({ message: 'Internal server error.' });
-  }
 });
 
 // Delete a specific donation by Donation_ID
-app.delete('/donation/:id', async (req, res) => {
-  const donationId = req.params.id;
+app.delete('/donation/:id', async(req, res) => {
+    const donationId = req.params.id;
 
-  try {
-    const deleted = await knex('Donations')
-      .where({ Donation_ID: donationId })
-      .del();
+    try {
+        const deleted = await knex('Donations')
+            .where({ Donation_ID: donationId })
+            .del();
 
-    if (deleted) {
-      res.status(200).json({ message: 'Donation deleted successfully.' });
-    } else {
-      res.status(404).json({ message: 'Donation not found.' });
+        if (deleted) {
+            res.status(200).json({ message: 'Donation deleted successfully.' });
+        } else {
+            res.status(404).json({ message: 'Donation not found.' });
+        }
+    } catch (err) {
+        console.error('Error deleting donation:', err);
+        res.status(500).json({ message: 'Internal server error.' });
     }
-  } catch (err) {
-    console.error('Error deleting donation:', err);
-    res.status(500).json({ message: 'Internal server error.' });
-  }
 });
 
 // Delete a specific EventOccurrence by composite key
-app.delete('/event-occurrence/:eventId/:startTime', async (req, res) => {
-  const { eventId, startTime } = req.params;
+app.delete('/event-occurrence/:eventId/:startTime', async(req, res) => {
+    const { eventId, startTime } = req.params;
 
-  try {
-    const deleted = await knex('EventOccurrence')
-      .where({
-        Event_ID: eventId,
-        EventDateTimeStart: startTime
-      })
-      .del();
+    try {
+        const deleted = await knex('EventOccurrence')
+            .where({
+                Event_ID: eventId,
+                EventDateTimeStart: startTime
+            })
+            .del();
 
-    if (deleted) {
-      res.status(200).json({ message: 'Event occurrence deleted successfully.' });
-    } else {
-      res.status(404).json({ message: 'Event occurrence not found.' });
+        if (deleted) {
+            res.status(200).json({ message: 'Event occurrence deleted successfully.' });
+        } else {
+            res.status(404).json({ message: 'Event occurrence not found.' });
+        }
+    } catch (err) {
+        console.error('Error deleting event occurrence:', err);
+        res.status(500).json({ message: 'Internal server error.' });
     }
-  } catch (err) {
-    console.error('Error deleting event occurrence:', err);
-    res.status(500).json({ message: 'Internal server error.' });
-  }
 });
 
 // Delete a specific Milestone by composite key
-app.delete('/milestone/:participantId/:title', async (req, res) => {
-  const { participantId, title } = req.params;
+app.delete('/milestone/:participantId/:title', async(req, res) => {
+    const { participantId, title } = req.params;
 
-  try {
-    const deleted = await knex('Milestones')
-      .where({
-        Participant_ID: participantId,
-        MilestoneTitle: title
-      })
-      .del();
+    try {
+        const deleted = await knex('Milestones')
+            .where({
+                Participant_ID: participantId,
+                MilestoneTitle: title
+            })
+            .del();
 
-    if (deleted) {
-      res.status(200).json({ message: 'Milestone deleted successfully.' });
-    } else {
-      res.status(404).json({ message: 'Milestone not found.' });
+        if (deleted) {
+            res.status(200).json({ message: 'Milestone deleted successfully.' });
+        } else {
+            res.status(404).json({ message: 'Milestone not found.' });
+        }
+    } catch (err) {
+        console.error('Error deleting milestone:', err);
+        res.status(500).json({ message: 'Internal server error.' });
     }
-  } catch (err) {
-    console.error('Error deleting milestone:', err);
-    res.status(500).json({ message: 'Internal server error.' });
-  }
 });
 
 // Delete a specific Registration by composite key
-app.delete('/registration/:participantId/:eventId/:startTime', async (req, res) => {
-  const { participantId, eventId, startTime } = req.params;
+app.delete('/registration/:participantId/:eventId/:startTime', async(req, res) => {
+    const { participantId, eventId, startTime } = req.params;
 
-  try {
-    const deleted = await knex('Registration')
-      .where({
-        Participant_ID: participantId,
-        Event_ID: eventId,
-        EventDateTimeStart: startTime
-      })
-      .del();
+    try {
+        const deleted = await knex('Registration')
+            .where({
+                Participant_ID: participantId,
+                Event_ID: eventId,
+                EventDateTimeStart: startTime
+            })
+            .del();
 
-    if (deleted) {
-      res.status(200).json({ message: 'Registration deleted successfully.' });
-    } else {
-      res.status(404).json({ message: 'Registration not found.' });
+        if (deleted) {
+            res.status(200).json({ message: 'Registration deleted successfully.' });
+        } else {
+            res.status(404).json({ message: 'Registration not found.' });
+        }
+    } catch (err) {
+        console.error('Error deleting registration:', err);
+        res.status(500).json({ message: 'Internal server error.' });
     }
-  } catch (err) {
-    console.error('Error deleting registration:', err);
-    res.status(500).json({ message: 'Internal server error.' });
-  }
 });
 
 // Delete a specific Survey by composite key
-app.delete('/survey/:participantId/:eventId/:startTime', async (req, res) => {
-  const { participantId, eventId, startTime } = req.params;
+app.delete('/survey/:participantId/:eventId/:startTime', async(req, res) => {
+    const { participantId, eventId, startTime } = req.params;
 
-  try {
-    const deleted = await knex('Surveys')
-      .where({
-        Participant_ID: participantId,
-        Event_ID: eventId,
-        EventDateTimeStart: startTime
-      })
-      .del();
+    try {
+        const deleted = await knex('Surveys')
+            .where({
+                Participant_ID: participantId,
+                Event_ID: eventId,
+                EventDateTimeStart: startTime
+            })
+            .del();
 
-    if (deleted) {
-      res.status(200).json({ message: 'Survey deleted successfully.' });
-    } else {
-      res.status(404).json({ message: 'Survey not found.' });
+        if (deleted) {
+            res.status(200).json({ message: 'Survey deleted successfully.' });
+        } else {
+            res.status(404).json({ message: 'Survey not found.' });
+        }
+    } catch (err) {
+        console.error('Error deleting survey:', err);
+        res.status(500).json({ message: 'Internal server error.' });
     }
-  } catch (err) {
-    console.error('Error deleting survey:', err);
-    res.status(500).json({ message: 'Internal server error.' });
-  }
 });
 
 // ===== Start server =====
