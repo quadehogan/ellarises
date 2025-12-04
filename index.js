@@ -852,7 +852,6 @@ app.post('/create-user-submit', requireLogin, async(req, res) => {
             ParticipantZIP: body.ParticipantZIP,
             ParticipantSchoolorEmployer: body.ParticipantSchoolorEmployer,
             ParticipantFieldOfInterest: body.ParticipantFieldOfInterest,
-            CreatedAt: knex.fn.now()
         });
 
         res.redirect('/participants');
