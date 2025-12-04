@@ -165,7 +165,7 @@ app.get('/events_user/:id', async (req, res) => {
                 'r.Participant_ID',
                 'eo.Event_ID',
                 'eo.EventDateTimeStart',
-                'r.RegistrationFlag',  // or RegistrationAttendedFlag
+                'r.RegistrationAttendedFlag',  // or RegistrationAttendedFlag
                 'et.EventName',
                 'et.EventDescription',
                 'et.EventType',
@@ -182,7 +182,7 @@ app.get('/events_user/:id', async (req, res) => {
 
         const userPastEvents = pastEvents.filter(e => 
             e.Participant_ID === userId &&
-            e.RegistrationFlag === "T"
+            e.RegistrationAttendedFlag === "T"
         );
 
 
