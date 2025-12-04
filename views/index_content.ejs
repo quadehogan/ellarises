@@ -1,4 +1,35 @@
-<!-- Hero Slideshow -->
+<!-- Top Hero Image -->
+<div class="hero-image">
+  <img src="/images/STEMWorkshop2.jpg" alt="STEM Workshop Hero">
+</div>
+
+<!-- Mission + Stats Section -->
+<div class="section section-mission-stats">
+  <div class="mission">
+    <h2>Our Mission</h2>
+    <p>Our mission is to provide an exceptional learning environment where participants grow, connect, and thrive. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent euismod ex at dui laoreet, ut cursus libero iaculis.</p>
+  </div>
+
+  <div class="stats">
+    <h2>Our Stats</h2>
+    <ul>
+      <li><strong>500+</strong> Participants trained</li>
+      <li><strong>120</strong> Events held</li>
+      <li><strong>95%</strong> Satisfaction rate</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Video Section -->
+<div class="section section-video">
+  <h2>Watch Our Introduction</h2>
+  <video controls>
+    <source src="https://video.wixstatic.com/video/e5f869_f075e19ca2744354bb20a65881dce28f/1080p/mp4/file.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<!-- Slideshow Section (Moved Lower) -->
 <div class="slideshow-container">
   <div class="slide">
     <img src="/images/STEMWorkshop5.jpg" alt="Slide 1">
@@ -38,72 +69,28 @@
     let slideIndex = 0;
     const slides = document.querySelectorAll('.slide');
 
-    if (!slides.length) {
-      console.error("No slides found.");
-      return;
-    }
+    if (!slides.length) return;
 
-    // Preload images
     slides.forEach(slide => {
       const img = slide.querySelector('img');
-      if (img) {
-        const preload = new Image();
-        preload.src = img.src;
-      }
+      if (img) new Image().src = img.src;
     });
 
-    // Make first slide visible immediately
     slides[0].classList.add('active');
 
     function showSlides() {
-      const previousIndex = slideIndex;
+      const prevIndex = slideIndex;
       slideIndex = (slideIndex + 1) % slides.length;
 
-      const currentSlide = slides[slideIndex];
-      const previousSlide = slides[previousIndex];
-
-      currentSlide.classList.add('active');
-
-      if (previousSlide && previousSlide !== currentSlide) {
-        setTimeout(() => {
-          previousSlide.classList.remove('active');
-        }, 500);
-      }
+      slides[slideIndex].classList.add('active');
+      setTimeout(() => slides[prevIndex]?.classList.remove('active'), 500);
 
       setTimeout(showSlides, 10000);
     }
 
-    setTimeout(showSlides, 10000); // Wait 10s before first fade
+    setTimeout(showSlides, 10000);
   });
 </script>
-
-
-
-<!-- Mission + Stats Section -->
-<div class="section section-mission-stats">
-  <div class="mission">
-    <h2>Our Mission</h2>
-    <p>Our mission is to provide an exceptional learning environment where participants grow, connect, and thrive. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent euismod ex at dui laoreet, ut cursus libero iaculis.</p>
-  </div>
-
-  <div class="stats">
-    <h2>Our Stats</h2>
-    <ul>
-      <li><strong>500+</strong> Participants trained</li>
-      <li><strong>120</strong> Events held</li>
-      <li><strong>95%</strong> Satisfaction rate</li>
-    </ul>
-  </div>
-</div>
-
-<!-- Video Section -->
-<div class="section section-video">
-  <h2>Watch Our Introduction</h2>
-  <video controls>
-    <source src="https://video.wixstatic.com/video/e5f869_f075e19ca2744354bb20a65881dce28f/1080p/mp4/file.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-</div>
 
 <!-- Cards Section -->
 <div class="section section-cards">
@@ -155,3 +142,30 @@
     <a href="#" class="cta-btn">Enroll Now</a>
   </div>
 </div>
+
+<!-- Hero Image CSS -->
+<style>
+.hero-image img {
+  width: 100%;
+  height: 60vh; /* slightly shorter than full screen */
+  object-fit: cover;
+}
+
+/* Optional: Slideshow styling if not already in your CSS */
+.slideshow-container {
+  position: relative;
+  max-width: 100%;
+  margin: 40px auto; /* spacing from above content */
+  overflow: hidden;
+}
+
+.slide {
+  display: none;
+  width: 100%;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.slide.active {
+  display: block;
+}
+</style>
