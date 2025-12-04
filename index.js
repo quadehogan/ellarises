@@ -560,10 +560,11 @@ app.get('/milestones/delete/:id', requireLogin, async(req, res) => {
 });
 
 // ===== Donations =====
-// ===== PUBLIC DONATION FORM (no login required) =====
-app.get('/donate-public', async(req, res) => {
-    res.render('add_donation_public'); // You already have this file
+// PUBLIC donation form
+app.get('/donate-public', (req, res) => {
+    res.render('add_donation_public');
 });
+
 
 // ===== PUBLIC DONATION SUBMIT =====
 app.post('/submit-donation-public', async(req, res) => {
@@ -575,18 +576,19 @@ app.post('/submit-donation-public', async(req, res) => {
             return res.status(400).send('Invalid donation amount.');
         }
 
-        // 1️⃣ Create a minimal Participant (only ID required)
-        const [newParticipantID] = await knex('Participants')
+        // Create minimal participant
+        const [newP] = await knex('Participants')
             .insert({
                 ParticipantFirstName: firstName || null,
                 ParticipantLastName: lastName || null,
-                ParticipantEmail: email || null
+                ParticipantEmail: email || null,
+                ParticipantRole: 'visitor'
             })
             .returning('Participant_ID');
 
-        // 2️⃣ Insert Donation tied to the new Participant_ID
+        // Insert donation
         await knex('Donations').insert({
-            Participant_ID: newParticipantID.Participant_ID,
+            Participant_ID: newP.Participant_ID,
             DonationAmount: numericAmount,
             DonationDate: knex.fn.now(),
             DonorFirstName: firstName || null,
@@ -594,12 +596,13 @@ app.post('/submit-donation-public', async(req, res) => {
             DonorEmail: email || null
         });
 
-        res.redirect('/thank-you'); // You can create a thank-you page
+        res.redirect('/thank-you');
     } catch (err) {
         console.error("Public donation error:", err);
         res.status(500).send("Server error submitting donation.");
     }
 });
+
 
 // ===== LOGGED-IN DONATIONS PAGE =====
 app.get('/donations', requireLogin, async(req, res) => {
@@ -611,7 +614,7 @@ app.get('/donations', requireLogin, async(req, res) => {
         // ADMIN VIEW
         if (user.role === 'admin') {
             donations = await knex('Donations')
-                .join('Participants', 'Donations.Participant_ID', 'Participants.Participant_ID')
+                .leftJoin('Participants', 'Donations.Participant_ID', 'Participants.Participant_ID')
                 .select(
                     'Donations.Donation_ID',
                     'Donations.Participant_ID',
@@ -622,7 +625,7 @@ app.get('/donations', requireLogin, async(req, res) => {
                 )
                 .orderBy('Donations.DonationDate', 'desc');
 
-            const totalAmount = donations.reduce((sum, d) => sum + Number(d.DonationAmount || 0), 0);
+            const totalAmount = donations.reduce((s, d) => s + Number(d.DonationAmount || 0), 0);
 
             return res.render('donations_admin', {
                 user,
@@ -638,7 +641,7 @@ app.get('/donations', requireLogin, async(req, res) => {
                 .select('Donation_ID', 'DonationAmount', 'DonationDate')
                 .orderBy('DonationDate', 'desc');
 
-            const totalAmount = donations.reduce((sum, d) => sum + Number(d.DonationAmount || 0), 0);
+            const totalAmount = donations.reduce((s, d) => s + Number(d.DonationAmount || 0), 0);
 
             return res.render('donations_user', {
                 user,
@@ -648,12 +651,13 @@ app.get('/donations', requireLogin, async(req, res) => {
         }
 
         return res.status(403).send("Unauthorized role.");
-
     } catch (err) {
         console.error("Error fetching donations:", err);
-        return res.status(500).send("Server error.");
+        res.status(500).send("Server error.");
     }
 });
+
+
 
 // ===== LOGGED-IN PARTICIPANT SUBMIT DONATION =====
 app.post('/submit-donation', requireLogin, async(req, res) => {
@@ -680,7 +684,7 @@ app.post('/submit-donation', requireLogin, async(req, res) => {
                 .where({ Participant_ID: user.id })
                 .increment('TotalDonations', amount);
         } catch (e) {
-            console.warn("Optional TotalDonations update skipped:", e.message);
+            console.warn("TotalDonations optional column not updated:", e.message);
         }
 
         res.redirect('/donations');
@@ -690,6 +694,7 @@ app.post('/submit-donation', requireLogin, async(req, res) => {
         res.status(500).send("Error submitting donation.");
     }
 });
+
 
 // ===== SHOW ADD DONATION FORM (USER ONLY) =====
 app.get('/donate', requireLogin, (req, res) => {
@@ -702,6 +707,9 @@ app.get('/donate', requireLogin, (req, res) => {
     res.render('add_donation_user', { user });
 });
 
+app.get('/thank-you', (req, res) => {
+    res.render('thank_you');
+});
 
 
 
