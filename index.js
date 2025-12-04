@@ -573,33 +573,32 @@ app.post('/submit-donation-public', async(req, res) => {
 
         const numericAmount = parseFloat(amount);
         if (isNaN(numericAmount) || numericAmount <= 0) {
-            return res.status(400).send('Invalid donation amount.');
+            return res.status(400).send("Invalid donation amount.");
         }
 
-        // Create minimal participant
-        const [newP] = await knex('Participants')
+        // Create minimal participant (donor)
+        const [newParticipant] = await knex("Participants")
             .insert({
                 ParticipantFirstName: firstName || null,
                 ParticipantLastName: lastName || null,
                 ParticipantEmail: email || null,
-                ParticipantRole: 'visitor'
+                ParticipantRole: "visitor"
             })
-            .returning('Participant_ID');
+            .returning("Participant_ID");
 
-        // Insert donation
-        await knex('Donations').insert({
-            Participant_ID: newP.Participant_ID,
+        const newId = newParticipant.Participant_ID;
+
+        // Create donation linked to this anonymous participant
+        await knex("Donations").insert({
+            Participant_ID: newId,
             DonationAmount: numericAmount,
-            DonationDate: knex.fn.now(),
-            DonorFirstName: firstName || null,
-            DonorLastName: lastName || null,
-            DonorEmail: email || null
+            DonationDate: knex.fn.now()
         });
 
-        res.redirect('/thank-you');
+        return res.redirect("/thank-you");
     } catch (err) {
         console.error("Public donation error:", err);
-        res.status(500).send("Server error submitting donation.");
+        return res.status(500).send("Server error submitting donation.");
     }
 });
 
