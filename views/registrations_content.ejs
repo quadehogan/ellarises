@@ -41,10 +41,9 @@
 
           <!-- Delete button -->
           <form 
-            action="/registration/<%= reg.Participant_ID %>/<%= reg.Event_ID %>/<%= encodeURIComponent(reg.EventDateTimeStart) %>" 
+            action="/registration/<%= reg.Participant_ID %>/<%= reg.Event_ID %>/<%= encodeURIComponent(reg.EventDateTimeStart) %>/delete" 
             method="POST" 
             onsubmit="return confirm('Are you sure you want to delete this registration?');">
-            <input type="hidden" name="_method" value="DELETE">
             <button class="btn btn-secondary btn-sm" type="submit">Delete</button>
           </form>
         </td>

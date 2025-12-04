@@ -955,43 +955,42 @@ app.post('/submit-milestone', requireLogin, async(req, res) => {
 });
 
 // ===== ALL DELETE ROUTES =====
-// Soft delete / anonymize a participant
-app.delete('/participant/:id', async(req, res) => {
-    const participantId = req.params.id;
+// Soft delete / anonymize a participant via POST
+app.post('/participant/:id/delete', async (req, res) => {
+  const participantId = req.params.id;
 
-    try {
-        // Update participant record, nullifying sensitive fields
-        const updated = await knex('Participants')
-            .where({ Participant_ID: participantId })
-            .update({
-                ParticipantEmail: null,
-                ParticipantPassword: null,
-                ParticipantFirstName: null,
-                ParticipantLastName: null,
-                ParticipantDOB: null,
-                ParticipantRole: null,
-                ParticipantPhone: null,
-                ParticipantCity: null,
-                ParticipantState: null,
-                ParticipantZIP: null,
-                ParticipantSchoolorEmployer: null,
-                ParticipantFieldOfInterest: null
-            });
+  try {
+    const updated = await knex('Participants')
+      .where({ Participant_ID: participantId })
+      .update({
+        ParticipantEmail: null,
+        ParticipantPassword: null,
+        ParticipantFirstName: null,
+        ParticipantLastName: null,
+        ParticipantDOB: null,
+        ParticipantRole: null,
+        ParticipantPhone: null,
+        ParticipantCity: null,
+        ParticipantState: null,
+        ParticipantZIP: null,
+        ParticipantSchoolorEmployer: null,
+        ParticipantFieldOfInterest: null
+      });
 
-        if (updated) {
-            res.status(200).json({ message: 'Participant anonymized successfully.' });
-        } else {
-            res.status(404).json({ message: 'Participant not found.' });
-        }
-    } catch (err) {
-        console.error('Error anonymizing participant:', err);
-        res.status(500).json({ message: 'Internal server error.' });
+    if (updated) {
+      res.redirect('/participants'); // redirect back to the page
+    } else {
+      res.status(404).send('Participant not found.');
     }
+  } catch (err) {
+    console.error('Error anonymizing participant:', err);
+    res.status(500).send('Internal server error.');
+  }
 });
 
 // Delete a specific donation by Donation_ID
-app.delete('/donation/:id', async(req, res) => {
-    const donationId = req.params.id;
+app.post('/donation/:id/delete', async (req, res) => {
+  const donationId = req.params.id;
 
     try {
         const deleted = await knex('Donations')
@@ -1010,8 +1009,8 @@ app.delete('/donation/:id', async(req, res) => {
 });
 
 // Delete a specific EventOccurrence by composite key
-app.delete('/event-occurrence/:eventId/:startTime', async(req, res) => {
-    const { eventId, startTime } = req.params;
+app.post('/event-occurrence/:eventId/:startTime/delete', async (req, res) => {
+  const { eventId, startTime } = req.params;
 
     try {
         const deleted = await knex('EventOccurrence')
@@ -1033,8 +1032,8 @@ app.delete('/event-occurrence/:eventId/:startTime', async(req, res) => {
 });
 
 // Delete a specific Milestone by composite key
-app.delete('/milestone/:participantId/:title', async(req, res) => {
-    const { participantId, title } = req.params;
+app.post('/milestone/:participantId/:title/delete', async (req, res) => {
+  const { participantId, title } = req.params;
 
     try {
         const deleted = await knex('Milestones')
@@ -1056,8 +1055,8 @@ app.delete('/milestone/:participantId/:title', async(req, res) => {
 });
 
 // Delete a specific Registration by composite key
-app.delete('/registration/:participantId/:eventId/:startTime', async(req, res) => {
-    const { participantId, eventId, startTime } = req.params;
+app.post('/registration/:participantId/:eventId/:startTime/delete', async (req, res) => {
+  const { participantId, eventId, startTime } = req.params;
 
     try {
         const deleted = await knex('Registration')
@@ -1080,8 +1079,8 @@ app.delete('/registration/:participantId/:eventId/:startTime', async(req, res) =
 });
 
 // Delete a specific Survey by composite key
-app.delete('/survey/:participantId/:eventId/:startTime', async(req, res) => {
-    const { participantId, eventId, startTime } = req.params;
+app.post('/survey/:participantId/:eventId/:startTime/delete', async (req, res) => {
+  const { participantId, eventId, startTime } = req.params;
 
     try {
         const deleted = await knex('Surveys')

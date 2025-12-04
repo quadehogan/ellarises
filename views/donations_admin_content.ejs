@@ -46,8 +46,11 @@
                                 <button class="custom-btn" onclick="alert('Edit coming soon')">Edit</button>
                             </td>
                             <td>
-                                <form action="/donation/<%= d.Donation_ID %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this donation?');" style="display: inline-block;">
-                                    <input type="hidden" name="_method" value="DELETE">
+                                <form 
+                                    action="/donation/<%= d.Donation_ID %>/delete" 
+                                    method="POST" 
+                                    onsubmit="return confirm('Are you sure you want to delete this donation?');" 
+                                    style="display: inline-block;">
                                     <button type="submit" class="custom-btn" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">
                                         Delete
                                     </button>
