@@ -149,7 +149,7 @@ app.get('/events', async(req, res) => {
 });
 
 // ===== Events route (public but shows user if logged in) =====
-app.get('/events_user/:id', async(req, res) => {
+app.get('/events_user/:id', async (req, res) => {
     const id = req.params.id;
 
     const userId = Number(req.params.id);
@@ -160,14 +160,9 @@ app.get('/events_user/:id', async(req, res) => {
 
         const upcomingEvents = await knex('EventOccurrence as eo')
             .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
-            .join('Registration as r', function() {
-                this.on('r.Event_ID', '=', 'eo.Event_ID')
-                    .andOn('r.EventDateTimeStart', '=', 'eo.EventDateTimeStart');
-            })
             .select(
                 'eo.Event_ID',
                 'eo.EventDateTimeStart',
-                'r.RegistrationAttendedFlag', // or RegistrationAttendedFlag
                 'et.EventName',
                 'et.EventDescription',
                 'et.EventType',
@@ -176,17 +171,77 @@ app.get('/events_user/:id', async(req, res) => {
             .where('eo.EventDateTimeStart', '>=', new Date())
             .orderBy('eo.EventDateTimeStart', 'asc');
 
+        const userPastEvents = await knex('EventOccurrence as eo')
+            .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
+            .join('Registration as r', function() {
+                this.on('r.Event_ID', '=', 'eo.Event_ID')
+                    .andOn('r.EventDateTimeStart', '=', 'eo.EventDateTimeStart')
+                    .andOn('r.Participant_ID', '=', knex.raw('?', [userId]));
+            })
+            .select(
+                'eo.Event_ID',
+                'eo.EventDateTimeStart',
+                'et.EventName',
+                'et.EventDescription',
+                'et.EventType',
+                'eo.EventLocation',
+                'r.RegistrationAttendedFlag'
+            )
+            .where('eo.EventDateTimeStart', '<', new Date())
+            .andWhere('r.RegistrationAttendedFlag', '=', 'T')
+            .orderBy('eo.EventDateTimeStart', 'desc'); // most recent first
 
-        // Separate upcoming vs past events
-        const upcomingEvents = events.filter(e => new Date(e.EventDateTimeStart) >= now);
-        const pastEvents = events.filter(e => new Date(e.EventDateTimeStart) < now);
 
-        const userId = Number(id);
 
-        const userPastEvents = pastEvents.filter(e =>
-            e.Participant_ID === userId &&
-            e.RegistrationAttendedFlag === "T"
-        );
+        res.render('events_user', {
+            user: req.session.user,
+            upcomingEvents,
+            userPastEvents
+        });
+    } catch (err) {
+        console.error('Knex Events route error:', err);
+        res.status(500).send('Error retrieving events');
+    }
+});// ===== Events route (public but shows user if logged in) =====
+app.get('/events_user/:id', async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const now = new Date();
+
+        const upcomingEvents = await knex('EventOccurrence as eo')
+            .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
+            .select(
+                'eo.Event_ID',
+                'eo.EventDateTimeStart',
+                'et.EventName',
+                'et.EventDescription',
+                'et.EventType',
+                'eo.EventLocation'
+            )
+            .where('eo.EventDateTimeStart', '>=', new Date())
+            .orderBy('eo.EventDateTimeStart', 'asc');
+
+        const userPastEvents = await knex('EventOccurrence as eo')
+            .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
+            .join('Registration as r', function() {
+                this.on('r.Event_ID', '=', 'eo.Event_ID')
+                    .andOn('r.EventDateTimeStart', '=', 'eo.EventDateTimeStart')
+                    .andOn('r.Participant_ID', '=', knex.raw('?', [id]));
+            })
+            .select(
+                'eo.Event_ID',
+                'eo.EventDateTimeStart',
+                'et.EventName',
+                'et.EventDescription',
+                'et.EventType',
+                'eo.EventLocation',
+                'r.RegistrationAttendedFlag'
+            )
+            .where('eo.EventDateTimeStart', '<', new Date())
+            .andWhere('r.RegistrationAttendedFlag', '=', 'T')
+            .orderBy('eo.EventDateTimeStart', 'desc'); // most recent first
+
 
 
         res.render('events_user', {
