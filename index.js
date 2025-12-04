@@ -691,7 +691,7 @@ app.post('/enroll', async (req, res) => {
     const data = req.body;
 
     try {
-        await knex('Participant').insert({
+        await knex('Participants').insert({
             ParticipantEmail: data.ParticipantEmail,
             ParticipantPassword: data.ParticipantPassword,
             ParticipantFirstName: data.ParticipantFirstName,
@@ -732,7 +732,7 @@ app.post('/create-user-submit', requireLogin, async (req, res) => {
     const body = req.body;
 
     try {
-        await knex('Participant').insert({
+        await knex('Participants').insert({
             ParticipantEmail: body.ParticipantEmail,
             ParticipantPassword: body.ParticipantPassword,
             ParticipantFirstName: body.ParticipantFirstName,
