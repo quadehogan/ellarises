@@ -149,7 +149,7 @@ app.get('/events', async(req, res) => {
 });
 
 // ===== Events route (public but shows user if logged in) =====
-app.get('/events_user/:id', async (req, res) => {
+app.get('/events_user/:id', async(req, res) => {
     const id = req.params.id;
 
     const userId = Number(req.params.id);
@@ -202,8 +202,8 @@ app.get('/events_user/:id', async (req, res) => {
         console.error('Knex Events route error:', err);
         res.status(500).send('Error retrieving events');
     }
-});// ===== Events route (public but shows user if logged in) =====
-app.get('/events_user/:id', async (req, res) => {
+}); // ===== Events route (public but shows user if logged in) =====
+app.get('/events_user/:id', async(req, res) => {
     const id = req.params.id;
 
     try {
@@ -654,9 +654,7 @@ app.get('/add_milestone_admin', requireLogin, async(req, res) => {
     res.render('add_milestone_admin', { user, participants });
 });
 
-
-
-// Add milestone POST route
+// admin Add milestone POST route
 app.post('/milestone/add', requireLogin, async(req, res) => {
     const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
 
@@ -674,6 +672,40 @@ app.post('/milestone/add', requireLogin, async(req, res) => {
     }
 });
 
+// User get add milestone page
+app.get("/milestone/add/:id", requireLogin, async(req, res) => {
+    const participantId = req.params.id;
+
+    const participant = await knex("Participants")
+        .where("Participant_ID", participantId)
+        .first();
+
+    res.render("add_milestone_user", {
+        user: req.session.user,
+        participant
+    });
+});
+
+
+
+// User post add milestone page
+app.post("/milestone/add", requireLogin, async(req, res) => {
+    const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
+
+    try {
+        await knex("Milestones").insert({
+            Participant_ID,
+            MilestoneTitle,
+            MilestoneDate
+        });
+
+        res.redirect(`/profile/${Participant_ID}`);
+    } catch (err) {
+        console.error("Error adding milestone:", err);
+        res.status(500).send("Error adding milestone");
+    }
+});
+
 
 
 app.get('/add_survey/:Participant_ID/:Event_ID/:EventDateTimeStart', requireLogin, (req, res) => {
@@ -687,7 +719,7 @@ app.get('/add_donation', (req, res) => res.render('add_donation', { user: req.se
 app.get('/teapot', (req, res) => res.status(418).send("I'm a teapot ☕"));
 
 // ===== POST: Enroll =====
-app.post('/enroll', async (req, res) => {
+app.post('/enroll', async(req, res) => {
     const data = req.body;
 
     try {
@@ -728,7 +760,7 @@ app.post('/enroll', async (req, res) => {
 
 
 // ===== POST: Create user (admin) =====
-app.post('/create-user-submit', requireLogin, async (req, res) => {
+app.post('/create-user-submit', requireLogin, async(req, res) => {
     const body = req.body;
 
     try {

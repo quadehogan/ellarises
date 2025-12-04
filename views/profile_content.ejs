@@ -96,6 +96,7 @@
     </table>
 
     <% if (user.isManager || user.id === profile.Participant_ID) { %>
+        <!-- NEW correct add-milestone route -->
         <a href="/milestone/add/<%= profile.Participant_ID %>" class="btn custom-btn mt-3">
            Add Milestone
         </a>

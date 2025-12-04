@@ -1,0 +1,34 @@
+<div class="container my-5">
+    <h2 class="mb-4">Add Milestone</h2>
+
+    <!-- Milestone Form -->
+    <form action="/milestone/add" method="POST">
+
+        <!-- Auto-filled Participant ID -->
+        <div class="mb-3">
+            <label class="form-label">Participant ID</label>
+            <input type="text" class="form-control" name="Participant_ID" value="<%= participant.Participant_ID %>" readonly>
+        </div>
+
+        <!-- Title -->
+        <div class="mb-3">
+            <label class="form-label">Milestone Title</label>
+            <input type="text" name="MilestoneTitle" class="form-control" placeholder="Enter milestone title" required>
+        </div>
+
+        <!-- Date -->
+        <div class="mb-3">
+            <label class="form-label">Milestone Date</label>
+            <input type="date" name="MilestoneDate" class="form-control" required>
+        </div>
+
+        <!-- Buttons -->
+        <button class="custom-btn" type="submit">Add Milestone</button>
+
+        <!-- Cancel goes back to user's profile -->
+        <a href="/profile/<%= participant.Participant_ID %>" class="btn btn-secondary ms-3">
+            Cancel
+        </a>
+
+    </form>
+</div>
