@@ -363,23 +363,44 @@ main {
     flex: 1; /* takes all remaining vertical space */
 }
 
-#dashboard {
-    width: 100%;
-    min-height: 600px; 
-    margin-bottom: 80px; /* keeps it off the footer */
-}
-
-/* Let Tableau auto-size */
-.tableauPlaceholder, 
-.tableauViz {
-  width: 100% !important;
-  height: auto !important;
-}
-
 .footer-logo {
-    width: 60px;
+    width: 20px;
     height: auto;
     margin-top: 10px;
     margin-bottom: 10px;
     cursor: pointer;
 }
+
+/* ===== Dashboard / Tableau Fix ===== */
+.tableauPlaceholder {
+    position: relative;
+    width: 100%;
+    min-height: 800px; /* ensures dashboard is visible and large enough */
+}
+
+.tableauViz {
+    width: 100% !important;
+    height: 100% !important; /* fills the placeholder */
+    min-height: 800px;       /* guarantees a minimum height */
+    display: block !important; /* ensure it shows */
+}
+
+/* Optional: make sure dashboard scales on smaller screens */
+@media (max-width: 1200px) {
+    .tableauPlaceholder {
+        min-height: 600px;
+    }
+    .tableauViz {
+        min-height: 600px;
+    }
+}
+
+@media (max-width: 768px) {
+    .tableauPlaceholder {
+        min-height: 500px;
+    }
+    .tableauViz {
+        min-height: 500px;
+    }
+}
+
