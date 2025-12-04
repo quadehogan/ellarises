@@ -1130,7 +1130,7 @@ app.delete('/registration/:participantId/:eventId/:startTime', async (req, res) 
 });
 
 // Delete a specific Survey by composite key
-router.delete('/survey/:participantId/:eventId/:startTime', async (req, res) => {
+app.delete('/survey/:participantId/:eventId/:startTime', async (req, res) => {
   const { participantId, eventId, startTime } = req.params;
 
   try {
