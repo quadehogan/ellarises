@@ -149,7 +149,7 @@ app.get('/events', async(req, res) => {
 });
 
 // ===== Events route (public but shows user if logged in) =====
-app.get('/events_user/:id', async (req, res) => {
+app.get('/events_user/:id', async(req, res) => {
     const id = req.params.id;
 
     try {
@@ -157,15 +157,15 @@ app.get('/events_user/:id', async (req, res) => {
 
         const events = await knex('EventOccurrence as eo')
             .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
-            .join('Registration as r', function () {
+            .join('Registration as r', function() {
                 this.on('r.Event_ID', '=', 'eo.Event_ID')
-                    .andOn('r.EventDateTimeStart', '=', 'eo.EventDateTimeStart'); 
+                    .andOn('r.EventDateTimeStart', '=', 'eo.EventDateTimeStart');
             })
             .select(
                 'r.Participant_ID',
                 'eo.Event_ID',
                 'eo.EventDateTimeStart',
-                'r.RegistrationAttendedFlag',  // or RegistrationAttendedFlag
+                'r.RegistrationAttendedFlag', // or RegistrationAttendedFlag
                 'et.EventName',
                 'et.EventDescription',
                 'et.EventType',
@@ -180,7 +180,7 @@ app.get('/events_user/:id', async (req, res) => {
 
         const userId = Number(id);
 
-        const userPastEvents = pastEvents.filter(e => 
+        const userPastEvents = pastEvents.filter(e =>
             e.Participant_ID === userId &&
             e.RegistrationAttendedFlag === "T"
         );
@@ -577,56 +577,45 @@ app.get('/add_events', requireLogin, (req, res) => res.render('add_events', { us
 
 
 
-// Add milestone form page (admin sees all participants)
-app.get('/add_milestone', requireLogin, async(req, res) => {
+// Admin Add Milestone page
+app.get('/add_milestone_admin', requireLogin, async(req, res) => {
     const user = req.session.user;
 
-    let participants = [];
-
-    // Managers/Admins can see participants
-    if (user.ParticipantRole === 'manager' || user.ParticipantRole === 'admin') {
-        participants = await knex('Participants')
-            .select(
-                'Participant_ID',
-                'ParticipantFirstName',
-                'ParticipantLastName',
-                'ParticipantEmail'
-            );
+    if (user.role !== 'admin') {
+        return res.redirect('/dashboard');
     }
 
-    res.render('add_milestone', {
-        user,
-        participants,
-        participant_id: null // important fix to prevent EJS crash
-    });
+    const participants = await knex('Participants')
+        .select(
+            'Participant_ID',
+            'ParticipantFirstName',
+            'ParticipantLastName',
+            'ParticipantEmail'
+        );
+
+    res.render('add_milestone_admin', { user, participants });
 });
+
 
 
 // Add milestone POST route
 app.post('/milestone/add', requireLogin, async(req, res) => {
+    const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
+
     try {
-        const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
-
-        // Validation
-        if (!Participant_ID || !MilestoneTitle || !MilestoneDate) {
-            return res.status(400).send("Missing required fields.");
-        }
-
-        // Insert into DB
         await knex('Milestones').insert({
             Participant_ID,
             MilestoneTitle,
             MilestoneDate
         });
 
-        // Redirect to participant profile OR dashboard
-        res.redirect(`/profile/${Participant_ID}`);
-
+        res.redirect('/dashboard');
     } catch (err) {
-        console.error("Error adding milestone:", err);
-        res.status(500).send("Server error");
+        console.error("Milestone insert error:", err);
+        res.status(500).send("Error adding milestone");
     }
 });
+
 
 
 app.get('/add_survey', requireLogin, (req, res) => res.render('add_survey', { user: req.session.user }));
