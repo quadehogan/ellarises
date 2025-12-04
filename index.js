@@ -765,7 +765,7 @@ app.post('/submit-survey', requireLogin, async(req, res) => {
             Participant_ID,
             Event_ID,
             EventDateTimeStart,
-            SurveySatisfactionScore: sat,
+            SurveySatisfaction: sat,
             SurveyUsefulnessScore: use,
             SurveyInstructorScore: instr,
             SurveyRecommendationScore: rec,
