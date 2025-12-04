@@ -701,8 +701,8 @@ app.post('/enroll', async (req, res) => {
             ParticipantPhone: data.ParticipantPhone,
             ParticipantCity: data.ParticipantCity,
             ParticipantState: data.ParticipantState,
-            ParticipantZip: data.ParticipantZip,
-            ParticipantSchoolorEmployer: data.ParticipantSchoolOrEmployer,
+            ParticipantZIP: data.ParticipantZIP,
+            ParticipantSchoolorEmployer: data.ParticipantSchoolorEmployer,
             ParticipantFieldOfInterest: data.ParticipantFieldOfInterest
         });
 
@@ -742,8 +742,8 @@ app.post('/create-user-submit', requireLogin, async (req, res) => {
             ParticipantPhone: body.ParticipantPhone,
             ParticipantCity: body.ParticipantCity,
             ParticipantState: body.ParticipantState,
-            ParticipantZip: body.ParticipantZip,
-            ParticipantSchoolorEmployer: body.ParticipantSchoolOrEmployer,
+            ParticipantZIP: body.ParticipantZIP,
+            ParticipantSchoolorEmployer: body.ParticipantSchoolorEmployer,
             ParticipantFieldOfInterest: body.ParticipantFieldOfInterest,
             CreatedAt: knex.fn.now()
         });
