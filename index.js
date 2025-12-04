@@ -149,30 +149,6 @@ app.get('/events', async(req, res) => {
 });
 
 
-// Public donations page (no login)
-app.get('/donate', async(req, res) => {
-    res.render('add_donation_public'); // simple page: name, email, amount
-});
-
-app.post('/submit-donation-public', async(req, res) => {
-    const { firstName, lastName, email, amount } = req.body;
-    const numericAmount = parseFloat(amount);
-    if (isNaN(numericAmount) || numericAmount <= 0) {
-        return res.status(400).send('Invalid donation amount.');
-    }
-
-    await knex('Donations').insert({
-        Participant_ID: null, // visitor
-        DonationAmount: numericAmount,
-        DonationDate: knex.fn.now(),
-        DonorFirstName: firstName,
-        DonorLastName: lastName,
-        DonorEmail: email
-    });
-
-    res.redirect('/'); // or a thank-you page
-});
-
 
 // ===== Events route (public but shows user if logged in) =====
 app.get('/events_user/:id', async(req, res) => {
@@ -584,13 +560,55 @@ app.get('/milestones/delete/:id', requireLogin, async(req, res) => {
 });
 
 // ===== Donations =====
-// ADMIN + USER donations (separated views)
+// ===== PUBLIC DONATION FORM (no login required) =====
+app.get('/donate-public', async(req, res) => {
+    res.render('add_donation_public'); // You already have this file
+});
+
+// ===== PUBLIC DONATION SUBMIT =====
+app.post('/submit-donation-public', async(req, res) => {
+    try {
+        const { firstName, lastName, email, amount } = req.body;
+
+        const numericAmount = parseFloat(amount);
+        if (isNaN(numericAmount) || numericAmount <= 0) {
+            return res.status(400).send('Invalid donation amount.');
+        }
+
+        // 1️⃣ Create a minimal Participant (only ID required)
+        const [newParticipantID] = await knex('Participants')
+            .insert({
+                ParticipantFirstName: firstName || null,
+                ParticipantLastName: lastName || null,
+                ParticipantEmail: email || null
+            })
+            .returning('Participant_ID');
+
+        // 2️⃣ Insert Donation tied to the new Participant_ID
+        await knex('Donations').insert({
+            Participant_ID: newParticipantID.Participant_ID,
+            DonationAmount: numericAmount,
+            DonationDate: knex.fn.now(),
+            DonorFirstName: firstName || null,
+            DonorLastName: lastName || null,
+            DonorEmail: email || null
+        });
+
+        res.redirect('/thank-you'); // You can create a thank-you page
+    } catch (err) {
+        console.error("Public donation error:", err);
+        res.status(500).send("Server error submitting donation.");
+    }
+});
+
+// ===== LOGGED-IN DONATIONS PAGE =====
 app.get('/donations', requireLogin, async(req, res) => {
     const user = req.session.user;
 
     try {
         let donations = [];
 
+        // ADMIN VIEW
         if (user.role === 'admin') {
             donations = await knex('Donations')
                 .join('Participants', 'Donations.Participant_ID', 'Participants.Participant_ID')
@@ -613,6 +631,7 @@ app.get('/donations', requireLogin, async(req, res) => {
             });
         }
 
+        // PARTICIPANT VIEW
         if (user.role === 'participant') {
             donations = await knex('Donations')
                 .where({ Participant_ID: user.id })
@@ -628,15 +647,15 @@ app.get('/donations', requireLogin, async(req, res) => {
             });
         }
 
-        return res.status(403).send('Unauthorized role');
+        return res.status(403).send("Unauthorized role.");
 
     } catch (err) {
-        console.error('Error fetching donations:', err);
-        res.status(500).send('Server error');
+        console.error("Error fetching donations:", err);
+        return res.status(500).send("Server error.");
     }
 });
 
-// SUBMIT donation (USER ONLY)
+// ===== LOGGED-IN PARTICIPANT SUBMIT DONATION =====
 app.post('/submit-donation', requireLogin, async(req, res) => {
     try {
         const user = req.session.user;
@@ -647,7 +666,7 @@ app.post('/submit-donation', requireLogin, async(req, res) => {
         }
 
         if (isNaN(amount) || amount <= 0) {
-            return res.status(400).send('Invalid donation amount.');
+            return res.status(400).send("Invalid donation amount.");
         }
 
         await knex('Donations').insert({
@@ -661,28 +680,29 @@ app.post('/submit-donation', requireLogin, async(req, res) => {
                 .where({ Participant_ID: user.id })
                 .increment('TotalDonations', amount);
         } catch (e) {
-            console.warn("Optional TotalDonations column update failed:", e.message);
+            console.warn("Optional TotalDonations update skipped:", e.message);
         }
 
         res.redirect('/donations');
 
     } catch (err) {
-        console.error('Error submitting donation:', err);
-        res.status(500).send('Error submitting donation.');
+        console.error("Error submitting donation:", err);
+        res.status(500).send("Error submitting donation.");
     }
 });
 
-
-// Show Add Donation Page (User Only)
+// ===== SHOW ADD DONATION FORM (USER ONLY) =====
 app.get('/donate', requireLogin, (req, res) => {
     const user = req.session.user;
 
     if (user.role !== 'participant') {
-        return res.status(403).send('Only participants can add donations.');
+        return res.status(403).send("Only participants can add donations.");
     }
 
     res.render('add_donation_user', { user });
 });
+
+
 
 
 // ===== Enroll / Create User / Add Events (render forms) =====
@@ -769,8 +789,6 @@ app.get('/add_survey/:Participant_ID/:Event_ID/:EventDateTimeStart', requireLogi
     const { Participant_ID, Event_ID, EventDateTimeStart } = req.params;
     res.render('add_survey', { user: req.session.user, Participant_ID, Event_ID, EventDateTimeStart });
 });
-
-app.get('/add_donation', (req, res) => res.render('add_donation', { user: req.session.user }));
 
 // Teapot
 app.get('/teapot', (req, res) => res.status(418).send("I'm a teapot ☕"));
