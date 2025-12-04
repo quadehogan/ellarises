@@ -109,6 +109,7 @@ main {
     transition: all 0.3s ease;
     display: inline-block;
     text-align: center;
+    text-decoration: none;
 }
 
 .custom-btn:hover {

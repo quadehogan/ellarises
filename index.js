@@ -324,20 +324,27 @@ app.post('/profile/delete', requireLogin, async(req, res) => {
 // ===== Events route (public but shows user if logged in) =====
 app.get('/events', async(req, res) => {
     try {
-        // Fetch events (EventOccurrence table)
-        const events = await knex('EventOccurrence')
-            .select('Event_ID', 'EventName', 'EventType', 'EventDateTimeStart', 'EventLocation')
-            .orderBy('EventDateTimeStart', 'asc');
-
         const now = new Date();
 
-        const upcomingEvents = events.filter(e => new Date(e.EventDateTimeStart) >= now);
-        const pastEvents = events.filter(e => new Date(e.EventDateTimeStart) < now);
+        // Join EventOccurrence with EventTemplates to get full event info
+        const allevents = await knex('EventOccurrence as eo')
+            .join('EventTemplates as et', 'eo.Event_ID', 'et.Event_ID')
+            .select(
+                'et.Event_ID',
+                'et.EventName',
+                'et.EventDescription',
+                'et.EventType',
+                'eo.EventDateTimeStart',
+                'eo.EventLocation'
+            )
+            .orderBy('eo.EventDateTimeStart', 'asc');
+
+        // Separate upcoming vs past events
+        const events = allevents.filter(e => new Date(e.EventDateTimeStart) >= now);
 
         res.render('events', {
             user: req.session.user,
-            upcomingEvents,
-            pastEvents
+            events
         });
     } catch (err) {
         console.error('Knex Events route error:', err);

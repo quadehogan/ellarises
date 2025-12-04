@@ -1,0 +1,8 @@
+<%- include('layout', { 
+    title: 'Events', 
+    body: include('events_user_content', { 
+        user: user, 
+        upcomingEvents: upcomingEvents, 
+        userPastEvents: userPastEvents 
+    }) 
+}) %>
