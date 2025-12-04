@@ -1,29 +1,36 @@
 <div class="container my-5">
     <h1 class="mb-4">Make a Donation</h1>
 
-    <form action="/submit-donation-public" method="POST">
-
-        <div class="mb-3">
-            <label class="form-label">First Name (optional)</label>
-            <input type="text" class="form-control" name="firstName">
+    <% if (message) { %>
+        <div class="alert alert-success text-center">
+            <%= message %>
         </div>
+        <% } %>
 
-        <div class="mb-3">
-            <label class="form-label">Last Name (optional)</label>
-            <input type="text" class="form-control" name="lastName">
-        </div>
+            <form action="/submit-donation-public" method="POST">
 
-        <div class="mb-3">
-            <label class="form-label">Email (optional)</label>
-            <input type="email" class="form-control" name="email">
-        </div>
+                <div class="mb-3">
+                    <label class="form-label">First Name (optional)</label>
+                    <input type="text" class="form-control" name="firstName">
+                </div>
 
-        <div class="mb-3">
-            <label class="form-label">Donation Amount *</label>
-            <input type="number" step="0.01" class="form-control" name="amount" required>
-        </div>
+                <div class="mb-3">
+                    <label class="form-label">Last Name (optional)</label>
+                    <input type="text" class="form-control" name="lastName">
+                </div>
 
-        <button class="custom-btn">Submit Donation</button>
-        <a href="/" class="btn btn-secondary ms-3">Cancel</a>
-    </form>
+                <div class="mb-3">
+                    <label class="form-label">Email (optional)</label>
+                    <input type="email" class="form-control" name="email">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Donation Amount *</label>
+                    <input type="number" step="0.01" class="form-control" name="amount" required>
+                </div>
+
+                <button class="custom-btn" type="submit">Submit Donation</button>
+                <a href="/" class="btn btn-secondary ms-3">Cancel</a>
+
+            </form>
 </div>

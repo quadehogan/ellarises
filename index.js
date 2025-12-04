@@ -523,10 +523,11 @@ app.post('/milestones/add', requireLogin, async(req, res) => {
 });
 
 // ===== Donations =====
-// PUBLIC donation form
+// ===== PUBLIC DONATION PAGE (no login required) =====
 app.get('/donate-public', (req, res) => {
-    res.render('add_donation_public');
+    res.render('add_donation_public', { message: null });
 });
+
 
 
 // ===== PUBLIC DONATION SUBMIT =====
@@ -534,36 +535,51 @@ app.post('/submit-donation-public', async(req, res) => {
     try {
         const { firstName, lastName, email, amount } = req.body;
 
-        const numericAmount = parseFloat(amount);
-        if (isNaN(numericAmount) || numericAmount <= 0) {
+        const numericAmount = parseFloat(amount || 0);
+        if (numericAmount <= 0) {
             return res.status(400).send("Invalid donation amount.");
         }
 
-        // Create minimal participant (donor)
+        // 1️⃣ Create temporary/visitor participant
         const [newParticipant] = await knex("Participants")
             .insert({
-                ParticipantFirstName: firstName || null,
-                ParticipantLastName: lastName || null,
+                ParticipantFirstName: firstName || "Visitor",
+                ParticipantLastName: lastName || "Donor",
                 ParticipantEmail: email || null,
-                ParticipantRole: "visitor"
+                ParticipantPassword: "publicdonor", // REQUIRED BY ERD
+                ParticipantRole: "visitor",
+
+                // Safe defaults in case schema does NOT allow null
+                ParticipantDOB: null,
+                ParticipantPhone: null,
+                ParticipantCity: "N/A",
+                ParticipantState: "N/A",
+                ParticipantZIP: "00000",
+                ParticipantSchoolorEmployer: null,
+                ParticipantFieldOfInterest: null
             })
             .returning("Participant_ID");
 
-        const newId = newParticipant.Participant_ID;
+        const visitorID = newParticipant.Participant_ID;
 
-        // Create donation linked to this anonymous participant
+        // 2️⃣ Insert donation linked to visitor participant
         await knex("Donations").insert({
-            Participant_ID: newId,
+            Participant_ID: visitorID,
             DonationAmount: numericAmount,
             DonationDate: knex.fn.now()
         });
 
-        return res.redirect("/thank-you");
+        // 3️⃣ Re-render form with thank-you message
+        return res.render("add_donation_public", {
+            message: "Thank you for your donation!"
+        });
+
     } catch (err) {
         console.error("Public donation error:", err);
         return res.status(500).send("Server error submitting donation.");
     }
 });
+
 
 
 // ===== LOGGED-IN DONATIONS PAGE =====
