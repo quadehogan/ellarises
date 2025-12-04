@@ -20,6 +20,7 @@
               <th>Date</th>
               <th>Location</th>
               <th>Actions</th>
+              <th></th>
               <th>Survey</th>
             </tr>
           </thead>
@@ -31,8 +32,10 @@
                 <td><%= new Date(event.EventDateTimeStart).toLocaleString() %></td>
                 <td><%= event.EventLocation %></td>
                 <td>
-                  <button onclick="alert('Edit coming soon')">Edit</button>
-                  <button onclick="alert('Delete coming soon')">Delete</button>
+                  <button class="custom-btn" onclick="alert('Edit coming soon')">Edit</button>
+                </td>
+                <td>
+                  <button class="custom-btn" onclick="alert('Delete coming soon')">Delete</button>
                 </td>
                 <td>
                   <a href="/surveys/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart.toISOString()) %>" class="custom-btn">Survey</a>
@@ -56,6 +59,7 @@
               <th>Date</th>
               <th>Location</th>
               <th>Actions</th>
+              <th></th>
               <th>Survey</th>
             </tr>
           </thead>
@@ -67,8 +71,10 @@
                 <td><%= new Date(event.EventDateTimeStart).toLocaleString() %></td>
                 <td><%= event.EventLocation %></td>
                 <td>
-                  <button onclick="alert('Cannot edit past event')">Edit</button>
-                  <button onclick="alert('Cannot delete past event')">Delete</button>
+                  <button class="custom-btn" onclick="alert('Cannot edit past event')">Edit</button>
+                </td>
+                <td>
+                  <button class="custom-btn" onclick="alert('Cannot delete past event')">Delete</button>
                 </td>
                 <td>
                   <a href="/surveys/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart.toISOString()) %>" class="custom-btn">Survey</a>
