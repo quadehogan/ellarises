@@ -829,9 +829,9 @@ app.post('/submit-survey', requireLogin, async(req, res) => {
         });
 
         if (user.role === 'admin') {
-        res.redirect('/manage_dashboard');
+            res.redirect('/manage_dashboard');
         } else {
-        res.redirect(`/events_user/${user.id}`);
+            res.redirect(`/events_user/${user.id}`);
         }
 
     } catch (err) {
@@ -1396,7 +1396,7 @@ app.post('/registration/:participantId/:eventId/:startTime/delete', async(req, r
 });
 
 // Delete a specific Survey by composite key
-app.post('/survey/:participantId/:eventId/:startTime/delete', async (req, res) => {
+app.post('/survey/:participantId/:eventId/:startTime/delete', async(req, res) => {
     const { participantId, eventId, startTime } = req.params;
     const user = req.session.user;
 
@@ -1571,7 +1571,7 @@ app.post("/milestone/add", requireLogin, async(req, res) => {
 app.get("/add_milestone_admin", requireLogin, async(req, res) => {
     const user = req.session.user;
 
-    if (user.role !== "admin") return res.redirect("/dashboard");
+    if (user.role !== "admin") return res.redirect("/Milestones");
 
     const participants = await knex("Participants").select(
         "Participant_ID",
