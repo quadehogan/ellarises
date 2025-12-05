@@ -126,7 +126,8 @@ app.get('/manage_dashboard', requireLogin, (req, res) => {
     res.render('manage_dashboard', {
         user: req.session.user,
         contentFile: 'manage_default_content',
-        contentData: { user: req.session.user } // render it first
+        contentData: { user: req.session.user }, // render it first
+        message
     });
 });
 
