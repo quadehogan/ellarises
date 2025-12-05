@@ -674,7 +674,15 @@ app.get('/thank-you', (req, res) => {
 
 // ===== Enroll / Create User / Add Events (render forms) =====
 app.get('/enroll', (req, res) => res.render('enroll', { user: req.session.user }));
-app.get('/create_user', requireLogin, (req, res) => res.render('create_user', { user: req.session.user }));
+
+app.get('/create_user', requireLogin, (req, res) => 
+    res.render('manage_dashboard', { 
+        user: req.session.user ,
+        title: 'Create User',
+        contentFile: 'create_user_content',
+        contentData: { user: req.session.user }
+    }));
+
 app.get('/add_events', requireLogin, (req, res) => res.render('add_events', { user: req.session.user }));
 
 
