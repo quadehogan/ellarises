@@ -499,16 +499,13 @@ main {
 }
 
 
-/* Full-page particle wrapper */
+/* Particle wrapper only for the content container */
 .particles-wrapper {
-    position: fixed;     /* cover the viewport */
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+    position: absolute;    /* relative to the container */
+    inset: 0;              /* top:0; right:0; bottom:0; left:0; */
     overflow: hidden;
-    z-index: 0;          /* behind all content */
-    pointer-events: none; /* clicks pass through */
+    z-index: 0;            /* behind content */
+    pointer-events: none;  /* clicks pass through */
 }
 
 /* Make sure your content sits on top */
@@ -540,7 +537,7 @@ main {
         transform: scale(1);
     }
     100% {
-        bottom: 100%;
+        bottom: 100%; /* stays within the container */
         opacity: 0;
         transform: scale(1.2);
     }
@@ -552,6 +549,7 @@ main {
     50% { transform: translateX(15px); }
     100% { transform: translateX(0); }
 }
+
 
 /* Force column widths to match across tables */
 #eventTable th,
