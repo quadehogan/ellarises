@@ -1355,6 +1355,8 @@ app.post("/profile/update", async (req, res) => {
       ParticipantFieldOfInterest
     } = req.body;
 
+    console.log("Participant_ID from form:", Participant_ID);
+
     // Update the participant record
     await knex("Participants")
       .where({ Participant_ID: Participant_ID })
@@ -1377,7 +1379,7 @@ app.post("/profile/update", async (req, res) => {
     req.session.message = "Profile updated successfully!";
 
     // Redirect back to profile page or dashboard
-    if (req.session.user.role === "admin") {
+    if (req.session.user.id === "admin") {
       res.redirect("/manage_dashboard");
     } else {
       res.redirect("/profile");
@@ -1457,7 +1459,7 @@ app.post("/milestone/update", async (req, res) => {
             .update({
                 MilestoneDate: MilestoneDate
             });
-        if (req.session.user.role === "admin") {
+        if (req.session.user.id === "admin") {
         res.redirect("/manage_dashboard");
         } else {
         res.redirect(`/profile/${Participant_ID}`);
@@ -1495,7 +1497,7 @@ app.post("/registration/:Participant_ID/:Event_ID/:EventDateTimeStart/edit", asy
       });
 
     req.session.message = "Registration updated successfully!";
-    if (req.session.user.role === "admin") {
+    if (req.session.user.id === "admin") {
     res.redirect("/manage_dashboard");
     } else {
     res.redirect(`/profile/${Participant_ID}`);
