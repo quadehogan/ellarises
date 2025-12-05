@@ -1,0 +1,24 @@
+<form action="/milestone/update" method="POST">
+    <div class="mb-3">
+        <label for="participantID" class="form-label">Participant ID</label>
+
+        <!-- ADMIN: Fully editable textbox, pre-filled -->
+        <input type="text" class="form-control" id="participantID" name="Participant_ID" 
+               value="<%= milestone.Participant_ID %>" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Milestone Title</label>
+        <input type="text" name="MilestoneTitle" class="form-control" 
+               value="<%= milestone.MilestoneTitle %>" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Milestone Date</label>
+        <input type="date" name="MilestoneDate" class="form-control" 
+               value="<%= milestone.MilestoneDate.toISOString().split('T')[0] %>" required>
+    </div>
+
+    <button class="btn btn-primary">Update Milestone</button>
+    <a href="/dashboard" class="btn btn-secondary ms-3">Cancel</a>
+</form>
