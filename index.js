@@ -788,7 +788,7 @@ app.post('/create-user-submit', requireLogin, async(req, res) => {
 
 
 // ===== POST: Submit Survey (example storing) =====
-app.post('/submit-survey', requireLogin, async (req, res) => {
+app.post('/submit-survey', requireLogin, async(req, res) => {
     const user = req.session.user;
     try {
         const {
@@ -1258,7 +1258,7 @@ app.post("/registration/:Participant_ID/:Event_ID/:EventDateTimeStart/edit", asy
             RegistrationCreatedAt
         } = req.body;
 
-        await knex("Registrations")
+        await knex("Registration")
             .where({
                 Participant_ID,
                 Event_ID,
