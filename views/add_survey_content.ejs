@@ -1,59 +1,79 @@
-<form action="/submit-survey" method="POST">
+<div class="container my-5">
+    <h1 class="mb-4">Submit Survey</h1>
 
-    <!-- Hidden Fields -->
-    <input type="hidden" name="Participant_ID" value="<%= Participant_ID %>">
-    <input type="hidden" name="Event_ID" value="<%= Event_ID %>">
-    <input type="hidden" name="EventDateTimeStart" value="<%= EventDateTimeStart %>">
+    <form action="/submit-survey" method="POST">
 
-    <!-- Satisfaction -->
-    <div class="mb-3">
-        <label class="form-label">Satisfaction Score:</label>
-        <select class="form-select" name="SurveySatisfactionScore" required>
-            <option value="">Select...</option>
-            <% [1,2,3,4,5].forEach(n => { %>
-                <option value="<%= n %>"><%= n %></option>
-            <% }) %>
-        </select>
-    </div>
+        <!-- Hidden Fields -->
+        <input type="hidden" name="Participant_ID" value="<%= Participant_ID %>">
+        <input type="hidden" name="Event_ID" value="<%= Event_ID %>">
+        <input type="hidden" name="EventDateTimeStart" value="<%= EventDateTimeStart %>">
 
-    <!-- Usefulness -->
-    <div class="mb-3">
-        <label class="form-label">Usefulness Score:</label>
-        <select class="form-select" name="SurveyUsefulnessScore" required>
-            <option value="">Select...</option>
-            <% [1,2,3,4,5].forEach(n => { %>
-                <option value="<%= n %>"><%= n %></option>
-            <% }) %>
-        </select>
-    </div>
+        <div class="row g-3">
+            <!-- Satisfaction -->
+            <div class="col-md-6">
+                <label class="form-label">Satisfaction Score:</label>
+                <select class="form-select" name="SurveySatisfactionScore" required>
+                    <option value="">Select...</option>
+                    <% [1,2,3,4,5].forEach(n => { %>
+                        <option value="<%= n %>"><%= n %></option>
+                    <% }) %>
+                </select>
+            </div>
 
-    <!-- Instructor -->
-    <div class="mb-3">
-        <label class="form-label">Instructor Score:</label>
-        <select class="form-select" name="SurveyInstructorScore" required>
-            <option value="">Select...</option>
-            <% [1,2,3,4,5].forEach(n => { %>
-                <option value="<%= n %>"><%= n %></option>
-            <% }) %>
-        </select>
-    </div>
+            <!-- Usefulness -->
+            <div class="col-md-6">
+                <label class="form-label">Usefulness Score:</label>
+                <select class="form-select" name="SurveyUsefulnessScore" required>
+                    <option value="">Select...</option>
+                    <% [1,2,3,4,5].forEach(n => { %>
+                        <option value="<%= n %>"><%= n %></option>
+                    <% }) %>
+                </select>
+            </div>
 
-    <!-- Recommendation -->
-    <div class="mb-3">
-        <label class="form-label">Recommendation Score:</label>
-        <select class="form-select" name="SurveyRecommendationScore" required>
-            <option value="">Select...</option>
-            <% [1,2,3,4,5].forEach(n => { %>
-                <option value="<%= n %>"><%= n %></option>
-            <% }) %>
-        </select>
-    </div>
+            <!-- Instructor -->
+            <div class="col-md-6">
+                <label class="form-label">Instructor Score:</label>
+                <select class="form-select" name="SurveyInstructorScore" required>
+                    <option value="">Select...</option>
+                    <% [1,2,3,4,5].forEach(n => { %>
+                        <option value="<%= n %>"><%= n %></option>
+                    <% }) %>
+                </select>
+            </div>
 
-    <!-- Survey Comments -->
-    <div class="mb-3">
-        <label class="form-label">Comments:</label>
-        <textarea class="form-control" name="SurveyComments" rows="4" placeholder="Optional"></textarea>
-    </div>
+            <!-- Recommendation -->
+            <div class="col-md-6">
+                <label class="form-label">Recommendation Score:</label>
+                <select class="form-select" name="SurveyRecommendationScore" required>
+                    <option value="">Select...</option>
+                    <% [1,2,3,4,5].forEach(n => { %>
+                        <option value="<%= n %>"><%= n %></option>
+                    <% }) %>
+                </select>
+            </div>
 
-    <button class="custom-btn" type="submit">Submit Survey</button>
-</form>
+            <!-- Comments -->
+            <div class="col-12">
+                <label class="form-label">Comments:</label>
+                <textarea class="form-control" name="SurveyComments" rows="4" placeholder="Optional"></textarea>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="mt-4">
+            <button class="btn btn-primary w-100" type="submit">Submit Survey</button>
+        </div>
+    </form>
+</div>
+
+<!-- Optional CSS for spacing and style -->
+<style>
+    .form-label {
+        font-weight: 500;
+    }
+    .btn {
+        min-height: 45px;
+    }
+</style>
+

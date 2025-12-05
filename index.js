@@ -1167,7 +1167,7 @@ app.post("/survey/update", async(req, res) => {
         Participant_ID,
         Event_ID,
         EventDateTimeStart,
-        SurveySatisfactionScore,
+        SurveySatisfaction,
         SurveyUsefulnessScore,
         SurveyInstructorScore,
         SurveyRecommendationScore,
@@ -1176,7 +1176,7 @@ app.post("/survey/update", async(req, res) => {
 
     try {
         // Convert numeric fields
-        const sat = parseInt(SurveySatisfactionScore || 0);
+        const sat = parseInt(SurveySatisfaction || 0);
         const use = parseInt(SurveyUsefulnessScore || 0);
         const instr = parseInt(SurveyInstructorScore || 0);
         const rec = parseInt(SurveyRecommendationScore || 0);
@@ -1392,6 +1392,7 @@ app.post('/registration/:participantId/:eventId/:startTime/delete', async(req, r
 // Delete a specific Survey by composite key
 app.post('/survey/:participantId/:eventId/:startTime/delete', async(req, res) => {
     const { participantId, eventId, startTime } = req.params;
+    const user = req.session.user;
 
     try {
         const deleted = await knex('Surveys')

@@ -1,68 +1,81 @@
-<form action="/survey/update" method="POST">
+<div class="container my-5">
+    <h1 class="mb-4">Update Survey</h1>
 
-    <!-- Hidden Composite Key Fields -->
-    <input type="hidden" name="Participant_ID" value="<%= survey.Participant_ID %>">
-    <input type="hidden" name="Event_ID" value="<%= survey.Event_ID %>">
-    <input type="hidden" name="EventDateTimeStart" value="<%= survey.EventDateTimeStart %>">
+    <form action="/survey/update" method="POST">
 
-    <!-- Satisfaction -->
-    <div class="mb-3">
-        <label class="form-label">Satisfaction Score:</label>
-        <select class="form-select" name="SurveySatisfactionScore" required>
-            <option value="">Select...</option>
-            <% [1,2,3,4,5].forEach(n => { %>
-                <option value="<%= n %>" <%= survey.SurveySatisfactionScore === n ? "selected" : "" %>>
-                    <%= n %>
-                </option>
-            <% }) %>
-        </select>
-    </div>
+        <!-- Hidden Composite Key Fields -->
+        <input type="hidden" name="Participant_ID" value="<%= survey.Participant_ID %>">
+        <input type="hidden" name="Event_ID" value="<%= survey.Event_ID %>">
+        <input type="hidden" name="EventDateTimeStart" value="<%= survey.EventDateTimeStart %>">
 
-    <!-- Usefulness -->
-    <div class="mb-3">
-        <label class="form-label">Usefulness Score:</label>
-        <select class="form-select" name="SurveyUsefulnessScore" required>
-            <option value="">Select...</option>
-            <% [1,2,3,4,5].forEach(n => { %>
-                <option value="<%= n %>" <%= survey.SurveyUsefulnessScore === n ? "selected" : "" %>>
-                    <%= n %>
-                </option>
-            <% }) %>
-        </select>
-    </div>
+        <div class="row g-3">
+            <!-- Satisfaction -->
+            <div class="col-md-6">
+                <label class="form-label">Satisfaction Score:</label>
+                <select class="form-select" name="SurveySatisfaction" required>
+                    <option value="">Select...</option>
+                    <% [1,2,3,4,5].forEach(n => { %>
+                        <option value="<%= n %>" <%= survey.SurveySatisfaction === n ? "selected" : "" %>><%= n %></option>
+                    <% }) %>
+                </select>
+            </div>
 
-    <!-- Instructor -->
-    <div class="mb-3">
-        <label class="form-label">Instructor Score:</label>
-        <select class="form-select" name="SurveyInstructorScore" required>
-            <option value="">Select...</option>
-            <% [1,2,3,4,5].forEach(n => { %>
-                <option value="<%= n %>" <%= survey.SurveyInstructorScore === n ? "selected" : "" %>>
-                    <%= n %>
-                </option>
-            <% }) %>
-        </select>
-    </div>
+            <!-- Usefulness -->
+            <div class="col-md-6">
+                <label class="form-label">Usefulness Score:</label>
+                <select class="form-select" name="SurveyUsefulnessScore" required>
+                    <option value="">Select...</option>
+                    <% [1,2,3,4,5].forEach(n => { %>
+                        <option value="<%= n %>" <%= survey.SurveyUsefulnessScore === n ? "selected" : "" %>><%= n %></option>
+                    <% }) %>
+                </select>
+            </div>
 
-    <!-- Recommendation -->
-    <div class="mb-3">
-        <label class="form-label">Recommendation Score:</label>
-        <select class="form-select" name="SurveyRecommendationScore" required>
-            <option value="">Select...</option>
-            <% [1,2,3,4,5].forEach(n => { %>
-                <option value="<%= n %>" <%= survey.SurveyRecommendationScore === n ? "selected" : "" %>>
-                    <%= n %>
-                </option>
-            <% }) %>
-        </select>
-    </div>
+            <!-- Instructor -->
+            <div class="col-md-6">
+                <label class="form-label">Instructor Score:</label>
+                <select class="form-select" name="SurveyInstructorScore" required>
+                    <option value="">Select...</option>
+                    <% [1,2,3,4,5].forEach(n => { %>
+                        <option value="<%= n %>" <%= survey.SurveyInstructorScore === n ? "selected" : "" %>><%= n %></option>
+                    <% }) %>
+                </select>
+            </div>
 
-    <!-- Comments -->
-    <div class="mb-3">
-        <label class="form-label">Comments:</label>
-        <textarea class="form-control" name="SurveyComments" rows="4" placeholder="Optional"><%= survey.SurveyComments || "" %></textarea>
-    </div>
+            <!-- Recommendation -->
+            <div class="col-md-6">
+                <label class="form-label">Recommendation Score:</label>
+                <select class="form-select" name="SurveyRecommendationScore" required>
+                    <option value="">Select...</option>
+                    <% [1,2,3,4,5].forEach(n => { %>
+                        <option value="<%= n %>" <%= survey.SurveyRecommendationScore === n ? "selected" : "" %>><%= n %></option>
+                    <% }) %>
+                </select>
+            </div>
 
-    <button class="custom-btn" type="submit">Update Survey</button>
-    <a href="/dashboard" class="btn btn-secondary ms-3">Cancel</a>
-</form>
+            <!-- Comments -->
+            <div class="col-12">
+                <label class="form-label">Comments:</label>
+                <textarea class="form-control" name="SurveyComments" rows="4" placeholder="Optional"><%= survey.SurveyComments || "" %></textarea>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-4 d-flex flex-wrap gap-3">
+            <button class="btn btn-primary flex-grow-1" type="submit">Update Survey</button>
+            <a href="/dashboard" class="btn btn-secondary flex-grow-1">Cancel</a>
+        </div>
+
+    </form>
+</div>
+
+<!-- Optional CSS for better spacing if needed -->
+<style>
+    .form-label {
+        font-weight: 500;
+    }
+    .btn {
+        min-width: 120px;
+    }
+</style>
+
