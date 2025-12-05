@@ -426,8 +426,6 @@ app.get('/users', requireLogin, async(req, res) => {
 
 // ===== Profile Routes =====
 app.get('/profile/:id', requireLogin, async(req, res) => {
-    const message = req.session.message;
-    delete req.session.message;
 
     try {
         const requestedId = Number(req.params.id);
@@ -449,7 +447,6 @@ app.get('/profile/:id', requireLogin, async(req, res) => {
         res.render('profile', {
             user: loggedInUser,
             profile,
-            message,
             milestones
         });
 
@@ -1284,7 +1281,11 @@ app.post('/participant/:id/delete', async(req, res) => {
             });
 
         if (updated) {
+            if (req.session.user && req.session.user.role === 'admin') {
             res.redirect('/participants'); // redirect back to the page
+            } else {
+            res.redirect('/logout'); // log out the user if they deleted themselves
+            }
         } else {
             res.status(404).send('Participant not found.');
         }
@@ -1295,7 +1296,7 @@ app.post('/participant/:id/delete', async(req, res) => {
 });
 
 // Delete a specific donation by Donation_ID
-app.post('/donation/:id/delete', async(req, res) => {
+app.post('/donation/:id/delete', async (req, res) => {
     const donationId = req.params.id;
 
     try {
@@ -1303,21 +1304,25 @@ app.post('/donation/:id/delete', async(req, res) => {
             .where({ Donation_ID: donationId })
             .del();
 
-        if (deleted) {
-            res.status(200).json({ message: 'Donation deleted successfully.' });
-            if (user.role === 'admin') {
-                res.redirect('/donations_admin');
-            } else {
-                res.redirect('/donations_user');
-            }
-        } else {
-            res.status(404).json({ message: 'Donation not found.' });
+        if (!deleted) {
+            return res.status(404).send('Donation not found.');
         }
+
+        // Redirect safely based on logged-in user
+        if (req.session.user && req.session.user.role === 'admin') {
+            return res.redirect('/donations_admin');
+        } else {
+            return res.redirect('/donations_user');
+        }
+
     } catch (err) {
         console.error('Error deleting donation:', err);
-        res.status(500).json({ message: 'Internal server error.' });
+
+        // Optional: display an error page instead of crashing
+        return res.status(500).send('Internal server error while deleting donation.');
     }
 });
+
 
 // Delete a specific EventOccurrence by composite key
 // ==================
