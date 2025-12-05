@@ -1,34 +1,40 @@
 <div class="container mt-5">
-    <h1 class="text-center mb-4">Upcoming Events</h1>
+    <h2 class="mb-4 text-center">Upcoming Events</h2>
 
-    <% if (events.length === 0) { %>
-        <div class="alert alert-warning text-center">
-            <strong>Currently no upcoming events — check back soon!</strong>
+    <% if (!events || events.length === 0) { %>
+        <div class="alert alert-info text-center">
+            No upcoming events — check back soon!
         </div>
-        <% } else { %>
-            <table class="table table-striped table-hover shadow-sm">
+    <% } else { %>
+        <div class="events-box" style="max-height: 400px; overflow-y: auto; border-radius: 16px; box-shadow: 0 6px 16px rgba(0,0,0,0.15); border: 1px solid var(--color-muted);">
+            <table class="table table-striped table-bordered events-table mb-0">
                 <thead class="table-dark">
                     <tr>
-                        <th scope="col">Event Name</th>
-                        <th scope="col">Description</th>
-                        <th scope="col">Start Time</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Start Time</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% events.forEach(event => { %>
                         <tr>
-                            <td>
-                                <%= event.EventName %>
-                            </td>
-                            <td>
-                                <%= event.EventDescription %>
-                            </td>
-                            <td>
-                                <%= new Date(event.EventDateTimeStart).toLocaleString() %>
-                            </td>
+                            <td><%= event.EventName %></td>
+                            <td><%= event.EventDescription %></td>
+                            <td><%= new Date(event.EventDateTimeStart).toLocaleString() %></td>
                         </tr>
-                        <% }) %>
+                    <% }) %>
                 </tbody>
             </table>
-            <% } %>
+        </div>
+    <% } %>
 </div>
+
+<style>
+    .events-box {
+        background: linear-gradient(135deg, var(--color-neutral-light) 0%, #ffffff 100%);
+        padding: 16px;
+    }
+    .events-table th, .events-table td {
+        vertical-align: middle;
+    }
+</style>
