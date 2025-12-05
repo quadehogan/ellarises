@@ -1126,7 +1126,7 @@ app.get('/participant/:id/edit', async(req, res) => {
             .first();
 
         if (participant) {
-            res.render('edit_participant', { user, participant });
+            res.render('edit_user', { user, participant });
         } else {
             res.status(404).send('Participant not found.');
         }
