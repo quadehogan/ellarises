@@ -1538,6 +1538,19 @@ app.post("/milestone/add", requireLogin, async(req, res) => {
     const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
 
     try {
+        // CHECK FOR DUPLICATE TITLE
+        const exists = await knex("Milestones")
+            .where({
+                Participant_ID,
+                MilestoneTitle
+            })
+            .first();
+
+        if (exists) {
+            return res.status(400).send("You already have a milestone with that title. Titles must be unique.");
+        }
+
+        // INSERT NEW MILESTONE
         await knex("Milestones").insert({
             Participant_ID,
             MilestoneTitle,
@@ -1551,6 +1564,7 @@ app.post("/milestone/add", requireLogin, async(req, res) => {
         res.status(500).send("Error adding milestone.");
     }
 });
+
 
 
 // 6. GET — Admin Add Milestone Page
@@ -1578,6 +1592,19 @@ app.post("/milestone/add_admin", requireLogin, async(req, res) => {
     const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
 
     try {
+        // CHECK FOR DUPLICATE TITLE
+        const exists = await knex("Milestones")
+            .where({
+                Participant_ID,
+                MilestoneTitle
+            })
+            .first();
+
+        if (exists) {
+            return res.status(400).send("This participant already has a milestone with that title.");
+        }
+
+        // INSERT NEW MILESTONE
         await knex("Milestones").insert({
             Participant_ID,
             MilestoneTitle,
@@ -1591,6 +1618,7 @@ app.post("/milestone/add_admin", requireLogin, async(req, res) => {
         res.status(500).send("Error adding milestone.");
     }
 });
+
 
 
 
