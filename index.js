@@ -1310,7 +1310,7 @@ app.post('/donation/:id/delete', async (req, res) => {
 
         // Redirect safely based on logged-in user
         if (req.session.user && req.session.user.role === 'admin') {
-            return res.redirect('/donations_admin');
+            return res.redirect('/manage_dashboard');
         } else {
             return res.redirect('/donations_user');
         }

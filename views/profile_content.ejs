@@ -46,7 +46,11 @@
                 <button class="btn btn-primary w-100 mb-2" type="submit">Update Profile</button>
 
                 <% if (user.id === profile.Participant_ID) { %>
-                    <a href="/participant/<%= profile.Participant_ID %>/delete" class="btn btn-danger w-100" onclick="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">Delete My Account</a>
+                    <form action="/participant/<%= profile.Participant_ID %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
+                        <button type="submit" class="btn btn-danger w-100">
+                            Delete My Account
+                        </button>
+                    </form>
                 <% } %>
             </form>
         </div>
@@ -87,7 +91,7 @@
             </div>
 
             <% if (user.id === profile.Participant_ID) { %>
-                <a href="/milestone/add/<%= profile.Participant_ID %>" class="btn btn-success mt-3">Add Milestone</a>
+                <a href="/milestone/add/<%= profile.Participant_ID %>" class="custom-btn">Add Milestone</a>
             <% } %>
         </div>
     </div>
