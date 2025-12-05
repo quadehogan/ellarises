@@ -373,29 +373,53 @@ app.get("/donations/add", requireLogin, (req, res) => {
     });
 });
 
-// POST route to create a new donation
+// ===== ADMIN ADD DONATION =====
 app.post("/donations/add", requireLogin, async (req, res) => {
     try {
-        const { DonationAmount, Participant_ID, DonationDate } = req.body;
+        let { DonationAmount, Participant_ID, DonationDate, firstName, lastName, email } = req.body;
 
         // Validate required fields
-        if (!DonationAmount) {
-            return res.status(400).send("Donation Amount is required.");
+        const numericAmount = parseFloat(DonationAmount || 0);
+        if (numericAmount <= 0) {
+            return res.status(400).send("Invalid donation amount.");
         }
 
-        // Build insert object
-        const newDonation = {
-            DonationAmount
-        };
+        let participantID = Participant_ID;
 
-        if (Participant_ID) newDonation.Participant_ID = Participant_ID;
-        if (DonationDate) newDonation.DonationDate = DonationDate;
+        // 1️⃣ If no Participant_ID is provided, create a temporary participant
+        if (!participantID) {
+            const [newParticipant] = await knex("Participants")
+                .insert({
+                    ParticipantFirstName: firstName || "Visitor",
+                    ParticipantLastName: lastName || "Donor",
+                    ParticipantEmail: email || null,
+                    ParticipantPassword: "publicdonor", // required by ERD
+                    ParticipantRole: "visitor",
+                    ParticipantDOB: null,
+                    ParticipantPhone: null,
+                    ParticipantCity: "N/A",
+                    ParticipantState: "N/A",
+                    ParticipantZIP: "00000",
+                    ParticipantSchoolorEmployer: null,
+                    ParticipantFieldOfInterest: null
+                })
+                .returning("Participant_ID");
 
-        // Insert into database
-        await knex("Donations").insert(newDonation);
+            participantID = newParticipant.Participant_ID;
+        }
 
-        // Redirect to donations list
-        res.redirect("/manage_dashboard");
+        // 2️⃣ Insert donation
+        await knex("Donations").insert({
+            Participant_ID: participantID,
+            DonationAmount: numericAmount,
+            DonationDate: DonationDate || knex.fn.now()
+        });
+
+        // 3️⃣ Optionally store a success message
+        req.session.message = "Donation added successfully!";
+
+        // 4️⃣ Redirect to donations list or dashboard
+        res.redirect("/donations");
 
     } catch (err) {
         console.error("Error adding donation:", err);
