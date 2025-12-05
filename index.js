@@ -116,14 +116,17 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/manage_dashboard', requireLogin, (req, res) => {
+    const message = req.session.message;
+    delete req.session.message;
+
     if (req.session.user.role !== 'admin') {
-        return res.redirect('/dashboard');
+        return res.redirect('/index');
     }
 
     res.render('manage_dashboard', {
         user: req.session.user,
         contentFile: 'manage_default_content',
-        contentData: { user: req.session.user } // render it first
+        contentData: { user: req.session.user, message } // render it first
     });
 });
 
@@ -463,6 +466,8 @@ app.get('/users', requireLogin, async(req, res) => {
 
 // ===== Profile Routes =====
 app.get('/profile/:id', requireLogin, async(req, res) => {
+    const message = req.session.message;
+    delete req.session.message;
     try {
         // If id param provided use it, otherwise use current user's id
         const id = req.params.id || req.session.user.id;
@@ -477,6 +482,7 @@ app.get('/profile/:id', requireLogin, async(req, res) => {
 
         res.render('profile', {
             user: req.session.user,
+            message,
             profile,
             milestones
         });
@@ -1119,7 +1125,6 @@ app.post('/submit-milestone', requireLogin, async(req, res) => {
 app.get('/participant/:id/edit', async(req, res) => {
     const user = req.session.user;
     const participantId = req.params.id;
-    console.log(req.session.user.role);
 
     try {
         const participant = await knex('Participants')
@@ -1338,6 +1343,7 @@ app.post("/events/edit", async (req, res) => {
 
 /* ----- POST: Update Participant ----- */
 app.post("/profile/update", async (req, res) => {
+    const user = req.session.user;
   try {
     // Pull every field exactly as named in the form
     const {
@@ -1378,9 +1384,10 @@ app.post("/profile/update", async (req, res) => {
     req.session.message = "Profile updated successfully!";
 
     // Redirect back to profile page or dashboard
-    if (req.session.user.role === "admin") {
+    if (user.role === "admin") {
       res.redirect("/manage_dashboard");
-    } else {
+    } 
+    else if (user.role === "participant") {
       res.redirect("/profile");
     }
 
