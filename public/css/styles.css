@@ -498,19 +498,25 @@ main {
     padding: 1.5rem;
 }
 
-/* Particle container covering only the main content area */
-.particles-wrapper {
-    position: absolute;      /* relative to content container */
-    top: 0;
-    left: 0;
-    width: 100%;             /* full width of content */
-    height: 100%;            /* full height of content container */
-    overflow: hidden;
-    z-index: 0;              /* behind content */
-    pointer-events: none;    /* clicks pass through */
+/* Particle container fills main content only */
+.page-content {
+    position: relative;  /* establishes positioning context for particles */
+    overflow: hidden;    /* keeps particles inside main area */
 }
 
-/* Make sure content sits on top */
+/* Particle wrapper fills the .page-content */
+.screensaver-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;          /* behind content */
+    pointer-events: none; /* allow clicks through */
+}
+
+/* Ensure dashboard content sits on top of particles */
 .dashboard-content {
     position: relative;
     z-index: 1;
@@ -518,7 +524,7 @@ main {
 }
 
 /* Bubble particles */
-.particles-wrapper .particle {
+.screensaver-box .particle {
     position: absolute;
     display: block;
     border-radius: 50%;
@@ -551,7 +557,6 @@ main {
     50% { transform: translateX(15px); }
     100% { transform: translateX(0); }
 }
-
 
 /* Force column widths to match across tables */
 #eventTable th,
@@ -635,4 +640,16 @@ main {
 
 .event-btn-survey:hover {
     background: var(--color-secondary);
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main.page-content {
+    flex: 1; /* takes remaining vertical space between header and footer */
+    position: relative;
+    overflow: hidden;
 }

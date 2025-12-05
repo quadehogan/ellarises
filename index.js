@@ -703,7 +703,11 @@ app.get('/add_survey/:Participant_ID/:Event_ID/:EventDateTimeStart', requireLogi
 });
 
 // Teapot
-app.get('/teapot', (req, res) => res.status(418).send("I'm a teapot ☕"));
+app.get('/teapot', (req, res) => {
+    res.status(418).render('teapot', {
+        message: "I'm a teapot ☕"
+    });
+});
 
 // ===== POST: Enroll =====
 app.post('/enroll', async(req, res) => {

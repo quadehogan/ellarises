@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teapot</title>
+    <link rel="stylesheet" href="/css/teatimer.css">
+</head>
+
+<body>
+    <%= message %>
+    <div class="wrapper">
+	<div class="teatime_wrapper">
+		<div class="teatime_container">
+			<div class="tea_item tea-bl" role="button" tabindex="0" aria-pressed="false" aria-label="Black tea" data-time="180">
+				<i class="fa fa-leaf"></i>
+				<span class="tea_name">Black</span>
+				<span class="tea_time">3 min</span>
+			</div>
+			<div class="tea_item tea-gr" role="button" tabindex="0" aria-pressed="false" aria-label="Green Tea" data-time="120">
+				<i class="fa fa-leaf"></i>
+				<span class="tea_name">Green</span>
+				<span class="tea_time">2 min</span>
+			</div>
+			<div class="tea_item tea-wh" role="button" tabindex="0" aria-pressed="false" aria-label="White Tea" data-time="60">
+				<i class="fa fa-leaf"></i>
+				<span class="tea_name">White</span>
+				<span class="tea_time">1 min</span>
+			</div>
+			<div class="tea_item tea-ro" role="button" tabindex="0" aria-pressed="false" aria-label="Roobios Tea" data-time="300">
+				<i class="fa fa-leaf"></i>
+				<span class="tea_name">Roobios</span>
+				<span class="tea_time">5 min</span>
+			</div>
+			<div class="tea_item tea-ol" role="button" tabindex="0" aria-pressed="false" aria-label="Oolong Tea" data-time="180">
+				<i class="fa fa-leaf"></i>
+				<span class="tea_name">Oolong</span>
+				<span class="tea_time">3 min</span>
+			</div>
+			<div class="tea_item tea-hr" role="button" tabindex="0" aria-pressed="false" aria-label="Herbal Tea" data-time="300">
+				<i class="fa fa-leaf"></i>
+				<span class="tea_name">Herbal</span>
+				<span class="tea_time">5 min</span>
+			</div>
+		</div>
+		<div class="teatime_timer">
+			<span class="close" role="button" tabindex="-1" aria-pressed="false" aria-label="Close">
+				<i class="fa fa-times"></i>
+			</span>
+			<div class="timer">
+				<h2>Your tea is being brewed!</h2>
+				<p><span class="time-display">00:00</span></p>
+			</div>
+		</div>
+	</div>
+</div> 
+
+<script>
+const teas = document.querySelectorAll(".tea_item");
+const teaContainer = document.querySelector(".teatime_container");
+const teaTimer = document.querySelector(".teatime_timer");
+const timerClose = document.querySelector(".close");
+const timeDisplay = document.querySelector(".time-display");
+let intervalTimer;
+
+function clicked() {
+    // Slide the container and show the timer
+    teaContainer.style.transform = "translateY(-100%)";
+    teaTimer.style.transform = "translateY(-100%)";
+    timerClose.setAttribute("tabindex", "0");
+    teas.forEach(t => t.setAttribute("tabindex", "-1"));
+
+    // Start the timer using the data-time attribute
+    setTimer(this.dataset.time);
+}
+
+function closed() {
+    // Reset positions
+    teaContainer.style.transform = "translateY(0%)";
+    teaTimer.style.transform = "translateY(100%)";
+    timerClose.setAttribute("tabindex", "-1");
+    teas.forEach(t => t.setAttribute("tabindex", "0"));
+
+    // Stop the countdown
+    clearInterval(intervalTimer);
+}
+
+function setTimer(seconds) {
+    const end = Date.now() + seconds * 1000;
+    countdown(end);
+}
+
+function countdown(end) {
+    intervalTimer = setInterval(() => {
+        const secleft = Math.round((end - Date.now()) / 1000);
+        const m = Math.floor(secleft / 60);
+        const s = secleft % 60;
+
+        if (secleft <= 0) {
+            timeDisplay.textContent = "00:00";
+            clearInterval(intervalTimer);
+            closed();
+            return;
+        }
+
+        displayTime(m, s);
+    }, 1000);
+}
+
+function displayTime(m, s) {
+    timeDisplay.textContent = `0${m}:${paddedS(s)}`;
+}
+
+function paddedS(s) {
+    return s < 10 ? "0" + s : s;
+}
+
+// Add event listeners
+teas.forEach(tea => tea.addEventListener("click", clicked));
+teas.forEach(tea => tea.addEventListener("keypress", e => {
+    if (e.key === "Enter" || e.key === " ") clicked.call(e.target);
+}));
+timerClose.addEventListener("click", closed);
+timerClose.addEventListener("keypress", e => {
+    if (e.key === "Enter" || e.key === " ") closed();
+});
+</script>
+
+</body>
+</html>

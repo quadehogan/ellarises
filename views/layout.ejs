@@ -32,8 +32,8 @@
 
 <script>
 $(document).ready(function () {
-    // Generate particles for each container with .floating-bubbles
-    $(".floating-bubbles").each(function () {
+    // Only target .floating-bubbles inside .page-content
+    $(".page-content .floating-bubbles").each(function () {
         const $container = $(this); // jQuery element for this specific container
         const gen = new ParticleGenerator(60, 40, 8, 100, $container); // 60 particles per container
         gen.generate();
