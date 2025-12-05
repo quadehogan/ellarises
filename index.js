@@ -122,7 +122,7 @@ app.get('/manage_dashboard', requireLogin, (req, res) => {
 
     res.render('manage_dashboard', {
         user: req.session.user,
-        contentFile: 'manage_default_content', 
+        contentFile: 'manage_default_content',
         contentData: { user: req.session.user } // render it first
     });
 });
@@ -131,7 +131,7 @@ app.get('/manage_dashboard', requireLogin, (req, res) => {
 // EVENTS ROUTES 
 // ===============
 // Admin events route
-app.get('/events', requireLogin, async (req, res) => {
+app.get('/events', requireLogin, async(req, res) => {
     const user = req.session.user;
 
     // Only admins go through manage_dashboard
@@ -320,7 +320,7 @@ app.post('/events/add', requireLogin, async(req, res) => {
 
 
 // Dashboard (requires login)
-app.get('/milestones', requireLogin, async (req, res) => {
+app.get('/milestones', requireLogin, async(req, res) => {
     const user = req.session.user;
 
     try {
@@ -357,7 +357,7 @@ app.get('/milestones', requireLogin, async (req, res) => {
 
 app.get('/dashboard', requireLogin, (req, res) => {
     const user = req.session.user;
-    res.render('manage_dashboard', {   
+    res.render('manage_dashboard', {
         title: 'Dashboard',
         contentFile: 'dashboard_content',
         contentData: { user }
@@ -366,7 +366,7 @@ app.get('/dashboard', requireLogin, (req, res) => {
 
 
 // ===== Participants page (admin only) =====
-app.get('/participants', requireLogin, async (req, res) => {
+app.get('/participants', requireLogin, async(req, res) => {
     const user = req.session.user;
 
     // Only admins can access
@@ -406,7 +406,7 @@ app.get('/participants', requireLogin, async (req, res) => {
     }
 });
 
-app.get('/users', requireLogin, async (req, res) => {
+app.get('/users', requireLogin, async(req, res) => {
     const user = req.session.user;
 
     // Only admins can access
@@ -664,7 +664,7 @@ app.post('/submit-donation-public', async(req, res) => {
 
 
 // ===== LOGGED-IN DONATIONS PAGE =====
-app.get('/donations', requireLogin, async (req, res) => {
+app.get('/donations', requireLogin, async(req, res) => {
     const user = req.session.user;
 
     try {
@@ -778,9 +778,9 @@ app.get('/thank-you', (req, res) => {
 // ===== Enroll / Create User / Add Events (render forms) =====
 app.get('/enroll', (req, res) => res.render('enroll', { user: req.session.user }));
 
-app.get('/create_user', requireLogin, (req, res) => 
-    res.render('manage_dashboard', { 
-        user: req.session.user ,
+app.get('/create_user', requireLogin, (req, res) =>
+    res.render('manage_dashboard', {
+        user: req.session.user,
         title: 'Create User',
         contentFile: 'create_user_content',
         contentData: { user: req.session.user }
@@ -1115,7 +1115,7 @@ app.post('/submit-milestone', requireLogin, async(req, res) => {
 // ===== ALL EDIT ROUTES =====
 
 // Edit participant (retrieve for edit form)
-app.get('/participant/:id/edit', async (req, res) => {
+app.get('/participant/:id/edit', async(req, res) => {
     const user = req.session.user;
     const participantId = req.params.id;
 
@@ -1136,7 +1136,7 @@ app.get('/participant/:id/edit', async (req, res) => {
 });
 
 // Edit donation
-app.get('/donation/:id/edit', async (req, res) => {
+app.get('/donation/:id/edit', async(req, res) => {
     const user = req.session.user;
     const donationId = req.params.id;
 
@@ -1157,31 +1157,67 @@ app.get('/donation/:id/edit', async (req, res) => {
 });
 
 // Edit event occurrence (composite key)
-app.get('/event-occurrence/:eventId/:startTime/edit', async (req, res) => {
+app.get('/events/edit/:eventId/:startTime', async(req, res) => {
     const user = req.session.user;
     const { eventId, startTime } = req.params;
 
     try {
-        const occurrence = await knex('EventOccurrence')
+        const event = await knex('EventOccurrence')
             .where({
                 Event_ID: eventId,
                 EventDateTimeStart: startTime
             })
             .first();
 
-        if (occurrence) {
-            res.render('edit_event_occurrence', { user, occurrence });
-        } else {
-            res.status(404).send('Event occurrence not found.');
-        }
+        if (!event) return res.status(404).send('Event occurrence not found.');
+
+        res.render('edit_events', { user, event });
+
     } catch (err) {
         console.error('Error fetching event occurrence:', err);
         res.status(500).send('Internal server error.');
     }
 });
 
+// Handles saving updated event occurrence details after the admin submits the edit form.
+app.post('/events/edit', requireLogin, async(req, res) => {
+    if (req.session.user.role !== 'admin') return res.redirect('/events_nonverified');
+
+    try {
+        const {
+            Event_ID,
+            OriginalDate,
+            EventDateTimeStart,
+            EventDateTimeEnd,
+            EventLocation,
+            EventCapacity,
+            EventRegistrationDeadline
+        } = req.body;
+
+        await knex('EventOccurrence')
+            .where({
+                Event_ID,
+                EventDateTimeStart: OriginalDate
+            })
+            .update({
+                EventDateTimeStart,
+                EventDateTimeEnd,
+                EventLocation,
+                EventCapacity,
+                EventRegistrationDeadline
+            });
+
+        return res.redirect('/events');
+
+    } catch (err) {
+        console.error("Error editing event:", err);
+        res.status(500).send("Server error editing event");
+    }
+});
+
+
 // Edit milestone (composite key)
-app.get('/milestone/:participantId/:title/edit', async (req, res) => {
+app.get('/milestone/:participantId/:title/edit', async(req, res) => {
     const user = req.session.user;
     const { participantId, title } = req.params;
 
@@ -1205,7 +1241,7 @@ app.get('/milestone/:participantId/:title/edit', async (req, res) => {
 });
 
 // Edit registration (composite key)
-app.get('/registration/:participantId/:eventId/:startTime/edit', async (req, res) => {
+app.get('/registration/:participantId/:eventId/:startTime/edit', async(req, res) => {
     user = req.session.user;
     const { participantId, eventId, startTime } = req.params;
 
@@ -1230,7 +1266,7 @@ app.get('/registration/:participantId/:eventId/:startTime/edit', async (req, res
 });
 
 // Edit survey (composite key)
-app.get('/survey/:participantId/:eventId/:startTime/edit', async (req, res) => {
+app.get('/survey/:participantId/:eventId/:startTime/edit', async(req, res) => {
     const user = req.session.user;
     const { participantId, eventId, startTime } = req.params;
 
@@ -1315,7 +1351,8 @@ app.post('/donation/:id/delete', async(req, res) => {
 });
 
 // Delete a specific EventOccurrence by composite key
-app.post('/event-occurrence/:eventId/:startTime/delete', async(req, res) => {
+app.post('/events/delete/:eventId/:startTime', requireLogin, async(req, res) => {
+    const user = req.session.user;
     const { eventId, startTime } = req.params;
 
     try {
@@ -1326,21 +1363,23 @@ app.post('/event-occurrence/:eventId/:startTime/delete', async(req, res) => {
             })
             .del();
 
-        if (deleted) {
-            res.status(200).json({ message: 'Event occurrence deleted successfully.' });
-            if (user.role === 'admin') {
-                res.redirect('/events_admin');
-            } else {
-                res.redirect('/events_user');
-            }
-        } else {
-            res.status(404).json({ message: 'Event occurrence not found.' });
+        if (!deleted) {
+            return res.status(404).send('Event occurrence not found.');
         }
+
+        // Redirect depending on role
+        if (user.role === 'admin') {
+            return res.redirect('/events');
+        } else {
+            return res.redirect('/events_user/' + user.id);
+        }
+
     } catch (err) {
         console.error('Error deleting event occurrence:', err);
-        res.status(500).json({ message: 'Internal server error.' });
+        res.status(500).send('Internal server error.');
     }
 });
+
 
 // Delete a specific Milestone by composite key
 app.post('/milestone/:participantId/:title/delete', async(req, res) => {

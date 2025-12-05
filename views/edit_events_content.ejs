@@ -1,0 +1,38 @@
+<div class="container my-5">
+    <h2 class="mb-4 text-center">Edit Event</h2>
+
+    <form action="/events/edit" method="POST">
+
+        <!-- Carry Event ID & Original Start Date -->
+        <input type="hidden" name="Event_ID" value="<%= event.Event_ID %>">
+        <input type="hidden" name="OriginalDate" value="<%= event.EventDateTimeStart %>">
+
+        <div class="mb-3">
+            <label class="form-label">Event Start Date & Time</label>
+            <input type="datetime-local" name="EventDateTimeStart" class="form-control" value="<%= event.EventDateTimeStart.toISOString().slice(0,16) %>" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Event End Date & Time</label>
+            <input type="datetime-local" name="EventDateTimeEnd" class="form-control" value="<%= event.EventDateTimeEnd.toISOString().slice(0,16) %>" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Location</label>
+            <input type="text" name="EventLocation" class="form-control" value="<%= event.EventLocation %>" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Capacity</label>
+            <input type="number" name="EventCapacity" class="form-control" value="<%= event.EventCapacity %>" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Registration Deadline</label>
+            <input type="datetime-local" name="EventRegistrationDeadline" class="form-control" value="<%= event.EventRegistrationDeadline.toISOString().slice(0,16) %>" required>
+        </div>
+
+        <button class="custom-btn">Save Changes</button>
+        <a href="/events" class="custom-btn ms-3">Cancel</a>
+    </form>
+</div>
