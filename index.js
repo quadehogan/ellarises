@@ -1610,6 +1610,40 @@ app.post("/milestone/add_admin", requireLogin, async(req, res) => {
 });
 
 
+// ===============================
+// ADMIN — View All Milestones
+// ===============================
+app.get("/milestones", requireLogin, async(req, res) => {
+
+    if (req.session.user.role !== "admin") {
+        return res.redirect("/dashboard");
+    }
+
+    try {
+        const milestones = await knex("Milestones")
+            .join("Participants", "Milestones.Participant_ID", "Participants.Participant_ID")
+            .select(
+                "Milestones.Participant_ID",
+                "Participants.ParticipantFirstName",
+                "Participants.ParticipantLastName",
+                "Milestones.MilestoneTitle",
+                "Milestones.MilestoneDate"
+            )
+            .orderBy("Participants.ParticipantLastName");
+
+        res.render("manage_dashboard", {
+            user: req.session.user,
+            contentFile: "milestones",
+            contentData: { milestones }
+        });
+
+    } catch (err) {
+        console.error("Error loading milestone admin page:", err);
+        res.status(500).send("Internal server error loading milestones.");
+    }
+});
+
+
 
 
 // ===== Start server =====
