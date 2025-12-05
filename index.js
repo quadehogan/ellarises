@@ -251,7 +251,7 @@ app.get('/events_nonverified', async(req, res) => {
 
 
 // Dashboard (requires login)
-app.get('/dashboard', requireLogin, async (req, res) => {
+app.get('/milestones', requireLogin, async (req, res) => {
     const user = req.session.user;
 
     try {
@@ -284,6 +284,15 @@ app.get('/dashboard', requireLogin, async (req, res) => {
         console.error('Error loading dashboard:', err);
         res.status(500).send('Server error.');
     }
+});
+
+app.get('/dashboard', requireLogin, (req, res) => {
+    const user = req.session.user;
+    res.render('manage_dashboard', {   
+        title: 'Dashboard',
+        contentFile: 'dashboard_content',
+        contentData: { user }
+    });
 });
 
 
