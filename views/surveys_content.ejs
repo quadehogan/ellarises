@@ -84,6 +84,11 @@
                 Delete
             </button>
         </form>
+
+        <!-- Edit button for a survey -->
+        <a href="/survey/<%= s.Participant_ID %>/<%= s.Event_ID %>/<%= encodeURIComponent(s.EventDateTimeStart) %>/edit" class="custom-btn" style="margin-top: 0.5rem; padding: 0.25rem 0.5rem; font-size: 0.85rem;">
+            Edit
+        </a>
     </div>
   <% }) %>
 

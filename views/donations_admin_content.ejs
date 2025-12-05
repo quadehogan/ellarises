@@ -43,7 +43,10 @@
                                 <%= d.DonationDate %>
                             </td>
                             <td>
-                                <button class="custom-btn" onclick="alert('Edit coming soon')">Edit</button>
+                                <!-- Edit button for a donation -->
+                                <a href="/donation/<%= d.Donation_ID %>/edit" class="btn btn-sm btn-primary">
+                                    Edit
+                                </a>
                             </td>
                             <td>
                                 <form 
