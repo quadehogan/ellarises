@@ -468,59 +468,34 @@ app.get('/users', requireLogin, async(req, res) => {
 app.get('/profile/:id', requireLogin, async(req, res) => {
     const message = req.session.message;
     delete req.session.message;
+
     try {
-        // If id param provided use it, otherwise use current user's id
-        const id = req.params.id || req.session.user.id;
+        const requestedId = Number(req.params.id);
+        const loggedInUser = req.session.user;
+
+        // Security: Users can ONLY view their own profile
+        if (loggedInUser.role !== "admin" && loggedInUser.id !== requestedId) {
+            return res.status(403).send("Not authorized to view this profile.");
+        }
 
         const profile = await knex('Participants')
-            .where({ Participant_ID: id })
+            .where({ Participant_ID: requestedId })
             .first();
 
         const milestones = await knex('Milestones')
-            .where({ Participant_ID: id })
+            .where({ Participant_ID: requestedId })
             .orderBy('MilestoneDate', 'desc');
 
         res.render('profile', {
-            user: req.session.user,
-            message,
+            user: loggedInUser,
             profile,
+            message,
             milestones
         });
+
     } catch (err) {
-        console.error(err);
+        console.error("Error loading profile:", err);
         res.status(500).send('Error loading profile');
-    }
-});
-
-app.post('/profile/update', upload.single('ProfilePicture'), requireLogin, async(req, res) => {
-    try {
-        const id = req.body.Participant_ID;
-
-        // Basic validation
-        if (!id) return res.status(400).send('Missing Participant_ID');
-
-        const updateData = {
-            ParticipantFirstName: req.body.ParticipantFirstName,
-            ParticipantLastName: req.body.ParticipantLastName,
-            ParticipantEmail: req.body.ParticipantEmail,
-            ParticipantDOB: req.body.ParticipantDOB,
-            ParticipantPhone: req.body.ParticipantPhone,
-            ParticipantSchoolorEmployer: req.body.ParticipantSchoolorEmployer,
-            ParticipantFieldOfInterest: req.body.ParticipantFieldOfInterest
-        };
-
-        if (req.file) {
-            updateData.ProfilePicture = req.file.filename;
-        }
-
-        await knex('Participants')
-            .where({ Participant_ID: id })
-            .update(updateData);
-
-        res.redirect(`/profile/${id}`);
-    } catch (err) {
-        console.error('Profile update error:', err);
-        res.status(500).send('Update failed');
     }
 });
 
@@ -1323,61 +1298,47 @@ app.post("/events/edit", async(req, res) => {
     }
 });
 
-/* ----- POST: Update Participant ----- */
-app.post("/profile/update", async (req, res) => {
-    const user = req.session.user;
-  try {
-    // Pull every field exactly as named in the form
-    const {
-      Participant_ID,  
-      ParticipantEmail,
-      ParticipantPassword,
-      ParticipantFirstName,
-      ParticipantLastName,
-      ParticipantDOB,
-      ParticipantRole,
-      ParticipantPhone,
-      ParticipantCity,
-      ParticipantState,
-      ParticipantZIP,
-      ParticipantSchoolorEmployer,
-      ParticipantFieldOfInterest
-    } = req.body;
+//
+app.post('/profile/update', requireLogin, async(req, res) => {
+    try {
+        const id = req.body.Participant_ID;
 
-        // Update the participant record
+        if (!id) {
+            return res.status(400).send("Missing Participant_ID");
+        }
+
+        const updateData = {
+            ParticipantFirstName: req.body.ParticipantFirstName,
+            ParticipantLastName: req.body.ParticipantLastName,
+            ParticipantEmail: req.body.ParticipantEmail,
+            ParticipantDOB: req.body.ParticipantDOB || null,
+            ParticipantPhone: req.body.ParticipantPhone || null,
+            ParticipantSchoolorEmployer: req.body.ParticipantSchoolorEmployer || null,
+            ParticipantFieldOfInterest: req.body.ParticipantFieldOfInterest || null
+        };
+
+        // Save update
         await knex("Participants")
-            .where({ Participant_ID: Participant_ID })
-            .update({
-                ParticipantEmail,
-                ParticipantPassword,
-                ParticipantFirstName,
-                ParticipantLastName,
-                ParticipantDOB,
-                ParticipantRole,
-                ParticipantPhone,
-                ParticipantCity,
-                ParticipantState,
-                ParticipantZIP,
-                ParticipantSchoolorEmployer,
-                ParticipantFieldOfInterest
-            });
+            .where({ Participant_ID: id })
+            .update(updateData);
 
-        // Optional success message
-        req.session.message = "Profile updated successfully!";
+        // Redirect logic:
+        const loggedInUser = req.session.user;
 
-    // Redirect back to profile page or dashboard
-    if (user.role === "admin") {
-      res.redirect("/manage_dashboard");
-    } 
-    else if (user.role === "participant") {
-      res.redirect("/profile");
-    }
+        // ADMIN editing someone else
+        if (loggedInUser.role === "admin" && loggedInUser.id !== Number(id)) {
+            return res.redirect("/users"); // or /participants depending on your admin view
+        }
+
+        // USER updating themselves
+        return res.redirect(`/profile/${id}`);
 
     } catch (err) {
-        console.error("Error updating profile:", err);
-        res.status(500).send("Server Error updating profile");
+        console.error("Profile update error:", err);
+        res.status(500).send("Update failed");
     }
 });
+
 
 app.post("/survey/update", async(req, res) => {
     const {
