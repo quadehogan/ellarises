@@ -3,96 +3,111 @@
     <h1 class="mb-4">Profile & Milestones</h1>
 
     <div class="row">
+
         <!-- Profile Form -->
         <div class="col-md-5">
             <form action="/profile/update" method="POST">
                 <input type="hidden" name="Participant_ID" value="<%= profile.Participant_ID %>">
 
+                <!-- FIRST NAME -->
                 <div class="mb-3">
                     <label class="form-label">First Name:</label>
                     <input class="form-control" type="text" name="ParticipantFirstName" value="<%= profile.ParticipantFirstName %>" required>
                 </div>
 
+                <!-- LAST NAME -->
                 <div class="mb-3">
                     <label class="form-label">Last Name:</label>
                     <input class="form-control" type="text" name="ParticipantLastName" value="<%= profile.ParticipantLastName %>" required>
                 </div>
 
+                <!-- EMAIL -->
                 <div class="mb-3">
                     <label class="form-label">Email:</label>
                     <input class="form-control" type="email" name="ParticipantEmail" value="<%= profile.ParticipantEmail %>" required>
                 </div>
 
+                <!-- DOB -->
                 <div class="mb-3">
                     <label class="form-label">DOB:</label>
                     <input class="form-control" type="date" name="ParticipantDOB" value="<%= profile.ParticipantDOB ? profile.ParticipantDOB.toISOString().split('T')[0] : '' %>">
                 </div>
 
+                <!-- PHONE -->
                 <div class="mb-3">
                     <label class="form-label">Phone:</label>
                     <input class="form-control" type="tel" name="ParticipantPhone" value="<%= profile.ParticipantPhone %>">
                 </div>
 
+                <!-- SCHOOL -->
                 <div class="mb-3">
                     <label class="form-label">School/Employer:</label>
                     <input class="form-control" type="text" name="ParticipantSchoolorEmployer" value="<%= profile.ParticipantSchoolorEmployer %>">
                 </div>
 
+                <!-- FIELD -->
                 <div class="mb-3">
                     <label class="form-label">Field of Interest:</label>
                     <input class="form-control" type="text" name="ParticipantFieldOfInterest" value="<%= profile.ParticipantFieldOfInterest %>">
                 </div>
 
                 <button class="btn btn-primary w-100 mb-2" type="submit">Update Profile</button>
-
-                <% if (user.id === profile.Participant_ID) { %>
-                    <form action="/participant/<%= profile.Participant_ID %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
-                        <button type="submit" class="btn btn-danger w-100">
-                            Delete My Account
-                        </button>
-                    </form>
-                <% } %>
             </form>
+
+            <% if (user.id === profile.Participant_ID) { %>
+                <form action="/participant/<%= profile.Participant_ID %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete your account?');">
+                    <button class="btn btn-danger w-100">Delete My Account</button>
+                </form>
+                <% } %>
         </div>
 
-        <!-- Milestones Table -->
+        <!-- MILESTONES TABLE -->
         <div class="col-md-7">
             <h2>Milestones</h2>
-            <div style="overflow-x:auto;">
-                <table class="table table-striped table-bordered">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Title</th>
-                            <th>Date</th>
-                            <% if (user.isManager || user.id === profile.Participant_ID) { %>
-                                <th>Actions</th>
+
+            <table class="table table-striped table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Date</th>
+                        <% if (user.role === "admin" || user.id === profile.Participant_ID) { %>
+                            <th>Actions</th>
                             <% } %>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% milestones.forEach(ms => { %>
-                            <tr>
-                                <td><%= ms.MilestoneTitle %></td>
-                                <td><%= ms.MilestoneDate %></td>
-                                <% if (user.isManager || user.id === profile.Participant_ID) { %>
-                                    <td class="d-flex gap-2">
-                                        <a href="/milestone/<%= ms.Participant_ID %>/<%= encodeURIComponent(ms.MilestoneTitle) %>/edit" class="btn btn-sm btn-warning">
-                                            Edit
-                                        </a>
-                                        <form action="/milestone/<%= ms.Participant_ID %>/<%= encodeURIComponent(ms.MilestoneTitle) %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this milestone?');">
-                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                        </form>
-                                    </td>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <% milestones.forEach(ms => { %>
+                        <tr>
+                            <td>
+                                <%= ms.MilestoneTitle %>
+                            </td>
+                            <td>
+                                <%= ms.MilestoneDate %>
+                            </td>
+
+                            <% if (user.role === "admin" || user.id === profile.Participant_ID) { %>
+                                <td class="d-flex gap-2">
+
+                                    <a href="/milestone/<%= ms.Participant_ID %>/<%= encodeURIComponent(ms.MilestoneTitle) %>/edit" class="btn btn-sm btn-warning">Edit</a>
+
+                                    <form action="/milestone/<%= ms.Participant_ID %>/<%= encodeURIComponent(ms.MilestoneTitle) %>/delete" method="POST" onsubmit="return confirm('Delete this milestone?');">
+                                        <button class="btn btn-sm btn-danger">Delete</button>
+                                    </form>
+
+                                </td>
                                 <% } %>
-                            </tr>
+
+                        </tr>
                         <% }) %>
-                    </tbody>
-                </table>
-            </div>
+                </tbody>
+            </table>
 
             <% if (user.id === profile.Participant_ID) { %>
                 <a href="/milestone/add/<%= profile.Participant_ID %>" class="custom-btn">Add Milestone</a>
-            <% } %>
+                <% } %>
         </div>
+
     </div>
 </div>

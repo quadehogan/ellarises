@@ -1,23 +1,23 @@
 <h2 class="mb-4">Add Milestone (Admin)</h2>
 
-<form action="/milestone/add/admin" method="POST">
+<form action="/milestone/add_admin" method="POST">
 
-    <!-- Selected participant -->
+    <!-- Participant ID -->
     <div class="mb-3">
         <label class="form-label">Selected Participant ID</label>
-        <input type="text" id="participantID" name="Participant_ID" class="form-control" placeholder="Click a participant below…" required readonly>
+        <input type="text" id="participantID" name="Participant_ID" class="form-control" placeholder="Select a participant…" readonly required>
     </div>
 
     <!-- Title -->
     <div class="mb-3">
         <label class="form-label">Milestone Title</label>
-        <input type="text" name="MilestoneTitles" class="form-control" required>
+        <input type="text" name="MilestoneTitle" class="form-control" required>
     </div>
 
     <!-- Date -->
     <div class="mb-3">
         <label class="form-label">Milestone Date</label>
-        <input type="date" name="MilestoneDates" class="form-control" required>
+        <input type="date" name="MilestoneDate" class="form-control" required>
     </div>
 
     <button class="custom-btn mt-3">Add Milestone</button>
@@ -29,12 +29,10 @@
 
 <h3>Select Participant</h3>
 
-<!-- Search Box -->
 <div class="mb-3">
     <input type="text" id="searchInput" class="form-control" placeholder="Search participants…">
 </div>
 
-<!-- Participant Table -->
 <div style="max-height: 350px; overflow-y: auto;">
     <table class="table table-striped" id="participantsTable">
         <thead>
@@ -46,7 +44,7 @@
         </thead>
         <tbody>
             <% participants.forEach(p => { %>
-                <tr style="cursor:pointer;" onclick="chooseParticipant('<%= p.Participant_ID %>')">
+                <tr onclick="chooseParticipant('<%= p.Participant_ID %>')" style="cursor:pointer;">
                     <td>
                         <%= p.Participant_ID %>
                     </td>
@@ -64,22 +62,17 @@
 </div>
 
 <script>
-    // ✔ Fill participant ID when a row is clicked
     function chooseParticipant(id) {
         document.getElementById("participantID").value = id;
     }
 
-    // ✔ Search filter
     const searchInput = document.getElementById("searchInput");
-    if (searchInput) {
-        searchInput.addEventListener("input", function() {
-            const filter = this.value.toLowerCase();
-            const rows = document.querySelectorAll("#participantsTable tbody tr");
+    searchInput.addEventListener("input", function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#participantsTable tbody tr");
 
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(filter) ? "" : "none";
-            });
+        rows.forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
         });
-    }
+    });
 </script>

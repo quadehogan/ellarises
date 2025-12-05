@@ -1,21 +1,21 @@
 <form action="/milestone/<%= milestone.Participant_ID %>/<%= encodeURIComponent(milestone.MilestoneTitle) %>/update" method="POST">
 
-    <!-- Participant ID (read-only) -->
+    <!-- Participant ID -->
     <div class="mb-3">
         <label class="form-label">Participant ID</label>
-        <input type="text" class="form-control" name="Participant_ID" value="<%= milestone.Participant_ID %>" readonly>
+        <input type="text" class="form-control" value="<%= milestone.Participant_ID %>" readonly>
     </div>
 
-    <!-- Title (read-only because it's part of the composite PK) -->
+    <!-- Milestone Title -->
     <div class="mb-3">
         <label class="form-label">Milestone Title</label>
-        <input type="text" class="form-control" name="MilestoneTitles" value="<%= milestone.MilestoneTitles %>" readonly>
+        <input type="text" class="form-control" value="<%= milestone.MilestoneTitle %>" readonly>
     </div>
 
-    <!-- Editable Date -->
+    <!-- Milestone Date -->
     <div class="mb-3">
         <label class="form-label">Milestone Date</label>
-        <input type="date" class="form-control" name="MilestoneDates" value="<%= milestone.MilestoneDates.toISOString().split('T')[0] %>" required>
+        <input type="date" class="form-control" name="MilestoneDate" value="<%= milestone.MilestoneDate.toISOString().split('T')[0] %>" required>
     </div>
 
     <button class="custom-btn mt-3">Update Milestone</button>
@@ -25,4 +25,5 @@
         <% } else { %>
             <a href="/profile/<%= milestone.Participant_ID %>" class="btn btn-secondary ms-3">Cancel</a>
             <% } %>
+
 </form>

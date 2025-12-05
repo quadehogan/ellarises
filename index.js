@@ -1282,9 +1282,9 @@ app.post('/participant/:id/delete', async(req, res) => {
 
         if (updated) {
             if (req.session.user && req.session.user.role === 'admin') {
-            res.redirect('/participants'); // redirect back to the page
+                res.redirect('/participants'); // redirect back to the page
             } else {
-            res.redirect('/logout'); // log out the user if they deleted themselves
+                res.redirect('/logout'); // log out the user if they deleted themselves
             }
         } else {
             res.status(404).send('Participant not found.');
@@ -1296,7 +1296,7 @@ app.post('/participant/:id/delete', async(req, res) => {
 });
 
 // Delete a specific donation by Donation_ID
-app.post('/donation/:id/delete', async (req, res) => {
+app.post('/donation/:id/delete', async(req, res) => {
     const donationId = req.params.id;
 
     try {
@@ -1418,10 +1418,10 @@ app.post('/survey/:participantId/:eventId/:startTime/delete', async(req, res) =>
 });
 
 // ===============================
-// MILESTONE ROUTES
+// MILESTONE ROUTES (CORRECTED)
 // ===============================
 
-// 1. GET — Edit Milestone Page (User or Admin)
+// 1. GET — Edit Milestone Page
 app.get("/milestone/:participantId/:title/edit", requireLogin, async(req, res) => {
     const { participantId, title } = req.params;
 
@@ -1429,7 +1429,7 @@ app.get("/milestone/:participantId/:title/edit", requireLogin, async(req, res) =
         const milestone = await knex("Milestones")
             .where({
                 Participant_ID: participantId,
-                MilestoneTitles: title
+                MilestoneTitle: title
             })
             .first();
 
@@ -1439,6 +1439,7 @@ app.get("/milestone/:participantId/:title/edit", requireLogin, async(req, res) =
             user: req.session.user,
             milestone
         });
+
     } catch (err) {
         console.error("Error loading milestone:", err);
         res.status(500).send("Internal server error.");
@@ -1446,22 +1447,21 @@ app.get("/milestone/:participantId/:title/edit", requireLogin, async(req, res) =
 });
 
 
-// 2. POST — Update Milestone Date ONLY (Title is locked)
+// 2. POST — Update Milestone Date ONLY
 app.post("/milestone/:participantId/:title/update", requireLogin, async(req, res) => {
     const { participantId, title } = req.params;
-    const { MilestoneDates } = req.body; // <-- correct name
+    const { MilestoneDate } = req.body;
 
     try {
         await knex("Milestones")
             .where({
                 Participant_ID: participantId,
-                MilestoneTitles: title
+                MilestoneTitle: title
             })
             .update({
-                MilestoneDates: MilestoneDates
+                MilestoneDate: MilestoneDate
             });
 
-        // Redirect logic
         if (req.session.user.role === "admin") {
             return res.redirect("/manage_dashboard?view=milestones");
         }
@@ -1475,7 +1475,7 @@ app.post("/milestone/:participantId/:title/update", requireLogin, async(req, res
 });
 
 
-// 3. POST — Delete milestone (Composite Key)
+// 3. POST — Delete a Milestone
 app.post("/milestone/:participantId/:title/delete", requireLogin, async(req, res) => {
     const { participantId, title } = req.params;
 
@@ -1483,7 +1483,7 @@ app.post("/milestone/:participantId/:title/delete", requireLogin, async(req, res
         const deleted = await knex("Milestones")
             .where({
                 Participant_ID: participantId,
-                MilestoneTitles: title
+                MilestoneTitle: title
             })
             .del();
 
@@ -1491,12 +1491,10 @@ app.post("/milestone/:participantId/:title/delete", requireLogin, async(req, res
             return res.status(404).send("Milestone not found.");
         }
 
-        // Admin redirect
         if (req.session.user.role === "admin") {
             return res.redirect("/manage_dashboard?view=milestones");
         }
 
-        // User redirect
         return res.redirect(`/profile/${participantId}`);
 
     } catch (err) {
@@ -1530,8 +1528,8 @@ app.post("/milestone/add", requireLogin, async(req, res) => {
     try {
         await knex("Milestones").insert({
             Participant_ID,
-            MilestoneTitles: MilestoneTitle,
-            MilestoneDates: MilestoneDate
+            MilestoneTitle,
+            MilestoneDate
         });
 
         return res.redirect(`/profile/${Participant_ID}`);
@@ -1570,8 +1568,8 @@ app.post("/milestone/add_admin", requireLogin, async(req, res) => {
     try {
         await knex("Milestones").insert({
             Participant_ID,
-            MilestoneTitles: MilestoneTitle,
-            MilestoneDates: MilestoneDate
+            MilestoneTitle,
+            MilestoneDate
         });
 
         return res.redirect("/manage_dashboard?view=milestones");
@@ -1581,7 +1579,6 @@ app.post("/milestone/add_admin", requireLogin, async(req, res) => {
         res.status(500).send("Error adding milestone.");
     }
 });
-
 
 
 
