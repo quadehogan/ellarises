@@ -1321,7 +1321,7 @@ app.post("/events/edit", async(req, res) => {
 });
 
 /* ----- POST: Update Participant ----- */
-app.post("/profile/update", async (req, res) => {
+app.post("/profile/update/admin", async (req, res) => {
     const user = req.session.user;
   try {
     // Pull every field exactly as named in the form
