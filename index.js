@@ -1340,7 +1340,7 @@ app.post("/profile/update", async (req, res) => {
   try {
     // Pull every field exactly as named in the form
     const {
-      ParticipantID,  
+      Participant_ID,  
       ParticipantEmail,
       ParticipantPassword,
       ParticipantFirstName,
@@ -1357,7 +1357,7 @@ app.post("/profile/update", async (req, res) => {
 
     // Update the participant record
     await knex("Participants")
-      .where({ Participant_ID: ParticipantID })
+      .where({ Participant_ID: Participant_ID })
       .update({
         ParticipantEmail,
         ParticipantPassword,
