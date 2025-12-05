@@ -1112,6 +1112,149 @@ app.post('/submit-milestone', requireLogin, async(req, res) => {
     }
 });
 
+// ===== ALL EDIT ROUTES =====
+
+// Edit participant (retrieve for edit form)
+app.get('/participant/:id/edit', async (req, res) => {
+    const user = req.session.user;
+    const participantId = req.params.id;
+
+    try {
+        const participant = await knex('Participants')
+            .where({ Participant_ID: participantId })
+            .first();
+
+        if (participant) {
+            res.render('edit_participant', { user, participant });
+        } else {
+            res.status(404).send('Participant not found.');
+        }
+    } catch (err) {
+        console.error('Error fetching participant:', err);
+        res.status(500).send('Internal server error.');
+    }
+});
+
+// Edit donation
+app.get('/donation/:id/edit', async (req, res) => {
+    const user = req.session.user;
+    const donationId = req.params.id;
+
+    try {
+        const donation = await knex('Donations')
+            .where({ Donation_ID: donationId })
+            .first();
+
+        if (donation) {
+            res.render('edit_donation', { user, donation });
+        } else {
+            res.status(404).send('Donation not found.');
+        }
+    } catch (err) {
+        console.error('Error fetching donation:', err);
+        res.status(500).send('Internal server error.');
+    }
+});
+
+// Edit event occurrence (composite key)
+app.get('/event-occurrence/:eventId/:startTime/edit', async (req, res) => {
+    const user = req.session.user;
+    const { eventId, startTime } = req.params;
+
+    try {
+        const occurrence = await knex('EventOccurrence')
+            .where({
+                Event_ID: eventId,
+                EventDateTimeStart: startTime
+            })
+            .first();
+
+        if (occurrence) {
+            res.render('edit_event_occurrence', { user, occurrence });
+        } else {
+            res.status(404).send('Event occurrence not found.');
+        }
+    } catch (err) {
+        console.error('Error fetching event occurrence:', err);
+        res.status(500).send('Internal server error.');
+    }
+});
+
+// Edit milestone (composite key)
+app.get('/milestone/:participantId/:title/edit', async (req, res) => {
+    const user = req.session.user;
+    const { participantId, title } = req.params;
+
+    try {
+        const milestone = await knex('Milestones')
+            .where({
+                Participant_ID: participantId,
+                MilestoneTitle: title
+            })
+            .first();
+
+        if (milestone) {
+            res.render('edit_milestone', { user, milestone });
+        } else {
+            res.status(404).send('Milestone not found.');
+        }
+    } catch (err) {
+        console.error('Error fetching milestone:', err);
+        res.status(500).send('Internal server error.');
+    }
+});
+
+// Edit registration (composite key)
+app.get('/registration/:participantId/:eventId/:startTime/edit', async (req, res) => {
+    user = req.session.user;
+    const { participantId, eventId, startTime } = req.params;
+
+    try {
+        const registration = await knex('Registration')
+            .where({
+                Participant_ID: participantId,
+                Event_ID: eventId,
+                EventDateTimeStart: startTime
+            })
+            .first();
+
+        if (registration) {
+            res.render('edit_registration', { user, registration });
+        } else {
+            res.status(404).send('Registration not found.');
+        }
+    } catch (err) {
+        console.error('Error fetching registration:', err);
+        res.status(500).send('Internal server error.');
+    }
+});
+
+// Edit survey (composite key)
+app.get('/survey/:participantId/:eventId/:startTime/edit', async (req, res) => {
+    const user = req.session.user;
+    const { participantId, eventId, startTime } = req.params;
+
+    try {
+        const survey = await knex('Surveys')
+            .where({
+                Participant_ID: participantId,
+                Event_ID: eventId,
+                EventDateTimeStart: startTime
+            })
+            .first();
+
+        if (survey) {
+            res.render('edit_survey', { user, survey });
+        } else {
+            res.status(404).send('Survey not found.');
+        }
+    } catch (err) {
+        console.error('Error fetching survey:', err);
+        res.status(500).send('Internal server error.');
+    }
+});
+
+
 // ===== ALL DELETE ROUTES =====
 // Soft delete / anonymize a participant via POST
 app.post('/participant/:id/delete', async(req, res) => {

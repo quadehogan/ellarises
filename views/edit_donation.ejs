@@ -1,0 +1,9 @@
+<%- include('layout', { 
+    title: 'Edit Donation', 
+    body: include('edit_donation_content', { 
+        user: user, 
+        Participant_ID: Participant_ID, 
+        Event_ID: Event_ID, 
+        EventDateTimeStart: EventDateTimeStart 
+    }) 
+}) %>
