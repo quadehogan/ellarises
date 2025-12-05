@@ -1,12 +1,12 @@
 <h2 class="mb-4 text-center">Member Overview</h2>
 
 <!-- Dashboard Section -->
-<div class="d-flex justify-content-center">
-    <div class="tableauPlaceholder" id="viz1764876061019" style="position: relative;">
+<div class="text-center">
+    <div class="tableauPlaceholder mx-auto" id="viz1764876061019" style="position: relative; display: inline-block;">
         <noscript>
             <a href="#"><img alt="Ella Rises Dashboard" src="https://public.tableau.com/static/images/Fa/FallIntex2025/Dashboard1/1_rss.png" style="border: none;" /></a>
         </noscript>
-        <object class="tableauViz" style="display:none;">
+        <object class="tableauViz" style="display:none; max-width: 100%;">
             <param name="host_url" value="https%3A%2F%2Fpublic.tableau.com%2F" />
             <param name="embed_code_version" value="3" />
             <param name="site_root" value="" />
@@ -28,18 +28,26 @@
     var divElement = document.getElementById('viz1764876061019');
     var vizElement = divElement.getElementsByTagName('object')[0];
 
-    if (divElement.offsetWidth > 800) {
-        vizElement.style.width = '1400px';
-        vizElement.style.height = '927px';
-    } else if (divElement.offsetWidth > 500) {
-        vizElement.style.width = '1400px';
-        vizElement.style.height = '927px';
-    } else {
-        vizElement.style.width = '100%';
-        vizElement.style.height = '1677px';
+    function resizeViz() {
+        var width = divElement.offsetWidth;
+
+        if (width > 1400) {
+            vizElement.style.width = '1400px';
+            vizElement.style.height = '927px';
+        } else if (width > 500) {
+            vizElement.style.width = '1400px';
+            vizElement.style.height = '927px';
+        } else {
+            vizElement.style.width = '100%';
+            vizElement.style.height = '1677px';
+        }
     }
+
+    resizeViz();
+    window.addEventListener('resize', resizeViz);
 
     var scriptElement = document.createElement('script');
     scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
     vizElement.parentNode.insertBefore(scriptElement, vizElement);
 </script>
+
