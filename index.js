@@ -788,7 +788,7 @@ app.post('/create-user-submit', requireLogin, async(req, res) => {
 
 
 // ===== POST: Submit Survey (example storing) =====
-app.post('/submit-survey', requireLogin, async(req, res) => {
+app.post('/submit-survey', requireLogin, async (req, res) => {
     const user = req.session.user;
     try {
         const {
@@ -802,6 +802,25 @@ app.post('/submit-survey', requireLogin, async(req, res) => {
             Participant_ID
         } = req.body;
 
+        // 1️⃣ Check if survey already exists
+        const existingSurvey = await knex('Surveys')
+            .where({
+                Participant_ID,
+                Event_ID,
+                EventDateTimeStart
+            })
+            .first();
+
+        if (existingSurvey) {
+            // Survey exists — redirect to the same pages as success
+            if (user.role === 'admin') {
+                return res.redirect('/manage_dashboard');
+            } else {
+                return res.redirect(`/events_user/${user.id}`);
+            }
+        }
+
+        // 2️⃣ Parse scores
         const sat = parseInt(SurveySatisfactionScore || 0);
         const use = parseInt(SurveyUsefulnessScore || 0);
         const instr = parseInt(SurveyInstructorScore || 0);
@@ -814,6 +833,7 @@ app.post('/submit-survey', requireLogin, async(req, res) => {
         else if (rec === 4) npsBucket = 'Passive';
         else npsBucket = 'Detractor';
 
+        // 3️⃣ Insert new survey
         await knex('Surveys').insert({
             Participant_ID,
             Event_ID,
@@ -828,10 +848,11 @@ app.post('/submit-survey', requireLogin, async(req, res) => {
             SurveySubmissionDate: knex.fn.now()
         });
 
+        // 4️⃣ Redirect after successful submission
         if (user.role === 'admin') {
-        res.redirect('/manage_dashboard');
+            res.redirect('/manage_dashboard');
         } else {
-        res.redirect(`/events_user/${user.id}`);
+            res.redirect(`/events_user/${user.id}`);
         }
 
     } catch (err) {
@@ -839,6 +860,7 @@ app.post('/submit-survey', requireLogin, async(req, res) => {
         res.status(500).send('Error submitting survey');
     }
 });
+
 
 // ===== Registration routes =====
 app.post('/register', async(req, res) => {
