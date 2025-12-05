@@ -1,40 +1,28 @@
-<form action="/milestone/update" method="POST">
+<form action="/milestone/<%= milestone.Participant_ID %>/<%= encodeURIComponent(milestone.MilestoneTitle) %>/update" method="POST">
 
+    <!-- Participant ID (read-only) -->
     <div class="mb-3">
-        <label for="participantID" class="form-label">Participant ID</label>
-        <input 
-            type="text" 
-            class="form-control" 
-            id="participantID" 
-            name="Participant_ID" 
-            value="<%= milestone.Participant_ID %>" 
-            readonly
-        >
+        <label class="form-label">Participant ID</label>
+        <input type="text" class="form-control" name="Participant_ID" value="<%= milestone.Participant_ID %>" readonly>
     </div>
 
+    <!-- Title (read-only because it's part of the composite PK) -->
     <div class="mb-3">
         <label class="form-label">Milestone Title</label>
-        <input 
-            type="text" 
-            name="MilestoneTitle" 
-            class="form-control" 
-            value="<%= milestone.MilestoneTitle %>" 
-            readonly
-        >
+        <input type="text" class="form-control" name="MilestoneTitle" value="<%= milestone.MilestoneTitle %>" readonly>
     </div>
 
+    <!-- Editable Date -->
     <div class="mb-3">
         <label class="form-label">Milestone Date</label>
-        <input 
-            type="date" 
-            name="MilestoneDate" 
-            class="form-control" 
-            value="<%= milestone.MilestoneDate.toISOString().split('T')[0] %>" 
-            required
-        >
+        <input type="date" class="form-control" name="MilestoneDate" value="<%= milestone.MilestoneDate.toISOString().split('T')[0] %>" required>
     </div>
 
-    <button class="btn btn-primary">Update Milestone</button>
-    <a href="/dashboard" class="btn btn-secondary ms-3">Cancel</a>
-</form>
+    <button class="custom-btn mt-3">Update Milestone</button>
 
+    <% if (user.role === 'admin') { %>
+        <a href="/manage_dashboard?view=milestones" class="btn btn-secondary ms-3">Cancel</a>
+        <% } else { %>
+            <a href="/profile/<%= milestone.Participant_ID %>" class="btn btn-secondary ms-3">Cancel</a>
+            <% } %>
+</form>
