@@ -1417,8 +1417,11 @@ app.post('/survey/:participantId/:eventId/:startTime/delete', async(req, res) =>
     }
 });
 
-// milestones routes
-// 1. GET — User or Admin: open edit milestone page
+// ===============================
+// MILESTONE ROUTES
+// ===============================
+
+// 1. GET — Edit Milestone Page (User or Admin)
 app.get("/milestone/:participantId/:title/edit", requireLogin, async(req, res) => {
     const { participantId, title } = req.params;
 
@@ -1426,36 +1429,39 @@ app.get("/milestone/:participantId/:title/edit", requireLogin, async(req, res) =
         const milestone = await knex("Milestones")
             .where({
                 Participant_ID: participantId,
-                MilestoneTitle: title
+                MilestoneTitles: title
             })
             .first();
 
-        if (!milestone) return res.status(404).send("Milestone not found");
+        if (!milestone) return res.status(404).send("Milestone not found.");
 
         res.render("edit_milestone", {
             user: req.session.user,
             milestone
         });
     } catch (err) {
-        console.error("Error fetching milestone:", err);
-        res.status(500).send("Server Error");
+        console.error("Error loading milestone:", err);
+        res.status(500).send("Internal server error.");
     }
 });
 
-// 2. POST — Update milestone date (Title is read-only)
+
+// 2. POST — Update Milestone Date ONLY (Title is locked)
 app.post("/milestone/:participantId/:title/update", requireLogin, async(req, res) => {
     const { participantId, title } = req.params;
-    const { MilestoneDate } = req.body;
+    const { MilestoneDates } = req.body; // <-- correct name
 
     try {
         await knex("Milestones")
             .where({
                 Participant_ID: participantId,
-                MilestoneTitle: title
+                MilestoneTitles: title
             })
-            .update({ MilestoneDate });
+            .update({
+                MilestoneDates: MilestoneDates
+            });
 
-        // Admin goes to dashboard. User goes to their profile.
+        // Redirect logic
         if (req.session.user.role === "admin") {
             return res.redirect("/manage_dashboard?view=milestones");
         }
@@ -1464,11 +1470,12 @@ app.post("/milestone/:participantId/:title/update", requireLogin, async(req, res
 
     } catch (err) {
         console.error("Error updating milestone:", err);
-        res.status(500).send("Update failed");
+        res.status(500).send("Update failed.");
     }
 });
 
-// 3. POST — Delete milestone
+
+// 3. POST — Delete milestone (Composite Key)
 app.post("/milestone/:participantId/:title/delete", requireLogin, async(req, res) => {
     const { participantId, title } = req.params;
 
@@ -1476,25 +1483,30 @@ app.post("/milestone/:participantId/:title/delete", requireLogin, async(req, res
         const deleted = await knex("Milestones")
             .where({
                 Participant_ID: participantId,
-                MilestoneTitle: title
+                MilestoneTitles: title
             })
             .del();
 
-        if (!deleted) return res.status(404).send("Milestone not found");
+        if (!deleted) {
+            return res.status(404).send("Milestone not found.");
+        }
 
+        // Admin redirect
         if (req.session.user.role === "admin") {
             return res.redirect("/manage_dashboard?view=milestones");
         }
 
+        // User redirect
         return res.redirect(`/profile/${participantId}`);
 
     } catch (err) {
         console.error("Error deleting milestone:", err);
-        res.status(500).send("Error deleting milestone");
+        res.status(500).send("Error deleting milestone.");
     }
 });
 
-// 4. GET — User add milestone page
+
+// 4. GET — Add Milestone Page (User)
 app.get("/milestone/add/:id", requireLogin, async(req, res) => {
     const participantId = req.params.id;
 
@@ -1502,31 +1514,36 @@ app.get("/milestone/add/:id", requireLogin, async(req, res) => {
         .where("Participant_ID", participantId)
         .first();
 
+    if (!participant) return res.status(404).send("Participant not found.");
+
     res.render("add_milestone_user", {
         user: req.session.user,
         participant
     });
 });
 
-// 5. POST — User submit milestone
+
+// 5. POST — User Adds Milestone
 app.post("/milestone/add", requireLogin, async(req, res) => {
     const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
 
     try {
         await knex("Milestones").insert({
             Participant_ID,
-            MilestoneTitle,
-            MilestoneDate
+            MilestoneTitles: MilestoneTitle,
+            MilestoneDates: MilestoneDate
         });
 
-        res.redirect(`/profile/${Participant_ID}`);
+        return res.redirect(`/profile/${Participant_ID}`);
+
     } catch (err) {
         console.error("Error adding milestone:", err);
-        res.status(500).send("Error adding milestone");
+        res.status(500).send("Error adding milestone.");
     }
 });
 
-// 6. GET — Admin add milestone
+
+// 6. GET — Admin Add Milestone Page
 app.get("/add_milestone_admin", requireLogin, async(req, res) => {
     const user = req.session.user;
 
@@ -1539,26 +1556,32 @@ app.get("/add_milestone_admin", requireLogin, async(req, res) => {
         "ParticipantEmail"
     );
 
-    res.render("add_milestone_admin", { user, participants });
+    res.render("add_milestone_admin", {
+        user,
+        participants
+    });
 });
 
-// 7. POST — Admin submit milestone
+
+// 7. POST — Admin Adds Milestone
 app.post("/milestone/add_admin", requireLogin, async(req, res) => {
     const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
 
     try {
         await knex("Milestones").insert({
             Participant_ID,
-            MilestoneTitle,
-            MilestoneDate
+            MilestoneTitles: MilestoneTitle,
+            MilestoneDates: MilestoneDate
         });
 
-        res.redirect("/manage_dashboard?view=milestones");
+        return res.redirect("/manage_dashboard?view=milestones");
+
     } catch (err) {
         console.error("Milestone insert error:", err);
-        res.status(500).send("Error adding milestone");
+        res.status(500).send("Error adding milestone.");
     }
 });
+
 
 
 
