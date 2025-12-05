@@ -9,6 +9,9 @@
 </div>
 
 <div class="admin-content">
+    <% if (message) { %>
+        <div class="alert alert-success"><%= message %></div>
+    <% } %>
     <% if (typeof contentFile !== 'undefined') { %>
         <%- include(contentFile, contentData) %>
     <% } %>
