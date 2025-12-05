@@ -23,10 +23,6 @@
         <% if (typeof body !== 'undefined') { %>
             <%- body %> <!-- normal page content -->
         <% } %>
-
-        <% if (typeof contentFile !== 'undefined') { %>
-            <%- include(contentFile, { user: user, content: content }) %> <!-- management pages -->
-        <% } %>
     </main>
 
     <!-- Footer Include -->
