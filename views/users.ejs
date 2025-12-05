@@ -26,11 +26,13 @@
               <td><%= u.email %></td>
               <td><%= u.phone %></td>
               <td>
-                <button class="custom-btn" onclick="window.location.href='/edit-user/<%= u.Participant_ID %>'">Edit</button>
+                <a href="/participant/<%= u.Participant_ID %>/edit" class="btn-sm custom-btn">
+                  Edit
+                </a>
               </td>
               <td>
                 <form action="/participant/<%= u.Participant_ID %>/delete" method="POST" onsubmit="return confirm('Are you sure?');">
-                  <button type="submit" class="custom-btn">Delete</button>
+                  <button type="submit" class="btn-sm custom-btn">Delete</button>
                 </form>
               </td>
             </tr>
