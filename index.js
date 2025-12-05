@@ -1338,11 +1338,9 @@ app.post("/events/edit", async (req, res) => {
 /* ----- POST: Update Participant ----- */
 app.post("/profile/update", async (req, res) => {
   try {
-    // Get logged-in user's ID
-    const participantId = req.session.user.Participant_ID;
-
     // Pull every field exactly as named in the form
     const {
+      ParticipantID,  
       ParticipantEmail,
       ParticipantPassword,
       ParticipantFirstName,
@@ -1359,7 +1357,7 @@ app.post("/profile/update", async (req, res) => {
 
     // Update the participant record
     await knex("Participants")
-      .where({ Participant_ID: participantId })
+      .where({ Participant_ID: ParticipantID })
       .update({
         ParticipantEmail,
         ParticipantPassword,
@@ -1404,6 +1402,22 @@ app.post("/survey/update", async (req, res) => {
     } = req.body;
 
     try {
+        // Convert numeric fields
+        const sat = parseInt(SurveySatisfactionScore || 0);
+        const use = parseInt(SurveyUsefulnessScore || 0);
+        const instr = parseInt(SurveyInstructorScore || 0);
+        const rec = parseInt(SurveyRecommendationScore || 0);
+
+        // Recalculate overall score (same formula as insert)
+        const overall = ((sat + use + instr) / 3).toFixed(2);
+
+        // Recalculate NPS bucket (same logic as insert)
+        let npsBucket;
+        if (rec === 5) npsBucket = "Promoter";
+        else if (rec === 4) npsBucket = "Passive";
+        else npsBucket = "Detractor";
+
+        // Perform update using composite key
         await db("Surveys")
             .where({
                 Participant_ID: Participant_ID,
@@ -1411,19 +1425,24 @@ app.post("/survey/update", async (req, res) => {
                 EventDateTimeStart: EventDateTimeStart
             })
             .update({
-                SurveySatisfactionScore: SurveySatisfactionScore,
-                SurveyUsefulnessScore: SurveyUsefulnessScore,
-                SurveyInstructorScore: SurveyInstructorScore,
-                SurveyRecommendationScore: SurveyRecommendationScore,
-                SurveyComments: SurveyComments
+                SurveySatisfaction: sat,            // corrected name!
+                SurveyUsefulnessScore: use,
+                SurveyInstructorScore: instr,
+                SurveyRecommendationScore: rec,
+                SurveyOverallScore: overall,
+                SurveyNPSBucket: npsBucket,
+                SurveyComments: SurveyComments,
+                SurveySubmissionDate: db.fn.now()   // optional: refresh timestamp
             });
 
         res.redirect("/dashboard");
+
     } catch (err) {
         console.error("Error updating survey:", err);
         res.status(500).send("Server Error");
     }
 });
+
 
 
 app.post("/milestone/update", async (req, res) => {

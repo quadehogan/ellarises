@@ -3,6 +3,11 @@
   <h1 class="text-center mb-4">Edit Profile</h1>
 
   <form action="/profile/update" method="POST" class="card p-4 shadow-sm">
+    <div class="mb-3">
+      <label for="ParticipantID" class="form-label">Participant ID</label>
+      <input type="text" class="form-control" id="ParticipantID" name="ParticipantID" readonly
+             value="<%= participant.Participant_ID %>">
+    </div>
 
     <div class="mb-3">
       <label for="ParticipantEmail" class="form-label">Email</label>
