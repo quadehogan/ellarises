@@ -1,0 +1,49 @@
+<form action="/registration/update" method="POST">
+
+    <div class="mb-3">
+        <label for="participantID" class="form-label">Participant ID</label>
+        <input type="text" class="form-control" id="participantID" name="Participant_ID" 
+               value="<%= registration.Participant_ID %>" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="eventID" class="form-label">Event ID</label>
+        <input type="text" class="form-control" id="eventID" name="Event_ID" 
+               value="<%= registration.Event_ID %>" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="startTime" class="form-label">Event Start Time</label>
+        <input type="datetime-local" class="form-control" id="startTime" name="EventDateTimeStart" 
+               value="<%= new Date(registration.EventDateTimeStart).toISOString().slice(0,16) %>" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="status" class="form-label">Registration Status</label>
+        <input type="text" class="form-control" id="status" name="RegistrationStatus" 
+               value="<%= registration.RegistrationStatus %>" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="attended" class="form-label">Attended?</label>
+        <select class="form-select" id="attended" name="RegistrationAttendedFlag">
+            <option value="true" <%= registration.RegistrationAttendedFlag ? 'selected' : '' %>>Yes</option>
+            <option value="false" <%= !registration.RegistrationAttendedFlag ? 'selected' : '' %>>No</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="checkInTime" class="form-label">Check-in Time</label>
+        <input type="datetime-local" class="form-control" id="checkInTime" name="RegistrationCheckInTime" 
+               value="<%= registration.RegistrationCheckInTime ? new Date(registration.RegistrationCheckInTime).toISOString().slice(0,16) : '' %>">
+    </div>
+
+    <div class="mb-3">
+        <label for="createdAt" class="form-label">Created At</label>
+        <input type="datetime-local" class="form-control" id="createdAt" name="RegistrationCreatedAt" 
+               value="<%= registration.RegistrationCreatedAt ? new Date(registration.RegistrationCreatedAt).toISOString().slice(0,16) : '' %>" readonly>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update Registration</button>
+    <a href="/registrations_content" class="btn btn-secondary ms-3">Cancel</a>
+</form>

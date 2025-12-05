@@ -1,0 +1,68 @@
+<form action="/survey/update" method="POST">
+
+    <!-- Hidden Composite Key Fields -->
+    <input type="hidden" name="Participant_ID" value="<%= survey.Participant_ID %>">
+    <input type="hidden" name="Event_ID" value="<%= survey.Event_ID %>">
+    <input type="hidden" name="EventDateTimeStart" value="<%= survey.EventDateTimeStart %>">
+
+    <!-- Satisfaction -->
+    <div class="mb-3">
+        <label class="form-label">Satisfaction Score:</label>
+        <select class="form-select" name="SurveySatisfactionScore" required>
+            <option value="">Select...</option>
+            <% [1,2,3,4,5].forEach(n => { %>
+                <option value="<%= n %>" <%= survey.SurveySatisfactionScore === n ? "selected" : "" %>>
+                    <%= n %>
+                </option>
+            <% }) %>
+        </select>
+    </div>
+
+    <!-- Usefulness -->
+    <div class="mb-3">
+        <label class="form-label">Usefulness Score:</label>
+        <select class="form-select" name="SurveyUsefulnessScore" required>
+            <option value="">Select...</option>
+            <% [1,2,3,4,5].forEach(n => { %>
+                <option value="<%= n %>" <%= survey.SurveyUsefulnessScore === n ? "selected" : "" %>>
+                    <%= n %>
+                </option>
+            <% }) %>
+        </select>
+    </div>
+
+    <!-- Instructor -->
+    <div class="mb-3">
+        <label class="form-label">Instructor Score:</label>
+        <select class="form-select" name="SurveyInstructorScore" required>
+            <option value="">Select...</option>
+            <% [1,2,3,4,5].forEach(n => { %>
+                <option value="<%= n %>" <%= survey.SurveyInstructorScore === n ? "selected" : "" %>>
+                    <%= n %>
+                </option>
+            <% }) %>
+        </select>
+    </div>
+
+    <!-- Recommendation -->
+    <div class="mb-3">
+        <label class="form-label">Recommendation Score:</label>
+        <select class="form-select" name="SurveyRecommendationScore" required>
+            <option value="">Select...</option>
+            <% [1,2,3,4,5].forEach(n => { %>
+                <option value="<%= n %>" <%= survey.SurveyRecommendationScore === n ? "selected" : "" %>>
+                    <%= n %>
+                </option>
+            <% }) %>
+        </select>
+    </div>
+
+    <!-- Comments -->
+    <div class="mb-3">
+        <label class="form-label">Comments:</label>
+        <textarea class="form-control" name="SurveyComments" rows="4" placeholder="Optional"><%= survey.SurveyComments || "" %></textarea>
+    </div>
+
+    <button class="custom-btn" type="submit">Update Survey</button>
+    <a href="/dashboard" class="btn btn-secondary ms-3">Cancel</a>
+</form>

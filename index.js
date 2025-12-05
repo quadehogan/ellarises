@@ -1291,6 +1291,125 @@ app.get('/survey/:participantId/:eventId/:startTime/edit', async(req, res) => {
     }
 });
 
+app.post("/events/edit", async (req, res) => {
+  try {
+    const {
+      Event_ID,
+      EventDateTimeStart,
+      EventDateTimeEnd,
+      EventLocation,
+      EventCapacity,
+      EventRegistrationDeadline
+    } = req.body;
+
+    await knex("Events")
+      .where({
+        Event_ID: Event_ID,
+        EventDateTimeStart: EventDateTimeStart  // Required because datetime is part of PK
+      })
+      .update({
+        EventDateTimeEnd,
+        EventLocation,
+        EventCapacity,
+        EventRegistrationDeadline
+      });
+
+    req.session.message = "Event updated successfully!";
+    res.redirect("/manage_dashboard");
+
+  } catch (err) {
+    console.error("Error updating event:", err);
+    res.status(500).send("Server Error updating event");
+  }
+});
+
+/* ----- POST: Update Participant ----- */
+app.post("/profile/update", async (req, res) => {
+  try {
+    // Get logged-in user's ID
+    const participantId = req.session.user.Participant_ID;
+
+    // Pull every field exactly as named in the form
+    const {
+      ParticipantEmail,
+      ParticipantPassword,
+      ParticipantFirstName,
+      ParticipantLastName,
+      ParticipantDOB,
+      ParticipantRole,
+      ParticipantPhone,
+      ParticipantCity,
+      ParticipantState,
+      ParticipantZIP,
+      ParticipantSchoolorEmployer,
+      ParticipantFieldOfInterest
+    } = req.body;
+
+    // Update the participant record
+    await knex("Participants")
+      .where({ Participant_ID: participantId })
+      .update({
+        ParticipantEmail,
+        ParticipantPassword,
+        ParticipantFirstName,
+        ParticipantLastName,
+        ParticipantDOB,
+        ParticipantRole,
+        ParticipantPhone,
+        ParticipantCity,
+        ParticipantState,
+        ParticipantZIP,
+        ParticipantSchoolorEmployer,
+        ParticipantFieldOfInterest
+      });
+
+    // Optional success message
+    req.session.message = "Profile updated successfully!";
+
+    // Redirect back to profile page or dashboard
+    res.redirect("/profile");
+
+  } catch (err) {
+    console.error("Error updating profile:", err);
+    res.status(500).send("Server Error updating profile");
+  }
+});
+
+
+/* ----- POST: Update Registration ----- */
+app.post("/registration/:Participant_ID/:Event_ID/:EventDateTimeStart/edit", async (req, res) => {
+  try {
+    const { Participant_ID, Event_ID, EventDateTimeStart } = req.params;
+
+    const {
+      RegistrationStatus,
+      RegistrationAttendedFlag,
+      RegistrationCheckInTime,
+      RegistrationCreatedAt
+    } = req.body;
+
+    await knex("Registrations")
+      .where({
+        Participant_ID,
+        Event_ID,
+        EventDateTimeStart
+      })
+      .update({
+        RegistrationStatus,
+        RegistrationAttendedFlag,
+        RegistrationCheckInTime,
+        RegistrationCreatedAt
+      });
+
+    req.session.message = "Registration updated successfully!";
+    res.redirect("/manage_dashboard");
+  } catch (err) {
+    console.error("Error updating registration:", err);
+    res.status(500).send("Server Error");
+  }
+});
+
+
 
 // ===== ALL DELETE ROUTES =====
 // Soft delete / anonymize a participant via POST

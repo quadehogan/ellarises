@@ -5,12 +5,7 @@
 
         <!-- Carry Event ID & Original Start Date -->
         <input type="hidden" name="Event_ID" value="<%= event.Event_ID %>">
-        <input type="hidden" name="OriginalDate" value="<%= event.EventDateTimeStart %>">
-
-        <div class="mb-3">
-            <label class="form-label">Event Start Date & Time</label>
-            <input type="datetime-local" name="EventDateTimeStart" class="form-control" value="<%= event.EventDateTimeStart.toISOString().slice(0,16) %>" required>
-        </div>
+        <input type="hidden" name="EventDateTimeStart" value="<%= event.EventDateTimeStart %>">
 
         <div class="mb-3">
             <label class="form-label">Event End Date & Time</label>
