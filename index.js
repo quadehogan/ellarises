@@ -147,6 +147,7 @@ app.get('/events', requireLogin, async(req, res) => {
             .select(
                 'et.Event_ID',
                 'et.EventName',
+                'et.EventType',
                 'et.EventDescription',
                 'eo.EventDateTimeStart',
                 'eo.EventLocation'
