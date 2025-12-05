@@ -1550,8 +1550,9 @@ app.post('/events/delete/:eventId/:startTime', requireLogin, async (req, res) =>
 
 
 // Delete a specific Registration by composite key
-app.post('/registration/:participantId/:eventId/:startTime/delete', async(req, res) => {
+app.post('/registration/:participantId/:eventId/:startTime/delete', requireLogin, async (req, res) => {
     const { participantId, eventId, startTime } = req.params;
+    const user = req.session.user; // get logged-in user
 
     try {
         const deleted = await knex('Registration')
@@ -1562,21 +1563,23 @@ app.post('/registration/:participantId/:eventId/:startTime/delete', async(req, r
             })
             .del();
 
-        if (deleted) {
-            res.status(200).json({ message: 'Registration deleted successfully.' });
-            if (user.role === 'admin') {
-                res.redirect('/manage_dashboard');
-            } else {
-                res.redirect(`/profile/${participantId}`);
-            }
-        } else {
-            res.status(404).json({ message: 'Registration not found.' });
+        if (!deleted) {
+            return res.status(404).send('Registration not found.');
         }
+
+        // Redirect depending on user role
+        if (user.role === 'admin') {
+            return res.redirect('/manage_dashboard');
+        } else {
+            return res.redirect(`/profile/${participantId}`);
+        }
+
     } catch (err) {
         console.error('Error deleting registration:', err);
-        res.status(500).json({ message: 'Internal server error.' });
+        res.status(500).send('Internal server error.');
     }
 });
+
 
 // Delete a specific Survey by composite key
 app.post('/survey/:participantId/:eventId/:startTime/delete', async(req, res) => {
