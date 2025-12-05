@@ -36,7 +36,7 @@
     <div class="mb-3">
       <label for="ParticipantDOB" class="form-label">Date of Birth</label>
       <input type="date" class="form-control" id="ParticipantDOB" name="ParticipantDOB" required
-             value="<%= participant.ParticipantDOB.toISOString().split('T')[0] %>">
+             value="<%= new Date(participant.ParticipantDOB).toISOString().split('T')[0] %>">
     </div>
 
     <!-- Hidden ParticipantRole field -->
