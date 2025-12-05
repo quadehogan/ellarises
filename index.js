@@ -272,7 +272,7 @@ app.get('/milestones', requireLogin, async (req, res) => {
             return res.render('manage_dashboard', {
                 user,
                 title: 'Milestones',
-                contentFile: 'dashboard_content',
+                contentFile: 'milestones',
                 contentData: {
                     user,
                     milestones
