@@ -810,24 +810,6 @@ app.get('/add_milestone_admin', requireLogin, async(req, res) => {
     res.render('add_milestone_admin', { user, participants });
 });
 
-// admin Add milestone POST route
-app.post('/milestone/add', requireLogin, async(req, res) => {
-    const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
-
-    try {
-        await knex('Milestones').insert({
-            Participant_ID,
-            MilestoneTitle,
-            MilestoneDate
-        });
-
-        res.redirect('/dashboard');
-    } catch (err) {
-        console.error("Milestone insert error:", err);
-        res.status(500).send("Error adding milestone");
-    }
-});
-
 // User get add milestone page
 app.get("/milestone/add/:id", requireLogin, async(req, res) => {
     const participantId = req.params.id;
@@ -1304,93 +1286,93 @@ app.get('/survey/:participantId/:eventId/:startTime/edit', async(req, res) => {
 });
 
 // ===== POST: Update Event Occurrence =====
-app.post("/events/edit", async (req, res) => {
-  try {
-    const {
-      Event_ID,
-      EventDateTimeStart,
-      EventDateTimeEnd,
-      EventLocation,
-      EventCapacity,
-      EventRegistrationDeadline
-    } = req.body;
+app.post("/events/edit", async(req, res) => {
+    try {
+        const {
+            Event_ID,
+            EventDateTimeStart,
+            EventDateTimeEnd,
+            EventLocation,
+            EventCapacity,
+            EventRegistrationDeadline
+        } = req.body;
 
-    await knex("Events")
-      .where({
-        Event_ID: Event_ID,
-        EventDateTimeStart: EventDateTimeStart  // Required because datetime is part of PK
-      })
-      .update({
-        EventDateTimeEnd,
-        EventLocation,
-        EventCapacity,
-        EventRegistrationDeadline
-      });
+        await knex("Events")
+            .where({
+                Event_ID: Event_ID,
+                EventDateTimeStart: EventDateTimeStart // Required because datetime is part of PK
+            })
+            .update({
+                EventDateTimeEnd,
+                EventLocation,
+                EventCapacity,
+                EventRegistrationDeadline
+            });
 
-    req.session.message = "Event updated successfully!";
-    res.redirect("/manage_dashboard");
+        req.session.message = "Event updated successfully!";
+        res.redirect("/manage_dashboard");
 
-  } catch (err) {
-    console.error("Error updating event:", err);
-    res.status(500).send("Server Error updating event");
-  }
+    } catch (err) {
+        console.error("Error updating event:", err);
+        res.status(500).send("Server Error updating event");
+    }
 });
 
 /* ----- POST: Update Participant ----- */
-app.post("/profile/update", async (req, res) => {
-  try {
-    // Pull every field exactly as named in the form
-    const {
-      Participant_ID,  
-      ParticipantEmail,
-      ParticipantPassword,
-      ParticipantFirstName,
-      ParticipantLastName,
-      ParticipantDOB,
-      ParticipantRole,
-      ParticipantPhone,
-      ParticipantCity,
-      ParticipantState,
-      ParticipantZIP,
-      ParticipantSchoolorEmployer,
-      ParticipantFieldOfInterest
-    } = req.body;
+app.post("/profile/update", async(req, res) => {
+    try {
+        // Pull every field exactly as named in the form
+        const {
+            Participant_ID,
+            ParticipantEmail,
+            ParticipantPassword,
+            ParticipantFirstName,
+            ParticipantLastName,
+            ParticipantDOB,
+            ParticipantRole,
+            ParticipantPhone,
+            ParticipantCity,
+            ParticipantState,
+            ParticipantZIP,
+            ParticipantSchoolorEmployer,
+            ParticipantFieldOfInterest
+        } = req.body;
 
-    // Update the participant record
-    await knex("Participants")
-      .where({ Participant_ID: Participant_ID })
-      .update({
-        ParticipantEmail,
-        ParticipantPassword,
-        ParticipantFirstName,
-        ParticipantLastName,
-        ParticipantDOB,
-        ParticipantRole,
-        ParticipantPhone,
-        ParticipantCity,
-        ParticipantState,
-        ParticipantZIP,
-        ParticipantSchoolorEmployer,
-        ParticipantFieldOfInterest
-      });
+        // Update the participant record
+        await knex("Participants")
+            .where({ Participant_ID: Participant_ID })
+            .update({
+                ParticipantEmail,
+                ParticipantPassword,
+                ParticipantFirstName,
+                ParticipantLastName,
+                ParticipantDOB,
+                ParticipantRole,
+                ParticipantPhone,
+                ParticipantCity,
+                ParticipantState,
+                ParticipantZIP,
+                ParticipantSchoolorEmployer,
+                ParticipantFieldOfInterest
+            });
 
-    // Optional success message
-    req.session.message = "Profile updated successfully!";
+        // Optional success message
+        req.session.message = "Profile updated successfully!";
 
-    // Redirect back to profile page or dashboard
-    if (req.session.user.role === "admin") {
-      res.redirect("/manage_dashboard");
-    } else {
-      res.redirect("/profile");
+        // Redirect back to profile page or dashboard
+        if (req.session.user.role === "admin") {
+            res.redirect("/manage_dashboard");
+        } else {
+            res.redirect("/profile");
+        }
+
+    } catch (err) {
+        console.error("Error updating profile:", err);
+        res.status(500).send("Server Error updating profile");
     }
-
-  } catch (err) {
-    console.error("Error updating profile:", err);
-    res.status(500).send("Server Error updating profile");
-  }
 });
 
-app.post("/survey/update", async (req, res) => {
+app.post("/survey/update", async(req, res) => {
     const {
         Participant_ID,
         Event_ID,
@@ -1426,14 +1408,14 @@ app.post("/survey/update", async (req, res) => {
                 EventDateTimeStart: EventDateTimeStart
             })
             .update({
-                SurveySatisfaction: sat,            // corrected name!
+                SurveySatisfaction: sat, // corrected name!
                 SurveyUsefulnessScore: use,
                 SurveyInstructorScore: instr,
                 SurveyRecommendationScore: rec,
                 SurveyOverallScore: overall,
                 SurveyNPSBucket: npsBucket,
                 SurveyComments: SurveyComments,
-                SurveySubmissionDate: db.fn.now()   // optional: refresh timestamp
+                SurveySubmissionDate: db.fn.now() // optional: refresh timestamp
             });
 
         res.redirect("/dashboard");
@@ -1446,7 +1428,7 @@ app.post("/survey/update", async (req, res) => {
 
 
 
-app.post("/milestone/update", async (req, res) => {
+app.post("/milestone/update", async(req, res) => {
     const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
 
     try {
@@ -1459,9 +1441,9 @@ app.post("/milestone/update", async (req, res) => {
                 MilestoneDate: MilestoneDate
             });
         if (req.session.user.id === "admin") {
-        res.redirect("/manage_dashboard");
+            res.redirect("/manage_dashboard");
         } else {
-        res.redirect(`/profile/${Participant_ID}`);
+            res.redirect(`/profile/${Participant_ID}`);
         }
     } catch (err) {
         console.error("Error updating milestone:", err);
@@ -1471,40 +1453,40 @@ app.post("/milestone/update", async (req, res) => {
 
 
 /* ----- POST: Update Registration ----- */
-app.post("/registration/:Participant_ID/:Event_ID/:EventDateTimeStart/edit", async (req, res) => {
-  try {
-    const { Participant_ID, Event_ID, EventDateTimeStart } = req.params;
+app.post("/registration/:Participant_ID/:Event_ID/:EventDateTimeStart/edit", async(req, res) => {
+    try {
+        const { Participant_ID, Event_ID, EventDateTimeStart } = req.params;
 
-    const {
-      RegistrationStatus,
-      RegistrationAttendedFlag,
-      RegistrationCheckInTime,
-      RegistrationCreatedAt
-    } = req.body;
+        const {
+            RegistrationStatus,
+            RegistrationAttendedFlag,
+            RegistrationCheckInTime,
+            RegistrationCreatedAt
+        } = req.body;
 
-    await knex("Registrations")
-      .where({
-        Participant_ID,
-        Event_ID,
-        EventDateTimeStart
-      })
-      .update({
-        RegistrationStatus,
-        RegistrationAttendedFlag,
-        RegistrationCheckInTime,
-        RegistrationCreatedAt
-      });
+        await knex("Registrations")
+            .where({
+                Participant_ID,
+                Event_ID,
+                EventDateTimeStart
+            })
+            .update({
+                RegistrationStatus,
+                RegistrationAttendedFlag,
+                RegistrationCheckInTime,
+                RegistrationCreatedAt
+            });
 
-    req.session.message = "Registration updated successfully!";
-    if (req.session.user.id === "admin") {
-    res.redirect("/manage_dashboard");
-    } else {
-    res.redirect(`/profile/${Participant_ID}`);
+        req.session.message = "Registration updated successfully!";
+        if (req.session.user.id === "admin") {
+            res.redirect("/manage_dashboard");
+        } else {
+            res.redirect(`/profile/${Participant_ID}`);
+        }
+    } catch (err) {
+        console.error("Error updating registration:", err);
+        res.status(500).send("Server Error");
     }
-  } catch (err) {
-    console.error("Error updating registration:", err);
-    res.status(500).send("Server Error");
-  }
 });
 
 
