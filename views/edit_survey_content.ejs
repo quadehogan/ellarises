@@ -6,7 +6,8 @@
         <!-- Hidden Composite Key Fields -->
         <input type="hidden" name="Participant_ID" value="<%= survey.Participant_ID %>">
         <input type="hidden" name="Event_ID" value="<%= survey.Event_ID %>">
-        <input type="hidden" name="EventDateTimeStart" value="<%= survey.EventDateTimeStart %>">
+        <input type="hidden" name="EventDateTimeStart" value="<%= survey.EventDateTimeStart instanceof Date ? survey.EventDateTimeStart.toISOString().slice(0,19).replace('T',' ') : survey.EventDateTimeStart %>">
+
 
         <div class="row g-3">
             <!-- Satisfaction -->

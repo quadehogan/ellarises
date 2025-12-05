@@ -481,5 +481,19 @@ main {
     100% { transform: translateX(0); }
 }
 
+/* Force column widths to match across tables */
+#eventTable th,
+#eventTable td,
+#pastEventTable th,
+#pastEventTable td {
+    width: 20%; /* Adjust to match total width */
+    min-width: 120px; /* Optional for readability */
+}
+
+/* Extra column in past events table */
+#pastEventTable th:nth-child(5),
+#pastEventTable td:nth-child(5) {
+    width: 20%;
+}
 
 
