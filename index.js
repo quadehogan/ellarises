@@ -297,10 +297,6 @@ app.get('/participants', requireLogin, async (req, res) => {
     }
 
     try {
-        // 1) Get all participants
-        const usersRaw = await knex('Participants')
-            .select('Participant_ID', 'ParticipantFirstName', 'ParticipantLastName', 'ParticipantEmail', 'ParticipantPhone');
-
         // 2) Get participants who attended (RegistrationAttendedFlag = 'T')
         const participantsRaw = await knex('Registration as r')
             .join('Participants as p', 'r.Participant_ID', 'p.Participant_ID')
@@ -314,6 +310,36 @@ app.get('/participants', requireLogin, async (req, res) => {
                 'r.EventDateTimeStart'
             )
             .where('r.RegistrationAttendedFlag', 'T');
+
+        // Render directly to manage_dashboard
+        res.render('manage_dashboard', {
+            user,
+            title: 'Participants',
+            contentFile: 'participants_content',
+            contentData: {
+                user,
+                participantsRaw
+            }
+        });
+
+    } catch (err) {
+        console.error('Error loading participants:', err);
+        res.status(500).send('Database error.');
+    }
+});
+
+app.get('/users', requireLogin, async (req, res) => {
+    const user = req.session.user;
+
+    // Only admins can access
+    if (!user || user.role !== 'admin') {
+        return res.status(403).send('Access denied');
+    }
+
+    try {
+        // 1) Get all participants
+        const usersRaw = await knex('Participants')
+            .select('Participant_ID', 'ParticipantFirstName', 'ParticipantLastName', 'ParticipantEmail', 'ParticipantPhone');
 
         // Deduplicate by email for each list
         const uniqueByEmail = (arr) => {
@@ -338,12 +364,11 @@ app.get('/participants', requireLogin, async (req, res) => {
         // Render directly to manage_dashboard
         res.render('manage_dashboard', {
             user,
-            title: 'Participants',
-            contentFile: 'participants_content',
+            title: 'Users',
+            contentFile: 'users',
             contentData: {
                 user,
-                users,
-                participantsRaw
+                users
             }
         });
 

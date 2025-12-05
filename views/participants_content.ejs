@@ -4,7 +4,7 @@
 
   <!-- Search Bar -->
   <div class="mb-3">
-    <input type="text" id="searchInput" class="form-control" placeholder="Search participants or users...">
+    <input type="text" id="searchInput" class="form-control" placeholder="Search participants...">
   </div>
 
   <!-- PARTICIPANTS SECTION -->
@@ -50,48 +50,6 @@
   </div>
 
   <p><strong>Total Participants:</strong> <%= participantsRaw.length %></p>
-
-  <!-- USERS SECTION -->
-  <h2 class="mb-2 mt-4">All Users</h2>
-  <div style="max-height: 400px; overflow-y: auto;">
-    <table class="table table-striped table-bordered" id="usersTable">
-      <thead>
-        <tr>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>Email</th>
-          <th>Phone</th>
-          <th>Actions</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (users && users.length > 0) { %>
-          <% users.forEach(u => { %>
-            <tr>
-              <td><%= u.firstName %></td>
-              <td><%= u.lastName %></td>
-              <td><%= u.email %></td>
-              <td><%= u.phone %></td>
-              <td>
-                <button class="custom-btn" onclick="window.location.href='/edit-user/<%= u.Participant_ID %>'">Edit</button>
-              </td>
-              <td>
-                <form action="/participant/<%= u.Participant_ID %>/delete" method="POST" onsubmit="return confirm('Are you sure?');">
-                  <button type="submit" class="custom-btn">Delete</button>
-                </form>
-              </td>
-            </tr>
-          <% }) %>
-        <% } else { %>
-          <tr>
-            <td colspan="5" class="text-center">No users found.</td>
-          </tr>
-        <% } %>
-      </tbody>
-    </table>
-  </div>
-
 </div>
 
 <script>
@@ -100,7 +58,6 @@
   searchInput.addEventListener("input", function() {
     const filter = searchInput.value.toLowerCase();
     filterTable("participantsTable", filter);
-    filterTable("usersTable", filter);
   });
 
   function filterTable(tableId, filter) {
@@ -109,18 +66,5 @@
       const text = row.textContent.toLowerCase();
       row.style.display = text.includes(filter) ? "" : "none";
     });
-  }
-
-  // CONFIRM DELETE
-  function confirmDelete(id) {
-    if (confirm("Are you sure you want to delete this participant?")) {
-      window.location.href = `/delete-participant/${id}`;
-    }
-  }
-
-  function confirmDeleteUser(id) {
-    if (confirm("Are you sure you want to delete this user?")) {
-      window.location.href = `/delete-user/${id}`;
-    }
   }
 </script>
