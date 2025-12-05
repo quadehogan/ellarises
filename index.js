@@ -1119,6 +1119,7 @@ app.post('/submit-milestone', requireLogin, async(req, res) => {
 app.get('/participant/:id/edit', async(req, res) => {
     const user = req.session.user;
     const participantId = req.params.id;
+    console.log(req.session.user.role);
 
     try {
         const participant = await knex('Participants')
@@ -1355,8 +1356,6 @@ app.post("/profile/update", async (req, res) => {
       ParticipantFieldOfInterest
     } = req.body;
 
-    console.log("Participant_ID from form:", Participant_ID);
-
     // Update the participant record
     await knex("Participants")
       .where({ Participant_ID: Participant_ID })
@@ -1379,7 +1378,7 @@ app.post("/profile/update", async (req, res) => {
     req.session.message = "Profile updated successfully!";
 
     // Redirect back to profile page or dashboard
-    if (req.session.user.id === "admin") {
+    if (req.session.user.role === "admin") {
       res.redirect("/manage_dashboard");
     } else {
       res.redirect("/profile");
