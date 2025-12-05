@@ -329,6 +329,47 @@ app.get('/dashboard', requireLogin, (req, res) => {
 });
 
 
+// ===== Donations Routes =====
+
+// GET route to display the new donation form
+app.get("/donations/add", requireLogin, (req, res) => {
+    const user = req.session.user;
+    res.render("add_donation_admin", {
+        user: user
+    });
+});
+
+// POST route to create a new donation
+app.post("/donations/add", requireLogin, async (req, res) => {
+    try {
+        const { DonationAmount, Participant_ID, DonationDate } = req.body;
+
+        // Validate required fields
+        if (!DonationAmount) {
+            return res.status(400).send("Donation Amount is required.");
+        }
+
+        // Build insert object
+        const newDonation = {
+            DonationAmount
+        };
+
+        if (Participant_ID) newDonation.Participant_ID = Participant_ID;
+        if (DonationDate) newDonation.DonationDate = DonationDate;
+
+        // Insert into database
+        await knex("Donations").insert(newDonation);
+
+        // Redirect to donations list
+        res.redirect("/manage_dashboard");
+
+    } catch (err) {
+        console.error("Error adding donation:", err);
+        res.status(500).send("Server error adding donation");
+    }
+});
+
+
 // ===== Participants page (admin only) =====
 app.get('/participants', requireLogin, async(req, res) => {
     const user = req.session.user;
@@ -1321,10 +1362,10 @@ app.post('/participant/:id/delete', async(req, res) => {
             });
 
         if (updated) {
-            if (req.session.user && req.session.user.role === 'admin') {
-                res.redirect('/participants'); // redirect back to the page
+            if (user && user.role === 'admin') {
+            res.redirect('/participants'); // redirect back to the page
             } else {
-                res.redirect('/logout'); // log out the user if they deleted themselves
+            res.redirect('/logout'); // log out the user if they deleted themselves
             }
         } else {
             res.status(404).send('Participant not found.');
@@ -1366,20 +1407,37 @@ app.post('/donation/:id/delete', async(req, res) => {
 
 // Delete a specific EventOccurrence by composite key
 // ==================
-// DELETE EVENT OCCURRENCE (ADMIN)
+// DELETE EVENT OCCURRENCE (ADMIN) WITH CASCADE
 // ==================
-app.post('/events/delete/:eventId/:startTime', requireLogin, async(req, res) => {
+app.post('/events/delete/:eventId/:startTime', requireLogin, async (req, res) => {
     if (req.session.user.role !== 'admin') {
         return res.redirect('/events_nonverified');
     }
 
+    const trx = await knex.transaction(); // start transaction
+
     try {
         const { eventId, startTime } = req.params;
-
-        // Convert startTime (coming from URL) into valid ISO format
         const startISO = new Date(startTime).toISOString();
 
-        const deleted = await knex("EventOccurrence")
+        // Delete dependent registrations first
+        await trx('Registration')
+            .where({
+                Event_ID: eventId,
+                EventDateTimeStart: startISO
+            })
+            .del();
+
+        // Delete dependent surveys next
+        await trx('Surveys')
+            .where({
+                Event_ID: eventId,
+                EventDateTimeStart: startISO
+            })
+            .del();
+
+        // Delete the actual event occurrence
+        const deleted = await trx('EventOccurrence')
             .where({
                 Event_ID: eventId,
                 EventDateTimeStart: startISO
@@ -1390,9 +1448,11 @@ app.post('/events/delete/:eventId/:startTime', requireLogin, async(req, res) => 
             console.warn("Delete attempted but no record found:", eventId, startISO);
         }
 
+        await trx.commit(); // commit transaction
         res.redirect("/events");
 
     } catch (err) {
+        await trx.rollback(); // rollback if any error occurs
         console.error("Error deleting event occurrence:", err);
         res.status(500).send("Internal server error");
     }
