@@ -9,12 +9,6 @@
 </div>
 
 <div class="admin-content">
-    <h2>Welcome to Admin Management</h2>
-    <p>Select a section above to begin.</p>
-</div>
-
-
-<div class="admin-content">
     <% if (typeof contentFile !== 'undefined') { %>
         <%- include(contentFile, contentData) %>
     <% } %>
