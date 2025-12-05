@@ -35,7 +35,7 @@ $(document).ready(function () {
 
     function createParticles() {
         if ($(".floating-bubbles").length > 0) {
-            let gen = new particleGenerator(60, 40, 8, 100, 100, 12);
+            let gen = new ParticleGenerator(60, 40, 8, 100);
             gen.generate();
         }
     }
@@ -44,29 +44,25 @@ $(document).ready(function () {
 });
 
 // Generator class
-class particleGenerator {
-    constructor(count, maxSize, minSize, leftRange, bottomRange, maxDelay) {
+class ParticleGenerator {
+    constructor(count, maxSize, minSize, leftRange) {
         this.count = count;
         this.maxSize = maxSize;
         this.minSize = minSize;
         this.leftRange = leftRange;
-        this.bottomRange = bottomRange;
-        this.maxDelay = maxDelay;
     }
 
     generate() {
         for (let i = 0; i < this.count; i++) {
             let size = Math.floor(Math.random() * this.maxSize) + this.minSize;
-            let bottom = Math.floor(Math.random() * this.bottomRange);
             let left = Math.floor(Math.random() * this.leftRange);
-            let delay = Math.random() * this.maxDelay;
+            let delay = (Math.random() * 12).toFixed(2); // random delay in seconds
 
             $(".particles-wrapper .particles").append(`
                 <span class="particle"
                     style="
                         width:${size}px;
                         height:${size}px;
-                        bottom:${bottom}px;
                         left:${left}%;
                         animation-delay:${delay}s;
                     ">

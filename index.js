@@ -1233,7 +1233,7 @@ app.post("/survey/update", async(req, res) => {
                 SurveyOverallScore: overall,
                 SurveyNPSBucket: npsBucket,
                 SurveyComments: SurveyComments,
-                SurveySubmissionDate: db.fn.now() // optional: refresh timestamp
+                SurveySubmissionDate: knex.fn.now() // optional: refresh timestamp
             });
 
         res.redirect("/manage_dashboard");
