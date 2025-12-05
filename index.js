@@ -1302,6 +1302,7 @@ app.get('/survey/:participantId/:eventId/:startTime/edit', async(req, res) => {
     }
 });
 
+// ===== POST: Update Event Occurrence =====
 app.post("/events/edit", async (req, res) => {
   try {
     const {
@@ -1378,12 +1379,74 @@ app.post("/profile/update", async (req, res) => {
     req.session.message = "Profile updated successfully!";
 
     // Redirect back to profile page or dashboard
-    res.redirect("/profile");
+    if (req.session.user.role === "admin") {
+      res.redirect("/manage_dashboard");
+    } else {
+      res.redirect("/profile");
+    }
 
   } catch (err) {
     console.error("Error updating profile:", err);
     res.status(500).send("Server Error updating profile");
   }
+});
+
+app.post("/survey/update", async (req, res) => {
+    const {
+        Participant_ID,
+        Event_ID,
+        EventDateTimeStart,
+        SurveySatisfactionScore,
+        SurveyUsefulnessScore,
+        SurveyInstructorScore,
+        SurveyRecommendationScore,
+        SurveyComments
+    } = req.body;
+
+    try {
+        await db("Surveys")
+            .where({
+                Participant_ID: Participant_ID,
+                Event_ID: Event_ID,
+                EventDateTimeStart: EventDateTimeStart
+            })
+            .update({
+                SurveySatisfactionScore: SurveySatisfactionScore,
+                SurveyUsefulnessScore: SurveyUsefulnessScore,
+                SurveyInstructorScore: SurveyInstructorScore,
+                SurveyRecommendationScore: SurveyRecommendationScore,
+                SurveyComments: SurveyComments
+            });
+
+        res.redirect("/dashboard");
+    } catch (err) {
+        console.error("Error updating survey:", err);
+        res.status(500).send("Server Error");
+    }
+});
+
+
+app.post("/milestone/update", async (req, res) => {
+    const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
+
+    try {
+        await db("Milestones")
+            .where({
+                Participant_ID: Participant_ID,
+                MilestoneTitle: MilestoneTitle
+            })
+            .update({
+                MilestoneDate: MilestoneDate
+            });
+        if (req.session.user.role === "admin") {
+        res.redirect("/manage_dashboard");
+        } else {
+        res.redirect(`/profile/${Participant_ID}`);
+        }
+    } catch (err) {
+        console.error("Error updating milestone:", err);
+        res.status(500).send("Server Error");
+    }
 });
 
 
@@ -1413,7 +1476,11 @@ app.post("/registration/:Participant_ID/:Event_ID/:EventDateTimeStart/edit", asy
       });
 
     req.session.message = "Registration updated successfully!";
+    if (req.session.user.role === "admin") {
     res.redirect("/manage_dashboard");
+    } else {
+    res.redirect(`/profile/${Participant_ID}`);
+    }
   } catch (err) {
     console.error("Error updating registration:", err);
     res.status(500).send("Server Error");
