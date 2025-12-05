@@ -498,17 +498,19 @@ main {
     padding: 1.5rem;
 }
 
-
-/* Particle wrapper only for the content container */
+/* Particle container covering only the main content area */
 .particles-wrapper {
-    position: absolute;    /* relative to the container */
-    inset: 0;              /* top:0; right:0; bottom:0; left:0; */
+    position: absolute;      /* relative to content container */
+    top: 0;
+    left: 0;
+    width: 100%;             /* full width of content */
+    height: 100%;            /* full height of content container */
     overflow: hidden;
-    z-index: 0;            /* behind content */
-    pointer-events: none;  /* clicks pass through */
+    z-index: 0;              /* behind content */
+    pointer-events: none;    /* clicks pass through */
 }
 
-/* Make sure your content sits on top */
+/* Make sure content sits on top */
 .dashboard-content {
     position: relative;
     z-index: 1;
@@ -537,7 +539,7 @@ main {
         transform: scale(1);
     }
     100% {
-        bottom: 100%; /* stays within the container */
+        bottom: 100%;
         opacity: 0;
         transform: scale(1.2);
     }

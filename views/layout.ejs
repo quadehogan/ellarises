@@ -32,33 +32,38 @@
 
 <script>
 $(document).ready(function () {
-    // Create particles on page load
-    function createParticles() {
-        if ($(".floating-bubbles").length > 0) {
-            const gen = new ParticleGenerator(80, 60, 8, 100); // 80 particles, full width
-            gen.generate();
-        }
-    }
-
-    createParticles();
+    // Generate particles for each container with .floating-bubbles
+    $(".floating-bubbles").each(function () {
+        const $container = $(this); // jQuery element for this specific container
+        const gen = new ParticleGenerator(60, 40, 8, 100, $container); // 60 particles per container
+        gen.generate();
+    });
 });
 
-// Generator class
+// Particle generator class
 class ParticleGenerator {
-    constructor(count, maxSize, minSize, leftRange = 100) {
+    /**
+     * @param {number} count - Number of particles to generate
+     * @param {number} maxSize - Maximum size of a particle (px)
+     * @param {number} minSize - Minimum size of a particle (px)
+     * @param {number} leftRange - Maximum left offset percentage
+     * @param {jQuery} container - jQuery element to append particles to
+     */
+    constructor(count, maxSize, minSize, leftRange = 100, container) {
         this.count = count;
         this.maxSize = maxSize;
         this.minSize = minSize;
         this.leftRange = leftRange;
+        this.container = container;
     }
 
     generate() {
         for (let i = 0; i < this.count; i++) {
-            const size = Math.floor(Math.random() * (this.maxSize - this.minSize)) + this.minSize;
-            const left = Math.random() * this.leftRange; // percentage of screen width
-            const delay = (Math.random() * 12).toFixed(2); // random delay in seconds
+            const size = Math.floor(Math.random() * (this.maxSize - this.minSize + 1)) + this.minSize;
+            const left = Math.random() * this.leftRange; // percentage of container width
+            const delay = (Math.random() * 12).toFixed(2); // seconds
 
-            $(".particles-wrapper .particles").append(`
+            this.container.append(`
                 <span class="particle"
                     style="
                         width:${size}px;
