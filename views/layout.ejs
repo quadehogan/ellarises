@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="/css/styles.css">
 
     <!-- Bootstrap CSS -->
-     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -20,12 +20,19 @@
     <%- include("partials/header") %>
 
     <main>
-        <%- body %> <!-- page content will be inserted here -->
+        <% if (typeof body !== 'undefined') { %>
+            <%- body %> <!-- normal page content -->
+        <% } %>
+
+        <% if (typeof contentFile !== 'undefined') { %>
+            <%- include(contentFile, { user: user, content: content }) %> <!-- management pages -->
+        <% } %>
     </main>
 
     <!-- Footer Include -->
     <%- include("partials/footer") %>
 </body>
 </html>
+
 
 

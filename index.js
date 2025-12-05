@@ -121,16 +121,20 @@ app.get('/manage_dashboard', requireLogin, (req, res) => {
     }
     
     res.render('manage_dashboard', {
-        user: req.session.user
+        user: req.session.user,
+        content: include('manage_default_content', { user: req.session.user }) // render it first
     });
 });
 
 // ===============
 // EVENTS ROUTES 
 // ===============
-// Admin event route
-app.get('/events', requireLogin, async(req, res) => {
-    if (req.session.user.role !== 'admin') {
+// Admin events route
+app.get('/events', requireLogin, async (req, res) => {
+    const user = req.session.user;
+
+    // Only admins go through manage_dashboard
+    if (!user || user.role !== 'admin') {
         return res.redirect('/events_nonverified');
     }
 
@@ -151,10 +155,15 @@ app.get('/events', requireLogin, async(req, res) => {
         const upcomingEvents = events.filter(e => new Date(e.EventDateTimeStart) >= now);
         const pastEvents = events.filter(e => new Date(e.EventDateTimeStart) < now);
 
-        res.render('events', {
-            user: req.session.user,
-            upcomingEvents,
-            pastEvents
+        // Render manage_dashboard with events_content
+        res.render('manage_dashboard', {
+            user,
+            title: 'Events',
+            content: include('events_content', {
+                user,
+                upcomingEvents,
+                pastEvents
+            })
         });
 
     } catch (err) {
@@ -162,6 +171,7 @@ app.get('/events', requireLogin, async(req, res) => {
         res.status(500).send("Error retrieving events");
     }
 });
+
 
 // User event routes
 app.get('/events_user/:id', requireLogin, async(req, res) => {
@@ -239,7 +249,7 @@ app.get('/events_nonverified', async(req, res) => {
 
 
 // Dashboard (requires login)
-app.get('/dashboard', requireLogin, async(req, res) => {
+app.get('/dashboard', requireLogin, async (req, res) => {
     const user = req.session.user;
 
     try {
@@ -255,18 +265,27 @@ app.get('/dashboard', requireLogin, async(req, res) => {
             )
             .orderBy('m.MilestoneDate', 'desc');
 
-        res.render('dashboard', {
-            user,
-            milestones
-        });
+        if (user.role === 'admin') {
+            // Admin view goes through manage_dashboard
+            return res.render('manage_dashboard', {
+                user,
+                title: 'Milestones',
+                content: include('dashboard_content', {
+                    user,
+                    milestones
+                })
+            });
+        }
+
     } catch (err) {
         console.error('Error loading dashboard:', err);
         res.status(500).send('Server error.');
     }
 });
 
+
 // ===== Participants page (admin only) =====
-app.get('/participants', requireLogin, async(req, res) => {
+app.get('/participants', requireLogin, async (req, res) => {
     const user = req.session.user;
 
     // Only admins can access
@@ -313,11 +332,15 @@ app.get('/participants', requireLogin, async(req, res) => {
             phone: p.ParticipantPhone
         }));
 
-        // Render participants page with both lists
-        res.render('participants', {
+        // Render directly to manage_dashboard
+        res.render('manage_dashboard', {
             user,
-            users,
-            participantsRaw
+            title: 'Participants',
+            content: include('participants_content', {
+                user,
+                users,
+                participantsRaw
+            })
         });
 
     } catch (err) {
@@ -325,6 +348,7 @@ app.get('/participants', requireLogin, async(req, res) => {
         res.status(500).send('Database error.');
     }
 });
+
 
 
 
@@ -532,9 +556,8 @@ app.post('/submit-donation-public', async(req, res) => {
 });
 
 
-
 // ===== LOGGED-IN DONATIONS PAGE =====
-app.get('/donations', requireLogin, async(req, res) => {
+app.get('/donations', requireLogin, async (req, res) => {
     const user = req.session.user;
 
     try {
@@ -556,10 +579,14 @@ app.get('/donations', requireLogin, async(req, res) => {
 
             const totalAmount = donations.reduce((s, d) => s + Number(d.DonationAmount || 0), 0);
 
-            return res.render('donations_admin', {
+            return res.render('manage_dashboard', {
                 user,
-                donations,
-                totalAmount
+                title: 'Donations',
+                content: include('donations_admin_content', {
+                    user,
+                    donations,
+                    totalAmount
+                })
             });
         }
 
@@ -585,8 +612,6 @@ app.get('/donations', requireLogin, async(req, res) => {
         res.status(500).send("Server error.");
     }
 });
-
-
 
 // ===== LOGGED-IN PARTICIPANT SUBMIT DONATION =====
 app.post('/submit-donation', requireLogin, async(req, res) => {
