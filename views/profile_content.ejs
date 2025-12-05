@@ -2,7 +2,7 @@
     <h1 class="mb-4">Profile</h1>
 
     <!-- User Info -->
-    <form action="/profile/update" method="POST" enctype="multipart/form-data">
+    <form action="/profile/update" method="POST">
         <input type="hidden" name="Participant_ID" value="<%= profile.Participant_ID %>">
 
         <div class="mb-3">
@@ -40,14 +40,6 @@
             <input class="form-control" type="text" name="ParticipantFieldOfInterest" value="<%= profile.ParticipantFieldOfInterest %>">
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Profile Picture:</label>
-            <input class="form-control" type="file" name="ProfilePicture">
-            <% if (profile.ProfilePicture) { %>
-                <img src="/uploads/<%= profile.ProfilePicture %>" class="img-thumbnail mt-2" width="150">
-                <% } %>
-        </div>
-
         <button class="custom-btn" type="submit">Update Profile</button>
 
         <% if (user.isManager && user.id !== profile.Participant_ID) { %>
@@ -83,10 +75,7 @@
                     <td>
                         <a href="/milestone/edit/<%= ms.Milestone_ID %>" class="btn btn-sm btn-warning">Edit</a>
 
-                        <form 
-                            action="/milestone/<%= profile.Participant_ID %>/<%= encodeURIComponent(ms.MilestoneTitle) %>/delete" 
-                            method="POST" 
-                            onsubmit="return confirm('Are you sure you want to delete this milestone?');">
+                        <form action="/milestone/<%= profile.Participant_ID %>/<%= encodeURIComponent(ms.MilestoneTitle) %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this milestone?');">
                             <button type="submit" class="custom-btn">Delete</button>
                         </form>
                     </td>
@@ -96,7 +85,6 @@
     </table>
 
     <% if (user.id === profile.Participant_ID) { %>
-        <!-- NEW correct add-milestone route -->
         <a href="/milestone/add/<%= profile.Participant_ID %>" class="custom-btn">
            Add Milestone
         </a>
