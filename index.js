@@ -908,47 +908,54 @@ app.post('/register', async(req, res) => {
     }
 });
 
-app.post('/registration/update', async(req, res) => {
-    const { Participant_ID, Event_ID, EventDateTimeStart, action } = req.body;
-
+app.post('/registration/:participantId/:eventId/:startTime/edit', async (req, res) => {
     try {
+        let {
+            Participant_ID,
+            Event_ID,
+            EventDateTimeStart,
+            RegistrationStatus,
+            RegistrationAttendedFlag,
+            RegistrationCheckInTime,
+            RegistrationCreatedAt
+        } = req.body;
+
         if (!Participant_ID || !Event_ID || !EventDateTimeStart) {
             return res.status(400).send('Missing required fields');
         }
 
-        const updateFields = (action === 'attended') ? { RegistrationStatus: 'attended', RegistrationAttendedFlag: 'T' } :
-            (action === 'absent') ? { RegistrationStatus: 'no-show', RegistrationAttendedFlag: 'F' } :
-            (action === 'cancel') ? { RegistrationStatus: 'cancelled', RegistrationAttendedFlag: 'F' } :
-            null;
+        // Convert all dates to ISO strings for Postgres
+        const eventStartISO = new Date(EventDateTimeStart).toISOString();
+        const checkInISO = RegistrationCheckInTime ? new Date(RegistrationCheckInTime).toISOString() : null;
+        const createdAtISO = RegistrationCreatedAt ? new Date(RegistrationCreatedAt).toISOString() : null;
 
-        if (!updateFields) return res.status(400).send('Invalid action');
+        // Convert attended flag to 'T' or 'F'
+        const attendedFlag = (RegistrationAttendedFlag === 'true' || RegistrationAttendedFlag === 'T') ? 'T' : 'F';
 
-        const existingReg = await knex('Registration')
-            .where({ Participant_ID, Event_ID, EventDateTimeStart })
-            .first();
+        // Build the update object
+        const updateFields = {
+            RegistrationStatus,
+            RegistrationAttendedFlag: attendedFlag,
+            RegistrationCheckInTime: checkInISO,
+            RegistrationCreatedAt: createdAtISO
+        };
 
+        // Perform the update
         await knex('Registration')
-            .where({ Participant_ID, Event_ID, EventDateTimeStart })
+            .where({
+                Participant_ID,
+                Event_ID,
+                EventDateTimeStart: eventStartISO
+            })
             .update(updateFields);
 
-        if (action === 'cancel' && existingReg && existingReg.RegistrationStatus !== 'cancelled') {
-            const event = await knex('EventOccurrence')
-                .where({ Event_ID, EventDateTimeStart })
-                .first();
-
-            const newCount = Math.max(0, (event.EventNumRegistered || 0) - 1);
-
-            await knex('EventOccurrence')
-                .where({ Event_ID, EventDateTimeStart })
-                .update({ EventNumRegistered: newCount });
-        }
-
-        res.redirect('back');
+        res.redirect('/participants'); // redirect after update
     } catch (err) {
         console.error('Error updating registration:', err);
         res.status(500).send('Error updating registration');
     }
 });
+
 
 
 // ===== ALL EDIT ROUTES =====
