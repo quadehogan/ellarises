@@ -43,6 +43,12 @@
                                     <button type="submit" class="custom-btn">Delete</button>
                                 </form>
                             </td>
+                            <td>
+                                <!-- Edit button for a milestone -->
+                                <a href="/milestone/<%= milestone.Participant_ID %>/<%= encodeURIComponent(milestone.MilestoneTitle) %>/edit" class="btn btn-sm btn-primary">
+                                    Edit
+                                </a>
+                            </td>
                         </tr>
                         <% }) %>
                 </tbody>

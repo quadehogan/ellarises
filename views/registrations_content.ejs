@@ -46,6 +46,11 @@
             onsubmit="return confirm('Are you sure you want to delete this registration?');">
             <button class="btn btn-secondary btn-sm" type="submit">Delete</button>
           </form>
+
+          <!-- Edit button for a milestone -->
+          <a href="/milestone/<%= milestone.Participant_ID %>/<%= encodeURIComponent(milestone.MilestoneTitle) %>/edit" class="btn btn-sm btn-primary">
+            Edit
+          </a>
         </td>
       </tr>
     <% }) %>
