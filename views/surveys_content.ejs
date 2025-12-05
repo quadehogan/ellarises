@@ -85,6 +85,7 @@
         transition: transform 0.15s ease-in-out;
         display: flex;
         flex-direction: column;
+        position: relative; /* Needed for tooltip positioning */
     }
 
     .survey-card:hover {
@@ -97,6 +98,27 @@
 
     .survey-cards-container {
         margin-top: 20px;
+    }
+
+    /* Tooltip box hidden by default */
+    .tooltip-box {
+        display: none;
+        position: absolute;
+        top: 105%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #f9f9f9;
+        padding: 12px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        width: 260px;
+        z-index: 10;
+        font-size: 0.9rem;
+    }
+
+    /* Show tooltip on hover */
+    .survey-card:hover .tooltip-box {
+        display: block;
     }
 </style>
 

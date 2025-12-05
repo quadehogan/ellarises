@@ -1191,7 +1191,7 @@ app.post("/survey/update", async(req, res) => {
         else npsBucket = "Detractor";
 
         // Perform update using composite key
-        await db("Surveys")
+        await knex("Surveys")
             .where({
                 Participant_ID: Participant_ID,
                 Event_ID: Event_ID,
@@ -1208,7 +1208,7 @@ app.post("/survey/update", async(req, res) => {
                 SurveySubmissionDate: db.fn.now() // optional: refresh timestamp
             });
 
-        res.redirect("/dashboard");
+        res.redirect("/manage_dashboard");
 
     } catch (err) {
         console.error("Error updating survey:", err);
@@ -1261,6 +1261,7 @@ app.post("/registration/:Participant_ID/:Event_ID/:EventDateTimeStart/edit", asy
 // Soft delete / anonymize a participant via POST
 app.post('/participant/:id/delete', async(req, res) => {
     const participantId = req.params.id;
+    const user = req.session.user;
 
     try {
         const updated = await knex('Participants')
@@ -1281,7 +1282,7 @@ app.post('/participant/:id/delete', async(req, res) => {
             });
 
         if (updated) {
-            if (req.session.user && req.session.user.role === 'admin') {
+            if (user && user.role === 'admin') {
             res.redirect('/participants'); // redirect back to the page
             } else {
             res.redirect('/logout'); // log out the user if they deleted themselves
@@ -1404,7 +1405,7 @@ app.post('/survey/:participantId/:eventId/:startTime/delete', async(req, res) =>
         if (deleted) {
             res.status(200).json({ message: 'Survey deleted successfully.' });
             if (user.role === 'admin') {
-                res.redirect('/surveys_content');
+                res.redirect('/manage_dashboard');
             } else {
                 res.redirect(`/profile/${participantId}`);
             }

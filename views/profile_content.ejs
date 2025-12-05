@@ -43,16 +43,24 @@
                     <input class="form-control" type="text" name="ParticipantFieldOfInterest" value="<%= profile.ParticipantFieldOfInterest %>">
                 </div>
 
-                <button class="btn btn-primary w-100 mb-2" type="submit">Update Profile</button>
-
-                <% if (user.id === profile.Participant_ID) { %>
-                    <form action="/participant/<%= profile.Participant_ID %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
-                        <button type="submit" class="btn btn-danger w-100">
-                            Delete My Account
-                        </button>
-                    </form>
-                <% } %>
+                <button class="btn btn-primary w-100 mb-3" type="submit">Update Profile</button>
             </form>
+
+            <% if (user.id === profile.Participant_ID) { %>
+                <form id="deleteAccountForm" action="/participant/<%= profile.Participant_ID %>/delete" method="POST">
+                    <button type="submit" class="btn btn-danger w-100">
+                        Delete My Account
+                    </button>
+                </form>
+
+                <script>
+                    document.getElementById('deleteAccountForm').addEventListener('submit', function(e) {
+                        if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                            e.preventDefault();
+                        }
+                    });
+                </script>
+            <% } %>
         </div>
 
         <!-- Milestones Table -->
@@ -73,14 +81,14 @@
                         <% milestones.forEach(ms => { %>
                             <tr>
                                 <td><%= ms.MilestoneTitle %></td>
-                                <td><%= ms.MilestoneDate %></td>
+                                <td><%= new Date(ms.MilestoneDate).toLocaleDateString() %></td>
                                 <% if (user.isManager || user.id === profile.Participant_ID) { %>
-                                    <td class="d-flex gap-2">
-                                        <a href="/milestone/<%= ms.Participant_ID %>/<%= encodeURIComponent(ms.MilestoneTitle) %>/edit" class="btn btn-sm btn-warning">
+                                    <td class="d-flex flex-column gap-2">
+                                        <a href="/milestone/<%= ms.Participant_ID %>/<%= encodeURIComponent(ms.MilestoneTitle) %>/edit" class="btn btn-warning w-100">
                                             Edit
                                         </a>
                                         <form action="/milestone/<%= ms.Participant_ID %>/<%= encodeURIComponent(ms.MilestoneTitle) %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this milestone?');">
-                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                            <button type="submit" class="btn btn-danger w-100">Delete</button>
                                         </form>
                                     </td>
                                 <% } %>
@@ -91,8 +99,9 @@
             </div>
 
             <% if (user.id === profile.Participant_ID) { %>
-                <a href="/milestone/add/<%= profile.Participant_ID %>" class="custom-btn">Add Milestone</a>
+                <a href="/milestone/add/<%= profile.Participant_ID %>" class="btn btn-success w-50 mt-3 d-block mx-auto">Add Milestone</a>
             <% } %>
         </div>
     </div>
 </div>
+
