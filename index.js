@@ -116,9 +116,6 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/manage_dashboard', requireLogin, (req, res) => {
-    const message = req.session.message;
-    delete req.session.message;
-
     if (req.session.user.role !== 'admin') {
         return res.redirect('/index');
     }
@@ -127,7 +124,6 @@ app.get('/manage_dashboard', requireLogin, (req, res) => {
         user: req.session.user,
         contentFile: 'manage_default_content',
         contentData: { user: req.session.user }, // render it first
-        message
     });
 });
 
