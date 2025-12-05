@@ -456,6 +456,50 @@ app.get('/profile/:id', requireLogin, async(req, res) => {
     }
 });
 
+app.get('/users/edit/:id', requireLogin, async(req, res) => {
+    const id = req.params.id;
+
+    const participant = await knex("Participants")
+        .where({ Participant_ID: id })
+        .first();
+
+    res.render('manage_dashboard', {
+        user: req.session.user,
+        contentFile: 'edit_user_content',
+        contentData: { user: req.session.user, participant }
+    });
+});
+
+
+// ADMIN update a user's profile
+app.post('/profile/update/admin', requireLogin, async(req, res) => {
+    try {
+        const id = req.body.Participant_ID;
+
+        await knex("Participants")
+            .where({ Participant_ID: id })
+            .update({
+                ParticipantEmail: req.body.ParticipantEmail,
+                ParticipantPassword: req.body.ParticipantPassword,
+                ParticipantFirstName: req.body.ParticipantFirstName,
+                ParticipantLastName: req.body.ParticipantLastName,
+                ParticipantDOB: req.body.ParticipantDOB,
+                ParticipantPhone: req.body.ParticipantPhone,
+                ParticipantCity: req.body.ParticipantCity,
+                ParticipantState: req.body.ParticipantState,
+                ParticipantZIP: req.body.ParticipantZIP,
+                ParticipantSchoolorEmployer: req.body.ParticipantSchoolorEmployer,
+                ParticipantFieldOfInterest: req.body.ParticipantFieldOfInterest
+            });
+
+        res.redirect('/users');
+    } catch (err) {
+        console.error("Admin user update error:", err);
+        res.status(500).send("Update failed");
+    }
+});
+
+
 
 // ===== Surveys route (composite key) =====
 app.get('/surveys/:eventId/:eventDateTimeStart', async(req, res) => {
@@ -516,6 +560,45 @@ app.get('/surveys/:eventId/:eventDateTimeStart', async(req, res) => {
 // ===== PUBLIC DONATION PAGE (no login required) =====
 app.get('/donate-public', (req, res) => {
     res.render('add_donation_public', { message: null });
+});
+
+
+// ADMIN add donation
+app.post('/donations/add', requireLogin, async(req, res) => {
+    try {
+        const { DonationAmount, Participant_ID, DonationDate } = req.body;
+
+        await knex("Donations").insert({
+            DonationAmount,
+            Participant_ID,
+            DonationDate: DonationDate || knex.fn.now()
+        });
+
+        res.redirect('/donations');
+    } catch (err) {
+        console.error("Admin add donation error:", err);
+        res.status(500).send("Error adding donation");
+    }
+});
+
+// ADMIN update donation
+app.post('/donations/update', requireLogin, async(req, res) => {
+    try {
+        const { Donation_ID, DonationAmount, Participant_ID, DonationDate } = req.body;
+
+        await knex("Donations")
+            .where({ Donation_ID })
+            .update({
+                DonationAmount,
+                Participant_ID,
+                DonationDate
+            });
+
+        res.redirect('/donations');
+    } catch (err) {
+        console.error("Admin donation update error:", err);
+        res.status(500).send("Error updating donation");
+    }
 });
 
 
@@ -790,6 +873,31 @@ app.post('/create-user-submit', requireLogin, async(req, res) => {
     }
 });
 
+// ADMIN submit survey
+app.post('/add_survey/submit', requireLogin, async(req, res) => {
+    try {
+        const body = req.body;
+
+        await knex("Surveys").insert({
+            Participant_ID: body.Participant_ID,
+            Event_ID: body.Event_ID,
+            EventDateTimeStart: body.EventDateTimeStart,
+            SurveySatisfaction: body.SurveySatisfaction,
+            SurveyUsefulnessScore: body.SurveyUsefulnessScore,
+            SurveyInstructorScore: body.SurveyInstructorScore,
+            SurveyRecommendationScore: body.SurveyRecommendationScore,
+            SurveyComments: body.SurveyComments,
+            SurveySubmissionDate: knex.fn.now()
+        });
+
+        res.redirect('/manage_dashboard');
+    } catch (err) {
+        console.error("Error submitting survey:", err);
+        res.status(500).send("Survey submit error");
+    }
+});
+
+
 
 // ===== POST: Submit Survey (example storing) =====
 app.post('/submit-survey', requireLogin, async(req, res) => {
@@ -912,7 +1020,7 @@ app.post('/register', async(req, res) => {
     }
 });
 
-app.post('/registration/:participantId/:eventId/:startTime/edit', async (req, res) => {
+app.post('/registration/:participantId/:eventId/:startTime/edit', async(req, res) => {
     try {
         let {
             Participant_ID,
