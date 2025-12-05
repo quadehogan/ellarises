@@ -499,44 +499,36 @@ main {
 }
 
 
-/* Container box */
-
-.screensaver-box {
-    position: relative;
-    width: 100%;
-    height: 350px;
-    border-radius: 16px;
-    overflow: hidden;
-    background: linear-gradient(135deg, var(--color-neutral-light) 0%, #ffffff 100%);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-    border: 1px solid var(--color-muted);
-}
-
-
-/* Wrapper for particles */
-
+/* Full-page particle wrapper */
 .particles-wrapper {
-    position: absolute;
-    inset: 0;
+    position: fixed;     /* cover the viewport */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
+    z-index: 0;          /* behind all content */
+    pointer-events: none; /* clicks pass through */
 }
 
+/* Make sure your content sits on top */
+.dashboard-content {
+    position: relative;
+    z-index: 1;
+    padding: 2rem;
+}
 
 /* Bubble particles */
-
 .particles-wrapper .particle {
     position: absolute;
     display: block;
     border-radius: 50%;
     background: var(--color-accent);
-    /* soft blue */
     box-shadow: 0 0 12px var(--color-secondary);
     animation: floatUp 12s linear infinite, driftSide 4s ease-in-out infinite;
 }
 
-
 /* Float upward */
-
 @keyframes floatUp {
     0% {
         bottom: -50px;
@@ -554,19 +546,11 @@ main {
     }
 }
 
-
 /* Gentle left-right drift */
-
 @keyframes driftSide {
-    0% {
-        transform: translateX(0);
-    }
-    50% {
-        transform: translateX(15px);
-    }
-    100% {
-        transform: translateX(0);
-    }
+    0% { transform: translateX(0); }
+    50% { transform: translateX(15px); }
+    100% { transform: translateX(0); }
 }
 
 /* Force column widths to match across tables */

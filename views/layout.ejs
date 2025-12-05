@@ -32,10 +32,10 @@
 
 <script>
 $(document).ready(function () {
-
+    // Create particles on page load
     function createParticles() {
         if ($(".floating-bubbles").length > 0) {
-            let gen = new ParticleGenerator(60, 40, 8, 100);
+            const gen = new ParticleGenerator(80, 60, 8, 100); // 80 particles, full width
             gen.generate();
         }
     }
@@ -45,7 +45,7 @@ $(document).ready(function () {
 
 // Generator class
 class ParticleGenerator {
-    constructor(count, maxSize, minSize, leftRange) {
+    constructor(count, maxSize, minSize, leftRange = 100) {
         this.count = count;
         this.maxSize = maxSize;
         this.minSize = minSize;
@@ -54,9 +54,9 @@ class ParticleGenerator {
 
     generate() {
         for (let i = 0; i < this.count; i++) {
-            let size = Math.floor(Math.random() * this.maxSize) + this.minSize;
-            let left = Math.floor(Math.random() * this.leftRange);
-            let delay = (Math.random() * 12).toFixed(2); // random delay in seconds
+            const size = Math.floor(Math.random() * (this.maxSize - this.minSize)) + this.minSize;
+            const left = Math.random() * this.leftRange; // percentage of screen width
+            const delay = (Math.random() * 12).toFixed(2); // random delay in seconds
 
             $(".particles-wrapper .particles").append(`
                 <span class="particle"
