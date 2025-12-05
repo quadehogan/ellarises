@@ -1,0 +1,33 @@
+<div class="container my-5" style="max-width: 600px;">
+
+    <h1 class="mb-4">Edit Donation</h1>
+
+    <form action="/donations/update" method="POST">
+
+        <!-- Hidden Donation ID (cannot be edited) -->
+        <input type="hidden" name="Donation_ID" value="<%= donation.Donation_ID %>">
+
+        <div class="mb-3">
+            <label class="form-label">Donation Amount</label>
+            <input type="number" step="0.01" class="form-control" name="DonationAmount" 
+                   required value="<%= donation.DonationAmount %>">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Participant ID</label>
+            <input type="text" class="form-control" name="Participant_ID" 
+                   value="<%= donation.Participant_ID %>">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Donation Date</label>
+            <input type="date" class="form-control" name="DonationDate" 
+                   value="<%= donation.DonationDate ? new Date(donation.DonationDate).toISOString().split('T')[0] : '' %>">
+        </div>
+
+        <button type="submit" class="custom-btn">Update Donation</button>
+        <a href="/manage_dashboard" class="btn btn-secondary ms-3">Cancel</a>
+
+    </form>
+</div>
+

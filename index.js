@@ -365,6 +365,45 @@ app.get('/dashboard', requireLogin, (req, res) => {
     });
 });
 
+// GET route to display the new donation form
+app.get("/donations/add", requireLogin, (req, res) => {
+    const user = req.session.user;
+    res.render("add_donation_admin", {
+        user: user
+    });
+});
+
+// POST route to create a new donation
+app.post("/donations/add", requireAdmin, async (req, res) => {
+    try {
+        const { DonationAmount, Participant_ID, DonationDate } = req.body;
+
+        // Validate required fields
+        if (!DonationAmount) {
+            return res.status(400).send("Donation Amount is required.");
+        }
+
+        // Build insert object
+        const newDonation = {
+            DonationAmount
+        };
+
+        if (Participant_ID) newDonation.Participant_ID = Participant_ID;
+        if (DonationDate) newDonation.DonationDate = DonationDate;
+
+        // Insert into database
+        await knex("Donations").insert(newDonation);
+
+        // Redirect to donations list
+        res.redirect("/manage_dashboard");
+
+    } catch (err) {
+        console.error("Error adding donation:", err);
+        res.status(500).send("Server error adding donation");
+    }
+});
+
+
 
 // ===== Participants page (admin only) =====
 app.get('/participants', requireLogin, async(req, res) => {
@@ -1375,6 +1414,42 @@ app.post("/profile/update/admin", async (req, res) => {
         res.status(500).send("Server Error updating profile");
     }
 });
+
+/* ----- POST: Update Donation ----- */
+app.post("/donations/update", async (req, res) => {
+    try {
+        const { Donation_ID, DonationAmount, Participant_ID, DonationDate } = req.body;
+
+        // Validate required fields
+        if (!Donation_ID || !DonationAmount) {
+            return res.status(400).send("Donation ID and Donation Amount are required.");
+        }
+
+        // Build update object dynamically
+        const updateData = {
+            DonationAmount
+        };
+
+        if (Participant_ID) updateData.Participant_ID = Participant_ID;
+        if (DonationDate) updateData.DonationDate = DonationDate;
+
+        // Update donation in the database
+        await knex("Donations")
+            .where({ Donation_ID })
+            .update(updateData);
+
+        // Optionally set a session message
+        req.session.message = "Donation updated successfully!";
+
+        // Redirect to donations list
+        res.redirect("/donations");
+
+    } catch (err) {
+        console.error("Error updating donation:", err);
+        res.status(500).send("Server error updating donation");
+    }
+});
+
 
 app.post("/survey/update", async(req, res) => {
     const {
