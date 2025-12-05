@@ -43,9 +43,10 @@
                                 <!-- EDIT BUTTON -->
                                 <td>
                                     <!-- Edit button for an event occurrence -->
-                                    <a href="/event-occurrence/<%= occurrence.Event_ID %>/<%= encodeURIComponent(occurrence.EventDateTimeStart) %>/edit" class="btn btn-sm btn-primary">
-                                        Edit
+                                    <a href="/events/edit/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart) %>" class="custom-btn">
+                                      Edit
                                     </a>
+
                                 </td>
 
                                 <!-- DELETE BUTTON -->
@@ -111,9 +112,10 @@
                                         <!-- EDIT BUTTON -->
                                         <td>
                                             <!-- Edit button for an event occurrence -->
-                                            <a href="/event-occurrence/<%= occurrence.Event_ID %>/<%= encodeURIComponent(occurrence.EventDateTimeStart) %>/edit" class="btn btn-sm btn-primary">
-                                                Edit
+                                            <a href="/events/edit/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart) %>" class="custom-btn">
+                                              Edit
                                             </a>
+
                                         </td>
 
                                         <!-- DELETE BUTTON -->
