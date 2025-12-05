@@ -604,24 +604,6 @@ app.get('/donate-public', (req, res) => {
 });
 
 
-// ADMIN add donation
-app.post('/donations/add', requireLogin, async(req, res) => {
-    try {
-        const { DonationAmount, Participant_ID, DonationDate } = req.body;
-
-        await knex("Donations").insert({
-            DonationAmount,
-            Participant_ID,
-            DonationDate: DonationDate || knex.fn.now()
-        });
-
-        res.redirect('/donations');
-    } catch (err) {
-        console.error("Admin add donation error:", err);
-        res.status(500).send("Error adding donation");
-    }
-});
-
 // ADMIN update donation
 app.post('/donations/update', requireLogin, async(req, res) => {
     try {
@@ -1583,7 +1565,7 @@ app.post('/registration/:participantId/:eventId/:startTime/delete', async(req, r
         if (deleted) {
             res.status(200).json({ message: 'Registration deleted successfully.' });
             if (user.role === 'admin') {
-                res.redirect('/registrations_content');
+                res.redirect('/manage_dashboard');
             } else {
                 res.redirect(`/profile/${participantId}`);
             }
