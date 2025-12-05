@@ -374,7 +374,7 @@ app.get("/donations/add", requireLogin, (req, res) => {
 });
 
 // POST route to create a new donation
-app.post("/donations/add", requireAdmin, async (req, res) => {
+app.post("/donations/add", requireLogin, async (req, res) => {
     try {
         const { DonationAmount, Participant_ID, DonationDate } = req.body;
 
