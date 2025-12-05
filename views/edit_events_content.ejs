@@ -1,38 +1,46 @@
-<div class="container my-5">
-    <h2 class="mb-4 text-center">Edit Event</h2>
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Edit Event Occurrence</h2>
 
     <form action="/events/edit" method="POST">
 
-        <!-- Carry Event ID & Original Start Date -->
+        <!-- Hidden identifiers -->
         <input type="hidden" name="Event_ID" value="<%= event.Event_ID %>">
-        <input type="hidden" name="OriginalDate" value="<%= event.EventDateTimeStart %>">
 
+        <!-- ORIGINAL TIMESTAMP (used to find the record) -->
+        <input type="hidden" name="OriginalDateTimeStart" value="<%= new Date(event.EventDateTimeStart).toISOString() %>">
+
+        <!-- START DATE -->
         <div class="mb-3">
-            <label class="form-label">Event Start Date & Time</label>
-            <input type="datetime-local" name="EventDateTimeStart" class="form-control" value="<%= event.EventDateTimeStart.toISOString().slice(0,16) %>" required>
+            <label class="form-label">Event Start Time</label>
+            <input type="datetime-local" name="EventDateTimeStart" class="form-control" required value="<%= new Date(event.EventDateTimeStart).toISOString().slice(0,16) %>">
         </div>
 
+        <!-- END DATE -->
         <div class="mb-3">
-            <label class="form-label">Event End Date & Time</label>
-            <input type="datetime-local" name="EventDateTimeEnd" class="form-control" value="<%= event.EventDateTimeEnd.toISOString().slice(0,16) %>" required>
+            <label class="form-label">Event End Time</label>
+            <input type="datetime-local" name="EventDateTimeEnd" class="form-control" value="<%= event.EventDateTimeEnd ? new Date(event.EventDateTimeEnd).toISOString().slice(0,16) : '' %>">
         </div>
 
+        <!-- LOCATION -->
         <div class="mb-3">
-            <label class="form-label">Location</label>
-            <input type="text" name="EventLocation" class="form-control" value="<%= event.EventLocation %>" required>
+            <label class="form-label">Event Location</label>
+            <input type="text" name="EventLocation" class="form-control" required value="<%= event.EventLocation %>">
         </div>
 
+        <!-- CAPACITY -->
         <div class="mb-3">
-            <label class="form-label">Capacity</label>
-            <input type="number" name="EventCapacity" class="form-control" value="<%= event.EventCapacity %>" required>
+            <label class="form-label">Event Capacity</label>
+            <input type="number" name="EventCapacity" class="form-control" required value="<%= event.EventCapacity %>">
         </div>
 
+        <!-- REGISTRATION DEADLINE -->
         <div class="mb-3">
             <label class="form-label">Registration Deadline</label>
-            <input type="datetime-local" name="EventRegistrationDeadline" class="form-control" value="<%= event.EventRegistrationDeadline.toISOString().slice(0,16) %>" required>
+            <input type="datetime-local" name="EventRegistrationDeadline" class="form-control" value="<%= event.EventRegistrationDeadline ? new Date(event.EventRegistrationDeadline).toISOString().slice(0,16) : '' %>">
         </div>
 
-        <button class="custom-btn">Save Changes</button>
-        <a href="/events" class="custom-btn ms-3">Cancel</a>
+        <!-- SUBMIT + CANCEL -->
+        <button type="submit" class="custom-btn">Save Changes</button>
+        <a href="/events" class="custom-btn" style="margin-left: 10px;">Cancel</a>
     </form>
 </div>

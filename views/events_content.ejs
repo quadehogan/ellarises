@@ -8,7 +8,9 @@
             <input type="text" id="eventSearchInput" class="form-control" placeholder="Search events by any field">
         </div>
 
-        <!-- Upcoming Events Table -->
+        <!-- ========================= -->
+        <!--      UPCOMING EVENTS     -->
+        <!-- ========================= -->
         <% if (upcomingEvents && upcomingEvents.length > 0) { %>
             <h4 class="mb-2">Upcoming Events</h4>
             <div style="max-height: 400px; overflow-y: auto;">
@@ -42,24 +44,22 @@
 
                                 <!-- EDIT BUTTON -->
                                 <td>
-                                    <!-- Edit button for an event occurrence -->
-                                    <a href="/events/edit/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart.toISOString()) %>" class="custom-btn">
+                                    <a href="/events/edit/<%= event.Event_ID %>/<%= encodeURIComponent(new Date(event.EventDateTimeStart).toISOString()) %>" class="custom-btn">
                                         Edit
                                     </a>
                                 </td>
 
                                 <!-- DELETE BUTTON -->
                                 <td>
-                                    <form action="/events/delete/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart) %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this event?');" style="display:inline-block;">
+                                    <form action="/events/delete/<%= event.Event_ID %>/<%= encodeURIComponent(new Date(event.EventDateTimeStart).toISOString()) %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this event?');" style="display:inline-block;">
 
-                                        <button type="submit" class="custom-btn" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">
+                                        <button type="submit" class="custom-btn" style="padding:0.25rem 0.5rem;font-size:0.85rem;">
                                             Delete
                                         </button>
-
                                     </form>
                                 </td>
 
-                                <!-- SURVEY -->
+                                <!-- SURVEY BUTTON -->
                                 <td>
                                     <a href="/surveys/<%= event.Event_ID %>/<%= encodeURIComponent(new Date(event.EventDateTimeStart).toISOString()) %>" class="custom-btn">
                                         Survey
@@ -70,12 +70,14 @@
                     </tbody>
                 </table>
             </div>
-
             <% } %>
+
                 <!-- ADD EVENT BUTTON -->
                 <a href="/events/add" class="custom-btn mt-3">Add Event</a>
 
-                <!-- Past Events Table -->
+                <!-- ========================= -->
+                <!--        PAST EVENTS        -->
+                <!-- ========================= -->
                 <% if (pastEvents && pastEvents.length > 0) { %>
                     <h4 class="mt-4 mb-2">Past Events</h4>
                     <div style="max-height: 400px; overflow-y: auto;">
@@ -109,25 +111,22 @@
 
                                         <!-- EDIT BUTTON -->
                                         <td>
-                                            <!-- Edit button for an event occurrence -->
                                             <a href="/events/edit/<%= event.Event_ID %>/<%= encodeURIComponent(new Date(event.EventDateTimeStart).toISOString()) %>" class="custom-btn">
-                                              Edit
-                                            </a>
-
+                                        Edit
+                                    </a>
                                         </td>
 
                                         <!-- DELETE BUTTON -->
                                         <td>
-                                            <form action="/events/delete/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart) %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this event?');" style="display:inline-block;">
+                                            <form action="/events/delete/<%= event.Event_ID %>/<%= encodeURIComponent(new Date(event.EventDateTimeStart).toISOString()) %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this event?');" style="display:inline-block;">
 
-                                                <button type="submit" class="custom-btn" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">
+                                                <button type="submit" class="custom-btn" style="padding:0.25rem 0.5rem;font-size:0.85rem;">
                                             Delete
                                         </button>
-
                                             </form>
                                         </td>
 
-                                        <!-- SURVEY -->
+                                        <!-- SURVEY BUTTON -->
                                         <td>
                                             <a href="/surveys/<%= event.Event_ID %>/<%= encodeURIComponent(new Date(event.EventDateTimeStart).toISOString()) %>" class="custom-btn">
                                         Survey

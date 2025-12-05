@@ -1181,13 +1181,18 @@ app.get('/events/edit/:eventId/:startTime', async(req, res) => {
 });
 
 // Handles saving updated event occurrence details after the admin submits the edit form.
+// ==================
+// EDIT EVENT SUBMIT
+// ==================
 app.post('/events/edit', requireLogin, async(req, res) => {
-    if (req.session.user.role !== 'admin') return res.redirect('/events_nonverified');
+    if (req.session.user.role !== 'admin') {
+        return res.redirect('/events_nonverified');
+    }
 
     try {
         const {
             Event_ID,
-            OriginalDate,
+            OriginalDateTimeStart,
             EventDateTimeStart,
             EventDateTimeEnd,
             EventLocation,
@@ -1195,26 +1200,32 @@ app.post('/events/edit', requireLogin, async(req, res) => {
             EventRegistrationDeadline
         } = req.body;
 
-        await knex('EventOccurrence')
+        // Convert all dates to ISO format for Postgres
+        const newStart = new Date(EventDateTimeStart).toISOString();
+        const newEnd = EventDateTimeEnd ? new Date(EventDateTimeEnd).toISOString() : null;
+        const regDeadline = EventRegistrationDeadline ? new Date(EventRegistrationDeadline).toISOString() : null;
+
+        await knex("EventOccurrence")
             .where({
-                Event_ID,
-                EventDateTimeStart: OriginalDate
+                Event_ID: Event_ID,
+                EventDateTimeStart: OriginalDateTimeStart // exact match to find the row
             })
             .update({
-                EventDateTimeStart,
-                EventDateTimeEnd,
+                EventDateTimeStart: newStart,
+                EventDateTimeEnd: newEnd,
                 EventLocation,
                 EventCapacity,
-                EventRegistrationDeadline
+                EventRegistrationDeadline: regDeadline
             });
 
-        return res.redirect('/events');
+        res.redirect("/events");
 
     } catch (err) {
         console.error("Error editing event:", err);
         res.status(500).send("Server error editing event");
     }
 });
+
 
 
 // Edit milestone (composite key)
@@ -1352,34 +1363,39 @@ app.post('/donation/:id/delete', async(req, res) => {
 });
 
 // Delete a specific EventOccurrence by composite key
+// ==================
+// DELETE EVENT OCCURRENCE (ADMIN)
+// ==================
 app.post('/events/delete/:eventId/:startTime', requireLogin, async(req, res) => {
-    const user = req.session.user;
-    const { eventId, startTime } = req.params;
+    if (req.session.user.role !== 'admin') {
+        return res.redirect('/events_nonverified');
+    }
 
     try {
-        const deleted = await knex('EventOccurrence')
+        const { eventId, startTime } = req.params;
+
+        // Convert startTime (coming from URL) into valid ISO format
+        const startISO = new Date(startTime).toISOString();
+
+        const deleted = await knex("EventOccurrence")
             .where({
                 Event_ID: eventId,
-                EventDateTimeStart: startTime
+                EventDateTimeStart: startISO
             })
             .del();
 
         if (!deleted) {
-            return res.status(404).send('Event occurrence not found.');
+            console.warn("Delete attempted but no record found:", eventId, startISO);
         }
 
-        // Redirect depending on role
-        if (user.role === 'admin') {
-            return res.redirect('/events');
-        } else {
-            return res.redirect('/events_user/' + user.id);
-        }
+        res.redirect("/events");
 
     } catch (err) {
-        console.error('Error deleting event occurrence:', err);
-        res.status(500).send('Internal server error.');
+        console.error("Error deleting event occurrence:", err);
+        res.status(500).send("Internal server error");
     }
 });
+
 
 
 // Delete a specific Milestone by composite key
