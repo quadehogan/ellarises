@@ -13,5 +13,7 @@
 
 
 <div class="admin-content">
-    <%- content %>
+    <% if (typeof contentFile !== 'undefined') { %>
+        <%- include(contentFile, contentData) %>
+    <% } %>
 </div>

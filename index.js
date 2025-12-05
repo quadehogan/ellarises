@@ -159,11 +159,12 @@ app.get('/events', requireLogin, async (req, res) => {
         res.render('manage_dashboard', {
             user,
             title: 'Events',
-            content: include('events_content', {
+            contentFile: 'events_content',
+            contentData: {
                 user,
                 upcomingEvents,
                 pastEvents
-            })
+            }
         });
 
     } catch (err) {
@@ -270,10 +271,11 @@ app.get('/dashboard', requireLogin, async (req, res) => {
             return res.render('manage_dashboard', {
                 user,
                 title: 'Milestones',
-                content: include('dashboard_content', {
+                contentFile: 'dashboard_content',
+                contentData: {
                     user,
                     milestones
-                })
+                }
             });
         }
 
@@ -336,11 +338,12 @@ app.get('/participants', requireLogin, async (req, res) => {
         res.render('manage_dashboard', {
             user,
             title: 'Participants',
-            content: include('participants_content', {
+            contentFile: 'participants_content',
+            contentData: {
                 user,
                 users,
                 participantsRaw
-            })
+            }
         });
 
     } catch (err) {
@@ -582,11 +585,12 @@ app.get('/donations', requireLogin, async (req, res) => {
             return res.render('manage_dashboard', {
                 user,
                 title: 'Donations',
-                content: include('donations_admin_content', {
+                contentFile: 'donations_admin_content',
+                contentData: {
                     user,
                     donations,
                     totalAmount
-                })
+                }
             });
         }
 
