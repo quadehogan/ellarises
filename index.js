@@ -119,7 +119,7 @@ app.get('/manage_dashboard', requireLogin, (req, res) => {
     if (req.session.user.role !== 'admin') {
         return res.redirect('/dashboard');
     }
-    
+
     res.render('manage_dashboard', {
         user: req.session.user
     });
@@ -236,6 +236,75 @@ app.get('/events_nonverified', async(req, res) => {
         res.status(500).send("Server error");
     }
 });
+
+
+// ===============
+// ADD EVENT FORM (ADMIN)
+// ===============
+app.get('/events/add', requireLogin, async(req, res) => {
+    if (req.session.user.role !== 'admin') {
+        return res.redirect('/events_nonverified');
+    }
+
+    try {
+        const eventTemplates = await knex('EventTemplates')
+            .select(
+                'Event_ID',
+                'EventName',
+                'EventType',
+                'EventDescription',
+                'EventRecurrencePattern',
+                'EventDefaultCapacity'
+            )
+            .orderBy('EventName', 'asc');
+
+        res.render('add_events', {
+            user: req.session.user,
+            eventTemplates
+        });
+
+    } catch (err) {
+        console.error("Error loading event templates:", err);
+        res.status(500).send("Server error retrieving event templates");
+    }
+});
+
+
+// ===============
+// ADD EVENT ACTION (ADMIN)
+// ===============
+app.post('/events/add', requireLogin, async(req, res) => {
+    if (req.session.user.role !== 'admin') {
+        return res.redirect('/events_nonverified');
+    }
+
+    try {
+        const {
+            Event_ID,
+            EventDateTimeStart,
+            EventDateTimeEnd,
+            EventLocation,
+            EventCapacity,
+            EventRegistrationDeadline
+        } = req.body;
+
+        await knex('EventOccurrence').insert({
+            Event_ID,
+            EventDateTimeStart,
+            EventDateTimeEnd,
+            EventLocation,
+            EventCapacity,
+            EventRegistrationDeadline
+        });
+
+        res.redirect('/events');
+
+    } catch (err) {
+        console.error("Error adding event occurrence:", err);
+        res.status(500).send("Server error creating event occurrence");
+    }
+});
+
 
 
 // Dashboard (requires login)
@@ -1014,20 +1083,20 @@ app.post('/donation/:id/delete', async(req, res) => {
             .where({ Donation_ID: donationId })
             .del();
 
-    if (deleted) {
-      res.status(200).json({ message: 'Donation deleted successfully.' });
-      if (user.role === 'admin') {
-        res.redirect('/donations_admin');
-      } else {
-        res.redirect('/donations_user');
-      }
-    } else {
-      res.status(404).json({ message: 'Donation not found.' });
+        if (deleted) {
+            res.status(200).json({ message: 'Donation deleted successfully.' });
+            if (user.role === 'admin') {
+                res.redirect('/donations_admin');
+            } else {
+                res.redirect('/donations_user');
+            }
+        } else {
+            res.status(404).json({ message: 'Donation not found.' });
+        }
+    } catch (err) {
+        console.error('Error deleting donation:', err);
+        res.status(500).json({ message: 'Internal server error.' });
     }
-  } catch (err) {
-    console.error('Error deleting donation:', err);
-    res.status(500).json({ message: 'Internal server error.' });
-  }
 });
 
 // Delete a specific EventOccurrence by composite key
@@ -1042,20 +1111,20 @@ app.post('/event-occurrence/:eventId/:startTime/delete', async(req, res) => {
             })
             .del();
 
-    if (deleted) {
-      res.status(200).json({ message: 'Event occurrence deleted successfully.' });
-      if (user.role === 'admin') {
-        res.redirect('/events_admin');
-      } else {
-        res.redirect('/events_user');
-      }
-    } else {
-      res.status(404).json({ message: 'Event occurrence not found.' });
+        if (deleted) {
+            res.status(200).json({ message: 'Event occurrence deleted successfully.' });
+            if (user.role === 'admin') {
+                res.redirect('/events_admin');
+            } else {
+                res.redirect('/events_user');
+            }
+        } else {
+            res.status(404).json({ message: 'Event occurrence not found.' });
+        }
+    } catch (err) {
+        console.error('Error deleting event occurrence:', err);
+        res.status(500).json({ message: 'Internal server error.' });
     }
-  } catch (err) {
-    console.error('Error deleting event occurrence:', err);
-    res.status(500).json({ message: 'Internal server error.' });
-  }
 });
 
 // Delete a specific Milestone by composite key
@@ -1070,20 +1139,20 @@ app.post('/milestone/:participantId/:title/delete', async(req, res) => {
             })
             .del();
 
-    if (deleted) {
-      res.status(200).json({ message: 'Milestone deleted successfully.' });
-        if (user.role === 'admin') {
-          res.redirect('/dashboard');
+        if (deleted) {
+            res.status(200).json({ message: 'Milestone deleted successfully.' });
+            if (user.role === 'admin') {
+                res.redirect('/dashboard');
+            } else {
+                res.redirect(`/profile/${participantId}`);
+            }
         } else {
-          res.redirect(`/profile/${participantId}`);
+            res.status(404).json({ message: 'Milestone not found.' });
         }
-    } else {
-      res.status(404).json({ message: 'Milestone not found.' });
+    } catch (err) {
+        console.error('Error deleting milestone:', err);
+        res.status(500).json({ message: 'Internal server error.' });
     }
-  } catch (err) {
-    console.error('Error deleting milestone:', err);
-    res.status(500).json({ message: 'Internal server error.' });
-  }
 });
 
 // Delete a specific Registration by composite key
@@ -1099,20 +1168,20 @@ app.post('/registration/:participantId/:eventId/:startTime/delete', async(req, r
             })
             .del();
 
-    if (deleted) {
-      res.status(200).json({ message: 'Registration deleted successfully.' });
-        if (user.role === 'admin') {
-            res.redirect('/registrations_content');  
+        if (deleted) {
+            res.status(200).json({ message: 'Registration deleted successfully.' });
+            if (user.role === 'admin') {
+                res.redirect('/registrations_content');
+            } else {
+                res.redirect(`/profile/${participantId}`);
+            }
         } else {
-            res.redirect(`/profile/${participantId}`);
+            res.status(404).json({ message: 'Registration not found.' });
         }
-    } else {
-      res.status(404).json({ message: 'Registration not found.' });
+    } catch (err) {
+        console.error('Error deleting registration:', err);
+        res.status(500).json({ message: 'Internal server error.' });
     }
-  } catch (err) {
-    console.error('Error deleting registration:', err);
-    res.status(500).json({ message: 'Internal server error.' });
-  }
 });
 
 // Delete a specific Survey by composite key
@@ -1128,20 +1197,20 @@ app.post('/survey/:participantId/:eventId/:startTime/delete', async(req, res) =>
             })
             .del();
 
-    if (deleted) {
-      res.status(200).json({ message: 'Survey deleted successfully.' });
-        if (user.role === 'admin') {
-            res.redirect('/surveys_content');  
+        if (deleted) {
+            res.status(200).json({ message: 'Survey deleted successfully.' });
+            if (user.role === 'admin') {
+                res.redirect('/surveys_content');
+            } else {
+                res.redirect(`/profile/${participantId}`);
+            }
         } else {
-            res.redirect(`/profile/${participantId}`);
+            res.status(404).json({ message: 'Survey not found.' });
         }
-    } else {
-      res.status(404).json({ message: 'Survey not found.' });
+    } catch (err) {
+        console.error('Error deleting survey:', err);
+        res.status(500).json({ message: 'Internal server error.' });
     }
-  } catch (err) {
-    console.error('Error deleting survey:', err);
-    res.status(500).json({ message: 'Internal server error.' });
-  }
 });
 
 // ===== Start server =====

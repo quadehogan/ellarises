@@ -19,8 +19,8 @@
                             <th>Type</th>
                             <th>Date</th>
                             <th>Location</th>
-                            <th>Actions</th>
-                            <th></th>
+                            <th>Edit</th>
+                            <th>Delete</th>
                             <th>Survey</th>
                         </tr>
                     </thead>
@@ -39,24 +39,40 @@
                                 <td>
                                     <%= event.EventLocation %>
                                 </td>
+
+                                <!-- EDIT BUTTON -->
                                 <td>
-                                    <button class="custom-btn" onclick="alert('Edit coming soon')">Edit</button>
+                                    <a href="/events/edit/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart) %>" class="custom-btn">
+                                        Edit
+                                    </a>
                                 </td>
+
+                                <!-- DELETE BUTTON -->
                                 <td>
-                                    <form action="/event-occurrence/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart) %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this upcoming event?');" style="display: inline-block;">
+                                    <form action="/events/delete/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart) %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this event?');" style="display:inline-block;">
+
                                         <button type="submit" class="custom-btn" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">
-                      Delete
-                    </button>
+                                            Delete
+                                        </button>
+
                                     </form>
                                 </td>
+
+                                <!-- SURVEY -->
                                 <td>
-                                    <a href="/surveys/<%= event.Event_ID %>/<%= encodeURIComponent(new Date(event.EventDateTimeStart).toISOString()) %>" class="custom-btn">Survey</a>
+                                    <a href="/surveys/<%= event.Event_ID %>/<%= encodeURIComponent(new Date(event.EventDateTimeStart).toISOString()) %>" class="custom-btn">
+                                        Survey
+                                    </a>
                                 </td>
                             </tr>
                             <% }) %>
                     </tbody>
                 </table>
             </div>
+
+            <!-- ADD EVENT BUTTON -->
+            <a href="/events/add" class="custom-btn mt-3">Add Event</a>
+
             <% } %>
 
                 <!-- Past Events Table -->
@@ -70,8 +86,8 @@
                                     <th>Type</th>
                                     <th>Date</th>
                                     <th>Location</th>
-                                    <th>Actions</th>
-                                    <th></th>
+                                    <th>Edit</th>
+                                    <th>Delete</th>
                                     <th>Survey</th>
                                 </tr>
                             </thead>
@@ -90,24 +106,30 @@
                                         <td>
                                             <%= event.EventLocation %>
                                         </td>
+
+                                        <!-- EDIT BUTTON -->
                                         <td>
-                                            <form action="/event-occurrence/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart) %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this past event?');" style="display: inline-block;">
-                                                <input type="hidden" name="_method" value="DELETE">
-                                                <button class="custom-btn" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">
-                      Edit
-                    </button>
-                                            </form>
+                                            <a href="/events/edit/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart) %>" class="custom-btn">
+                                        Edit
+                                    </a>
                                         </td>
+
+                                        <!-- DELETE BUTTON -->
                                         <td>
-                                            <form action="/event-occurrence/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart) %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this past event?');" style="display: inline-block;">
-                                                <input type="hidden" name="_method" value="DELETE">
+                                            <form action="/events/delete/<%= event.Event_ID %>/<%= encodeURIComponent(event.EventDateTimeStart) %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this event?');" style="display:inline-block;">
+
                                                 <button type="submit" class="custom-btn" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">
-                      Delete
-                    </button>
+                                            Delete
+                                        </button>
+
                                             </form>
                                         </td>
+
+                                        <!-- SURVEY -->
                                         <td>
-                                            <a href="/surveys/<%= event.Event_ID %>/<%= encodeURIComponent(new Date(event.EventDateTimeStart).toISOString()) %>" class="custom-btn">Survey</a>
+                                            <a href="/surveys/<%= event.Event_ID %>/<%= encodeURIComponent(new Date(event.EventDateTimeStart).toISOString()) %>" class="custom-btn">
+                                        Survey
+                                    </a>
                                         </td>
                                     </tr>
                                     <% }) %>
@@ -123,11 +145,13 @@
 
 <script>
     const eventSearchInput = document.getElementById('eventSearchInput');
+
     if (eventSearchInput) {
         eventSearchInput.addEventListener('keyup', function() {
             const filter = this.value.toLowerCase();
             const rows = document.querySelectorAll('#eventTable tbody tr');
             const pastRows = document.querySelectorAll('#pastEventTable tbody tr');
+
             [...rows, ...pastRows].forEach(row => {
                 const text = row.textContent.toLowerCase();
                 row.style.display = text.includes(filter) ? '' : 'none';
