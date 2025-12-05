@@ -493,7 +493,7 @@ app.get('/surveys/:eventId/:eventDateTimeStart', async(req, res) => {
         if (surveys.length > 0) {
             const count = surveys.length;
             averages.overall = (surveys.reduce((t, r) => t + Number(r.SurveyOverallScore || 0), 0) / count).toFixed(2);
-            averages.satisfaction = (surveys.reduce((t, r) => t + Number(r.SurveySatisfactionScore || 0), 0) / count).toFixed(2);
+            averages.satisfaction = (surveys.reduce((t, r) => t + Number(r.SurveySatisfaction || 0), 0) / count).toFixed(2);
             averages.usefulness = (surveys.reduce((t, r) => t + Number(r.SurveyUsefulnessScore || 0), 0) / count).toFixed(2);
             averages.instructor = (surveys.reduce((t, r) => t + Number(r.SurveyInstructorScore || 0), 0) / count).toFixed(2);
             averages.recommendation = (surveys.reduce((t, r) => t + Number(r.SurveyRecommendationScore || 0), 0) / count).toFixed(2);
@@ -789,6 +789,7 @@ app.post('/create-user-submit', requireLogin, async(req, res) => {
 
 // ===== POST: Submit Survey (example storing) =====
 app.post('/submit-survey', requireLogin, async(req, res) => {
+    const user = req.session.user;
     try {
         const {
             SurveySatisfactionScore,
@@ -827,7 +828,12 @@ app.post('/submit-survey', requireLogin, async(req, res) => {
             SurveySubmissionDate: knex.fn.now()
         });
 
-        res.send('Survey submitted successfully!');
+        if (user.role === 'admin') {
+        res.redirect('/manage_dashboard');
+        } else {
+        res.redirect(`/events_user/${user.id}`);
+        }
+
     } catch (err) {
         console.error('Error saving survey:', err);
         res.status(500).send('Error submitting survey');
@@ -1390,7 +1396,7 @@ app.post('/registration/:participantId/:eventId/:startTime/delete', async(req, r
 });
 
 // Delete a specific Survey by composite key
-app.post('/survey/:participantId/:eventId/:startTime/delete', async(req, res) => {
+app.post('/survey/:participantId/:eventId/:startTime/delete', async (req, res) => {
     const { participantId, eventId, startTime } = req.params;
     const user = req.session.user;
 
@@ -1404,20 +1410,24 @@ app.post('/survey/:participantId/:eventId/:startTime/delete', async(req, res) =>
             .del();
 
         if (deleted) {
-            res.status(200).json({ message: 'Survey deleted successfully.' });
+            // Redirect based on user role
             if (user.role === 'admin') {
-                res.redirect('/manage_dashboard');
+                return res.redirect('/manage_dashboard');
             } else {
-                res.redirect(`/profile/${participantId}`);
+                return res.redirect(`/profile/${participantId}`);
             }
         } else {
-            res.status(404).json({ message: 'Survey not found.' });
+            // Survey not found, send 404 JSON response
+            return res.status(404).json({ message: 'Survey not found.' });
         }
     } catch (err) {
         console.error('Error deleting survey:', err);
-        res.status(500).json({ message: 'Internal server error.' });
+        if (!res.headersSent) {
+            return res.status(500).json({ message: 'Internal server error.' });
+        }
     }
 });
+
 
 // ===============================
 // MILESTONE ROUTES (CORRECTED)
