@@ -1,29 +1,29 @@
 <!-- Top Hero Image -->
 <div class="hero-image">
-  <img src="/images/STEMWorkshop2.jpg" alt="STEM Workshop Hero">
+    <img src="/images/STEMWorkshop2.jpg" alt="STEM Workshop Hero">
 </div>
 
 <!-- Mission + Stats Section -->
 <div class="section section-mission-stats">
-  <div class="mission">
-    <h2>Our Mission</h2>
-    <p>Our mission is to provide an exceptional learning environment where participants grow, connect, and thrive. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent euismod ex at dui laoreet, ut cursus libero iaculis.</p>
-  </div>
+    <div class="mission">
+        <h2>Our Mission</h2>
+        <p>Our mission is to provide an exceptional learning environment where participants grow, connect, and thrive. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent euismod ex at dui laoreet, ut cursus libero iaculis.</p>
+    </div>
 
-  <div class="stats">
-    <h2>Our Stats</h2>
-    <ul>
-      <li><strong>500+</strong> Participants trained</li>
-      <li><strong>120</strong> Events held</li>
-      <li><strong>95%</strong> Satisfaction rate</li>
-    </ul>
-  </div>
+    <div class="stats">
+        <h2>Our Stats</h2>
+        <ul>
+            <li><strong>500+</strong> Participants trained</li>
+            <li><strong>120</strong> Events held</li>
+            <li><strong>95%</strong> Satisfaction rate</li>
+        </ul>
+    </div>
 </div>
 
 <!-- Video Section -->
 <div class="section section-video">
-  <h2>Watch Our Introduction</h2>
-  <video controls>
+    <h2>Watch Our Introduction</h2>
+    <video controls>
     <source src="https://video.wixstatic.com/video/e5f869_f075e19ca2744354bb20a65881dce28f/1080p/mp4/file.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
@@ -31,105 +31,102 @@
 
 <!-- Slideshow Section (Moved Lower) -->
 <div class="slideshow-container">
-  <div class="slide">
-    <img src="/images/STEMWorkshop5.jpg" alt="Slide 1">
-  </div>
-  <div class="slide">
-    <img src="/images/drawing_robot_hat.JPG" alt="Slide 2">
-  </div>
-  <div class="slide">
-    <img src="/images/group_labcoats.jpeg" alt="Slide 3">
-  </div>
-  <div class="slide">
-    <img src="/images/mariachi1.jpeg" alt="Slide 4">
-  </div>
-  <div class="slide">
-    <img src="/images/duo_girls_desk.jpg" alt="Slide 5">
-  </div>
-  <div class="slide">
-    <img src="/images/cultural_music.jpeg" alt="Slide 6">
-  </div>
-  <div class="slide">
-    <img src="/images/Mural2.jpg" alt="Slide 7">
-  </div>
-  <div class="slide">
-    <img src="/images/SummerSummit1.jpg" alt="Slide 8">
-  </div>
-  <div class="slide">
-    <img src="/images/uvu_lab.jpeg" alt="Slide 9">
-  </div>
-  <div class="slide">
-    <img src="/images/BYUTour.jpg" alt="Slide 10">
-  </div>
+    <div class="slide">
+        <img src="/images/STEMWorkshop5.jpg" alt="Slide 1">
+    </div>
+    <div class="slide">
+        <img src="/images/drawing_robot_hat.JPG" alt="Slide 2">
+    </div>
+    <div class="slide">
+        <img src="/images/group_labcoats.jpeg" alt="Slide 3">
+    </div>
+    <div class="slide">
+        <img src="/images/mariachi1.jpeg" alt="Slide 4">
+    </div>
+    <div class="slide">
+        <img src="/images/duo_girls_desk.jpg" alt="Slide 5">
+    </div>
+    <div class="slide">
+        <img src="/images/cultural_music.jpeg" alt="Slide 6">
+    </div>
+    <div class="slide">
+        <img src="/images/Mural2.jpg" alt="Slide 7">
+    </div>
+    <div class="slide">
+        <img src="/images/SummerSummit1.jpg" alt="Slide 8">
+    </div>
+    <div class="slide">
+        <img src="/images/uvu_lab.jpeg" alt="Slide 9">
+    </div>
+    <div class="slide">
+        <img src="/images/BYUTour.jpg" alt="Slide 10">
+    </div>
 </div>
 
 <!-- JavaScript Slideshow -->
 <script>
-  window.addEventListener("load", () => {
-    let slideIndex = 0;
-    const slides = document.querySelectorAll('.slide');
+    window.addEventListener("load", () => {
+        let slideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
 
-    if (!slides.length) return;
+        if (!slides.length) return;
 
-    slides.forEach(slide => {
-      const img = slide.querySelector('img');
-      if (img) new Image().src = img.src;
+        // Preload images
+        slides.forEach(slide => {
+            const img = slide.querySelector('img');
+            if (img) new Image().src = img.src;
+        });
+
+        slides[0].classList.add('active');
+
+        function showSlides() {
+            const prevIndex = slideIndex;
+            slideIndex = (slideIndex + 1) % slides.length;
+
+            slides[slideIndex].classList.add('active');
+
+            // SAFE VERSION: No optional chaining needed
+            if (slides[prevIndex]) {
+                slides[prevIndex].classList.remove('active');
+            }
+
+            setTimeout(showSlides, 10000);
+        }
+
+        setTimeout(showSlides, 10000);
     });
-
-    slides[0].classList.add('active');
-
-    function showSlides() {
-      const prevIndex = slideIndex;
-      slideIndex = (slideIndex + 1) % slides.length;
-
-      slides[slideIndex].classList.add('active');
-      setTimeout(() => slides[prevIndex]?.classList.remove('active'), 500);
-
-      setTimeout(showSlides, 10000);
-    }
-
-    setTimeout(showSlides, 10000);
-  });
 </script>
+
 
 <!-- Cards Section -->
 <div class="section section-cards">
-  <div class="card card1">
-    <div class="card-overlay"></div>
-    <div class="card-content">
-      <h3>Milestones</h3>
-      <a 
-        href="<%= user ? (user.role === 'admin' ? '/dashboard' : '/profile/' + user.id) : '/login' %>" 
-        class="custom-btn"
-      >
+    <div class="card card1">
+        <div class="card-overlay"></div>
+        <div class="card-content">
+            <h3>Milestones</h3>
+            <a href="<%= user ? (user.role === 'admin' ? '/dashboard' : '/profile/' + user.id) : '/login' %>" class="custom-btn">
         Learn More
       </a>
+        </div>
     </div>
-  </div>
-  <div class="card card2">
-    <div class="card-overlay"></div>
-    <div class="card-content">
-      <h3>Upcoming Events</h3>
-      <a 
-        href="<%= user ? '/events' : '/events_nonverified' %>" 
-        class="custom-btn"
-      >
+    <div class="card card2">
+        <div class="card-overlay"></div>
+        <div class="card-content">
+            <h3>Upcoming Events</h3>
+            <a href="<%= user ? '/events' : '/events_nonverified' %>" class="custom-btn">
         Learn More
       </a>
+        </div>
     </div>
-  </div>
-  <div class="card card3">
-    <div class="card-overlay"></div>
-    <div class="card-content">
-      <h3>Get Involved</h3>
-      <a 
-        href="<%= user ? '/donations' : '/enroll' %>" 
-        class="custom-btn"
-      >
+    <div class="card card3">
+        <div class="card-overlay"></div>
+        <div class="card-content">
+            <h3>Get Involved</h3>
+            <a href="<%= user ? '/donations' : '/enroll' %>" class="custom-btn">
         Learn More
       </a>
+        </div>
     </div>
-  </div>
 </div>
 
 <!-- Spacer -->
@@ -137,35 +134,42 @@
 
 <!-- Call to Action Hero Section -->
 <div class="section section-cta-hero">
-  <div class="cta-overlay"></div>
-  <div class="cta-content">
-    <a href="#" class="cta-btn">Enroll Now</a>
-  </div>
+    <div class="cta-overlay"></div>
+    <div class="cta-content">
+
+        <% if (!user) { %>
+            <a href="/enroll" class="cta-btn">Enroll Now</a>
+            <% } %>
+
+    </div>
 </div>
+
 
 <!-- Hero Image CSS -->
 <style>
-.hero-image img {
-  width: 100%;
-  height: 60vh; /* slightly shorter than full screen */
-  object-fit: cover;
-}
-
-/* Optional: Slideshow styling if not already in your CSS */
-.slideshow-container {
-  position: relative;
-  max-width: 100%;
-  margin: 40px auto; /* spacing from above content */
-  overflow: hidden;
-}
-
-.slide {
-  display: none;
-  width: 100%;
-  transition: opacity 0.5s ease-in-out;
-}
-
-.slide.active {
-  display: block;
-}
+    .hero-image img {
+        width: 100%;
+        height: 60vh;
+        /* slightly shorter than full screen */
+        object-fit: cover;
+    }
+    /* Optional: Slideshow styling if not already in your CSS */
+    
+    .slideshow-container {
+        position: relative;
+        max-width: 100%;
+        margin: 40px auto;
+        /* spacing from above content */
+        overflow: hidden;
+    }
+    
+    .slide {
+        display: none;
+        width: 100%;
+        transition: opacity 0.5s ease-in-out;
+    }
+    
+    .slide.active {
+        display: block;
+    }
 </style>
