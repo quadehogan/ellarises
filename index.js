@@ -322,43 +322,6 @@ app.post('/events/add', requireLogin, async(req, res) => {
 });
 
 
-
-// Dashboard (requires login)
-app.get('/milestones', requireLogin, async(req, res) => {
-    const user = req.session.user;
-
-    try {
-        // Fetch milestones with participant names
-        const milestones = await knex('Milestones as m')
-            .join('Participants as p', 'm.Participant_ID', 'p.Participant_ID')
-            .select(
-                'm.Participant_ID',
-                'p.ParticipantFirstName',
-                'p.ParticipantLastName',
-                'm.MilestoneTitle',
-                'm.MilestoneDate'
-            )
-            .orderBy('m.MilestoneDate', 'desc');
-
-        if (user.role === 'admin') {
-            // Admin view goes through manage_dashboard
-            return res.render('manage_dashboard', {
-                user,
-                title: 'Milestones',
-                contentFile: 'milestones',
-                contentData: {
-                    user,
-                    milestones
-                }
-            });
-        }
-
-    } catch (err) {
-        console.error('Error loading dashboard:', err);
-        res.status(500).send('Server error.');
-    }
-});
-
 app.get('/dashboard', requireLogin, (req, res) => {
     const user = req.session.user;
     res.render('manage_dashboard', {
@@ -554,37 +517,6 @@ app.get('/surveys/:eventId/:eventDateTimeStart', async(req, res) => {
     }
 });
 
-// ===== Milestones (use KNEX) =====
-app.get('/milestones', async(req, res) => {
-    try {
-        // Use Milestones table (capitalization consistent with other routes)
-        const rows = await knex('Milestones').select('*').orderBy('id', 'desc');
-        res.render('milestones', { milestones: rows, user: req.session.user });
-    } catch (err) {
-        console.error('Error loading milestones:', err);
-        res.status(500).send('Error loading milestones');
-    }
-});
-
-app.get('/milestones/add', (req, res) => {
-    res.render('add_milestone', { user: req.session.user });
-});
-
-app.post('/milestones/add', requireLogin, async(req, res) => {
-    const { title, due_date, details } = req.body;
-
-    try {
-        await knex('Milestones').insert({
-            title,
-            due_date,
-            details
-        });
-        res.redirect('/milestones');
-    } catch (err) {
-        console.error('Error adding milestone:', err);
-        res.status(500).send('Error adding milestone');
-    }
-});
 
 // ===== Donations =====
 // ===== PUBLIC DONATION PAGE (no login required) =====
@@ -769,62 +701,6 @@ app.get('/create_user', requireLogin, (req, res) =>
     }));
 
 app.get('/add_events', requireLogin, (req, res) => res.render('add_events', { user: req.session.user }));
-
-
-
-// Admin Add Milestone page
-app.get('/add_milestone_admin', requireLogin, async(req, res) => {
-    const user = req.session.user;
-
-    if (user.role !== 'admin') {
-        return res.redirect('/dashboard');
-    }
-
-    const participants = await knex('Participants')
-        .select(
-            'Participant_ID',
-            'ParticipantFirstName',
-            'ParticipantLastName',
-            'ParticipantEmail'
-        );
-
-    res.render('add_milestone_admin', { user, participants });
-});
-
-// User get add milestone page
-app.get("/milestone/add/:id", requireLogin, async(req, res) => {
-    const participantId = req.params.id;
-
-    const participant = await knex("Participants")
-        .where("Participant_ID", participantId)
-        .first();
-
-    res.render("add_milestone_user", {
-        user: req.session.user,
-        participant
-    });
-});
-
-
-
-// User post add milestone page
-app.post("/milestone/add", requireLogin, async(req, res) => {
-    const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
-
-    try {
-        await knex("Milestones").insert({
-            Participant_ID,
-            MilestoneTitle,
-            MilestoneDate
-        });
-
-        res.redirect(`/profile/${Participant_ID}`);
-    } catch (err) {
-        console.error("Error adding milestone:", err);
-        res.status(500).send("Error adding milestone");
-    }
-});
-
 
 
 app.get('/add_survey/:Participant_ID/:Event_ID/:EventDateTimeStart', requireLogin, (req, res) => {
@@ -1052,29 +928,6 @@ app.post('/registration/update', async(req, res) => {
     }
 });
 
-// ===== Submit milestone (participants limited) =====
-app.post('/submit-milestone', requireLogin, async(req, res) => {
-    try {
-        const user = req.session.user;
-        let { Participant_ID, MilestoneTitle, MilestoneDescription } = req.body;
-
-        if (user.role === 'participant') {
-            Participant_ID = user.id;
-        }
-
-        await knex('Milestones').insert({
-            Participant_ID,
-            MilestoneTitle,
-            MilestoneDescription,
-            MilestoneDate: knex.fn.now()
-        });
-
-        res.redirect('/milestones');
-    } catch (err) {
-        console.error('Error creating milestone:', err);
-        res.status(500).send('Error creating milestone');
-    }
-});
 
 // ===== ALL EDIT ROUTES =====
 
@@ -1189,31 +1042,6 @@ app.post('/events/edit', requireLogin, async(req, res) => {
     }
 });
 
-
-
-// Edit milestone (composite key)
-app.get('/milestone/:participantId/:title/edit', async(req, res) => {
-    const user = req.session.user;
-    const { participantId, title } = req.params;
-
-    try {
-        const milestone = await knex('Milestones')
-            .where({
-                Participant_ID: participantId,
-                MilestoneTitle: title
-            })
-            .first();
-
-        if (milestone) {
-            res.render('edit_milestone', { user, milestone });
-        } else {
-            res.status(404).send('Milestone not found.');
-        }
-    } catch (err) {
-        console.error('Error fetching milestone:', err);
-        res.status(500).send('Internal server error.');
-    }
-});
 
 // Edit registration (composite key)
 app.get('/registration/:participantId/:eventId/:startTime/edit', async(req, res) => {
@@ -1396,30 +1224,6 @@ app.post("/survey/update", async(req, res) => {
 
 
 
-app.post("/milestone/update", async(req, res) => {
-    const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
-
-    try {
-        await db("Milestones")
-            .where({
-                Participant_ID: Participant_ID,
-                MilestoneTitle: MilestoneTitle
-            })
-            .update({
-                MilestoneDate: MilestoneDate
-            });
-        if (req.session.user.id === "admin") {
-            res.redirect("/manage_dashboard");
-        } else {
-            res.redirect(`/profile/${Participant_ID}`);
-        }
-    } catch (err) {
-        console.error("Error updating milestone:", err);
-        res.status(500).send("Server Error");
-    }
-});
-
-
 /* ----- POST: Update Registration ----- */
 app.post("/registration/:Participant_ID/:Event_ID/:EventDateTimeStart/edit", async(req, res) => {
     try {
@@ -1553,35 +1357,6 @@ app.post('/events/delete/:eventId/:startTime', requireLogin, async(req, res) => 
 });
 
 
-
-// Delete a specific Milestone by composite key
-app.post('/milestone/:participantId/:title/delete', async(req, res) => {
-    const { participantId, title } = req.params;
-
-    try {
-        const deleted = await knex('Milestones')
-            .where({
-                Participant_ID: participantId,
-                MilestoneTitle: title
-            })
-            .del();
-
-        if (deleted) {
-            res.status(200).json({ message: 'Milestone deleted successfully.' });
-            if (user.role === 'admin') {
-                res.redirect('/dashboard');
-            } else {
-                res.redirect(`/profile/${participantId}`);
-            }
-        } else {
-            res.status(404).json({ message: 'Milestone not found.' });
-        }
-    } catch (err) {
-        console.error('Error deleting milestone:', err);
-        res.status(500).json({ message: 'Internal server error.' });
-    }
-});
-
 // Delete a specific Registration by composite key
 app.post('/registration/:participantId/:eventId/:startTime/delete', async(req, res) => {
     const { participantId, eventId, startTime } = req.params;
@@ -1639,6 +1414,151 @@ app.post('/survey/:participantId/:eventId/:startTime/delete', async(req, res) =>
         res.status(500).json({ message: 'Internal server error.' });
     }
 });
+
+// milestones routes
+// 1. GET — User or Admin: open edit milestone page
+app.get("/milestone/:participantId/:title/edit", requireLogin, async(req, res) => {
+    const { participantId, title } = req.params;
+
+    try {
+        const milestone = await knex("Milestones")
+            .where({
+                Participant_ID: participantId,
+                MilestoneTitle: title
+            })
+            .first();
+
+        if (!milestone) return res.status(404).send("Milestone not found");
+
+        res.render("edit_milestone", {
+            user: req.session.user,
+            milestone
+        });
+    } catch (err) {
+        console.error("Error fetching milestone:", err);
+        res.status(500).send("Server Error");
+    }
+});
+
+// 2. POST — Update milestone date (Title is read-only)
+app.post("/milestone/:participantId/:title/update", requireLogin, async(req, res) => {
+    const { participantId, title } = req.params;
+    const { MilestoneDate } = req.body;
+
+    try {
+        await knex("Milestones")
+            .where({
+                Participant_ID: participantId,
+                MilestoneTitle: title
+            })
+            .update({ MilestoneDate });
+
+        // Admin goes to dashboard. User goes to their profile.
+        if (req.session.user.role === "admin") {
+            return res.redirect("/manage_dashboard?view=milestones");
+        }
+
+        return res.redirect(`/profile/${participantId}`);
+
+    } catch (err) {
+        console.error("Error updating milestone:", err);
+        res.status(500).send("Update failed");
+    }
+});
+
+// 3. POST — Delete milestone
+app.post("/milestone/:participantId/:title/delete", requireLogin, async(req, res) => {
+    const { participantId, title } = req.params;
+
+    try {
+        const deleted = await knex("Milestones")
+            .where({
+                Participant_ID: participantId,
+                MilestoneTitle: title
+            })
+            .del();
+
+        if (!deleted) return res.status(404).send("Milestone not found");
+
+        if (req.session.user.role === "admin") {
+            return res.redirect("/manage_dashboard?view=milestones");
+        }
+
+        return res.redirect(`/profile/${participantId}`);
+
+    } catch (err) {
+        console.error("Error deleting milestone:", err);
+        res.status(500).send("Error deleting milestone");
+    }
+});
+
+// 4. GET — User add milestone page
+app.get("/milestone/add/:id", requireLogin, async(req, res) => {
+    const participantId = req.params.id;
+
+    const participant = await knex("Participants")
+        .where("Participant_ID", participantId)
+        .first();
+
+    res.render("add_milestone_user", {
+        user: req.session.user,
+        participant
+    });
+});
+
+// 5. POST — User submit milestone
+app.post("/milestone/add", requireLogin, async(req, res) => {
+    const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
+
+    try {
+        await knex("Milestones").insert({
+            Participant_ID,
+            MilestoneTitle,
+            MilestoneDate
+        });
+
+        res.redirect(`/profile/${Participant_ID}`);
+    } catch (err) {
+        console.error("Error adding milestone:", err);
+        res.status(500).send("Error adding milestone");
+    }
+});
+
+// 6. GET — Admin add milestone
+app.get("/add_milestone_admin", requireLogin, async(req, res) => {
+    const user = req.session.user;
+
+    if (user.role !== "admin") return res.redirect("/dashboard");
+
+    const participants = await knex("Participants").select(
+        "Participant_ID",
+        "ParticipantFirstName",
+        "ParticipantLastName",
+        "ParticipantEmail"
+    );
+
+    res.render("add_milestone_admin", { user, participants });
+});
+
+// 7. POST — Admin submit milestone
+app.post("/milestone/add_admin", requireLogin, async(req, res) => {
+    const { Participant_ID, MilestoneTitle, MilestoneDate } = req.body;
+
+    try {
+        await knex("Milestones").insert({
+            Participant_ID,
+            MilestoneTitle,
+            MilestoneDate
+        });
+
+        res.redirect("/manage_dashboard?view=milestones");
+    } catch (err) {
+        console.error("Milestone insert error:", err);
+        res.status(500).send("Error adding milestone");
+    }
+});
+
+
 
 // ===== Start server =====
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
